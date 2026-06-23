@@ -36,13 +36,9 @@ const OPERATION_NAV_ITEMS: NavItem[] = [
     icon: <Calendar className="h-4.5 w-4.5" />,
   },
   {
+    to: urlPaths.medicalRecordList,
     label: "Khách hàng",
     icon: <Users className="h-4.5 w-4.5" />,
-    children: [
-      { label: "Tạo mới", to: urlPaths.medicalRecordCreate },
-      { label: "Danh sách", to: urlPaths.medicalRecordList },
-      { label: "Người giới thiệu", to: urlPaths.referrers },
-    ],
   },
   {
     to: urlPaths.standardMedicalRecords,

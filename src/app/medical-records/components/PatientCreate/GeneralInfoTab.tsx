@@ -6,7 +6,14 @@ import { Radio } from "@/components/ui/radio"
 import { Label } from "@/components/ui/label"
 import { Camera } from "lucide-react"
 
-export function GeneralInfoTab() {
+import type { PatientFormState, SetPatientField } from "./patientForm"
+
+interface GeneralInfoTabProps {
+  form: PatientFormState
+  setField: SetPatientField
+}
+
+export function GeneralInfoTab({ form, setField }: GeneralInfoTabProps) {
   return (
     <div className="grid grid-cols-4 gap-6 p-6">
       {/* Cột 1: Avatar */}
@@ -27,11 +34,19 @@ export function GeneralInfoTab() {
       <div className="col-span-3 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <Radio name="gender" defaultChecked />
+            <Radio
+              name="gender"
+              checked={form.gender === "MALE"}
+              onChange={() => setField("gender", "MALE")}
+            />
             Nam
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <Radio name="gender" />
+            <Radio
+              name="gender"
+              checked={form.gender === "FEMALE"}
+              onChange={() => setField("gender", "FEMALE")}
+            />
             Nữ
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer ml-4">
@@ -58,11 +73,19 @@ export function GeneralInfoTab() {
       {/* Row 2, Cols 2-4 */}
       <div className="col-span-1 space-y-1.5">
         <Label className="text-gray-700 font-medium text-xs">Họ và tên</Label>
-        <Input placeholder="eg. họ và tên" />
+        <Input
+          placeholder="eg. họ và tên"
+          value={form.fullName}
+          onChange={(e) => setField("fullName", e.target.value)}
+        />
       </div>
       <div className="col-span-1 space-y-1.5">
         <Label className="text-gray-700 font-medium text-xs">Ngày sinh</Label>
-        <Input placeholder="dd-mm-yyyy" />
+        <Input
+          placeholder="dd-mm-yyyy"
+          value={form.birthDate}
+          onChange={(e) => setField("birthDate", e.target.value)}
+        />
       </div>
       <div className="col-span-1 space-y-1.5">
         <Label className="text-gray-700 font-medium text-xs">Số điện thoại</Label>
@@ -75,7 +98,12 @@ export function GeneralInfoTab() {
               <SelectItem value="vn">🇻🇳</SelectItem>
             </SelectContent>
           </Select>
-          <Input className="rounded-l-none" placeholder="" />
+          <Input
+            className="rounded-l-none"
+            placeholder=""
+            value={form.phone}
+            onChange={(e) => setField("phone", e.target.value)}
+          />
         </div>
       </div>
 
@@ -116,12 +144,18 @@ export function GeneralInfoTab() {
           <Label className="text-gray-700 font-medium text-xs">Nguồn khách hàng</Label>
           <div className="h-1 w-3 bg-green-500 rounded-sm"></div>
         </div>
-        <Select defaultValue="vang-lai">
+        <Select
+          value={form.source}
+          onValueChange={(value) => setField("source", value)}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="vang-lai">Khách Vãng Lai</SelectItem>
+            <SelectItem value="Khách Vãng Lai">Khách Vãng Lai</SelectItem>
+            <SelectItem value="BN Giới Thiệu">BN Giới Thiệu</SelectItem>
+            <SelectItem value="Facebook">Facebook</SelectItem>
+            <SelectItem value="Zalo">Zalo</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -165,7 +199,11 @@ export function GeneralInfoTab() {
       {/* Row 5 */}
       <div className="col-span-1 space-y-1.5">
         <Label className="text-gray-700 font-medium text-xs">Địa chỉ</Label>
-        <Input placeholder="eg. địa chỉ" />
+        <Input
+          placeholder="eg. địa chỉ"
+          value={form.address}
+          onChange={(e) => setField("address", e.target.value)}
+        />
       </div>
       <div className="col-span-1 space-y-1.5">
         <Label className="text-gray-700 font-medium text-xs">Tỉnh/Thành phố</Label>

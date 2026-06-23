@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom"
 
 import { Sidebar } from "@/components/layouts/Sidebar"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function MainLayout() {
   return (
@@ -12,6 +13,7 @@ export default function MainLayout() {
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <Outlet />
       </main>
+      <Toaster richColors position="top-right" />
     </div>
   )
 }
