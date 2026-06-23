@@ -1,0 +1,56 @@
+import { createBrowserRouter, Navigate } from "react-router-dom"
+
+import MainLayout from "@/components/layouts/MainLayout"
+import { ComingSoonPage } from "@/components/pages/coming-soon-page"
+import { urlPaths } from "@/constants/urlPaths"
+import MedicalRecords from "@/app/medical-records/components/MedicalRecords"
+import { StandardMedicalRecord } from "@/app/standard-medical-record/components/StandardMedicalRecord"
+import MedicalRecordList from "@/app/medical-records/components/MedicalRecordList"
+
+export const router = createBrowserRouter([
+  {
+    element: <MainLayout />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to={urlPaths.medicalRecordList} replace />,
+      },
+      {
+        path: urlPaths.medicalRecords(),
+        element: <MedicalRecords />,
+      },
+      {
+        path: urlPaths.medicalRecordList,
+        element: <MedicalRecordList />,
+      },
+      {
+        path: urlPaths.dashboard,
+        element: <ComingSoonPage title="Dashboard" />,
+      },
+      {
+        path: urlPaths.appointments,
+        element: <ComingSoonPage title="Lịch Hẹn" />,
+      },
+      {
+        path: urlPaths.patients,
+        element: <ComingSoonPage title="Bệnh Nhân" />,
+      },
+      {
+        path: urlPaths.standardMedicalRecords,
+        element: <StandardMedicalRecord />,
+      },
+      {
+        path: urlPaths.revenueKpi,
+        element: <ComingSoonPage title="Doanh Thu & KPI" />,
+      },
+      {
+        path: urlPaths.commissionPayroll,
+        element: <ComingSoonPage title="Hoa Hồng & Lương" />,
+      },
+      {
+        path: urlPaths.herbsProducts,
+        element: <ComingSoonPage title="Dược Liệu & Sản Phẩm" />,
+      },
+    ],
+  },
+])
