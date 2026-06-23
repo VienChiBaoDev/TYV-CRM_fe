@@ -6,6 +6,8 @@ import { urlPaths } from "@/constants/urlPaths"
 import MedicalRecords from "@/app/medical-records/components/MedicalRecords"
 import { StandardMedicalRecord } from "@/app/standard-medical-record/components/StandardMedicalRecord"
 import MedicalRecordList from "@/app/medical-records/components/MedicalRecordList"
+import PatientCreatePage from "@/app/medical-records/components/PatientCreate/PatientCreatePage"
+import ReferrersPage from "@/app/medical-records/components/Referrers/ReferrersPage"
 
 export const router = createBrowserRouter([
   {
@@ -14,6 +16,14 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Navigate to={urlPaths.medicalRecordList} replace />,
+      },
+      {
+        path: urlPaths.referrers,
+        element: <ReferrersPage />,
+      },
+      {
+        path: urlPaths.medicalRecordCreate,
+        element: <PatientCreatePage />,
       },
       {
         path: urlPaths.medicalRecords(),
@@ -33,7 +43,7 @@ export const router = createBrowserRouter([
       },
       {
         path: urlPaths.patients,
-        element: <ComingSoonPage title="Bệnh Nhân" />,
+        element: <MedicalRecords />,
       },
       {
         path: urlPaths.standardMedicalRecords,

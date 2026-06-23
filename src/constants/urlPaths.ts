@@ -9,4 +9,6 @@ export const urlPaths = {
   commissionPayroll: "/commission-payroll",
   herbsProducts: "/herbs-products",
   medicalRecordList: "/medical-record",
+  medicalRecordCreate: "/medical-record/create",
+  referrers: "/referrers",
 } as const

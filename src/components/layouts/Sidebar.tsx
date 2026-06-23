@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom"
+import { useState } from "react"
+import { NavLink, useLocation } from "react-router-dom"
 import {
   LayoutDashboard,
   Calendar,
@@ -8,6 +9,8 @@ import {
   TrendingUp,
   DollarSign,
   Leaf,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react"
 
 import { urlPaths } from "@/constants/urlPaths"
@@ -15,10 +18,11 @@ import { useClinicStore } from "@/stores/clinic-store"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
-  to: string
+  to?: string
   label: string
   icon: React.ReactNode
   isHighlighted?: boolean
+  children?: { label: string; to: string }[]
 }
 
 const OPERATION_NAV_ITEMS: NavItem[] = [
@@ -38,9 +42,13 @@ const OPERATION_NAV_ITEMS: NavItem[] = [
     icon: <Users className="h-4.5 w-4.5" />,
   },
   {
-    to: urlPaths.medicalRecordList,
-    label: "Hồ sơ bệnh án",
+    label: "Khách hàng",
     icon: <FileText className="h-4.5 w-4.5" />,
+    children: [
+      { label: "Tạo mới", to: urlPaths.medicalRecordCreate },
+      { label: "Danh sách", to: urlPaths.medicalRecordList },
+      { label: "Người giới thiệu", to: urlPaths.referrers },
+    ],
   },
   {
     to: urlPaths.standardMedicalRecords,
@@ -70,30 +78,91 @@ const SALES_NAV_ITEMS: NavItem[] = [
   },
 ]
 
+function CollapsibleNavItem({ item }: { item: NavItem }) {
+  const location = useLocation()
+  
+  const activeChildTo = item.children?.reduce((prev, curr) => {
+    if (location.pathname.startsWith(curr.to) && curr.to.length > prev.length) {
+      return curr.to;
+    }
+    return prev;
+  }, "");
+
+  const isActive = activeChildTo !== "";
+  const [isOpen, setIsOpen] = useState(isActive || false)
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "group flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm transition-all",
+          isActive
+            ? "bg-emerald-900/40 text-emerald-100"
+            : "text-emerald-300 hover:bg-emerald-900/40"
+        )}
+      >
+        <div className="flex items-center gap-3">
+          {item.icon}
+          {item.label}
+        </div>
+        {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+      </button>
+      {isOpen && (
+        <div className="ml-9 mt-1 flex flex-col space-y-1 border-l border-emerald-800/50 pl-2">
+          {item.children?.map((child) => {
+            const isChildActive = child.to === activeChildTo
+            return (
+              <NavLink
+                key={child.to}
+                to={child.to}
+                className={cn(
+                  "rounded-md px-3 py-1.5 text-xs transition-all",
+                  isChildActive
+                    ? "bg-emerald-700/50 text-white font-medium"
+                    : "text-emerald-400 hover:bg-emerald-900/30 hover:text-emerald-200"
+                )}
+              >
+                {child.label}
+              </NavLink>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function NavGroup({ title, items }: { title: string; items: NavItem[] }) {
+  const location = useLocation()
   return (
     <div>
       <p className="mb-2 px-4 text-[10px] font-bold tracking-wider text-emerald-400 uppercase">
         {title}
       </p>
       <div className="space-y-1">
-        {items.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              cn(
-                "group flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition-all",
-                isActive || window.location.pathname.startsWith(item.to)
-                  ? "border-l-4 border-l-lime-400 bg-emerald-700 text-white"
-                  : "text-emerald-300 hover:bg-emerald-900/40"
-              )
-            }
-          >
-            {item.icon}
-            {item.label}
-          </NavLink>
-        ))}
+        {items.map((item) => {
+          if (item.children) {
+            return <CollapsibleNavItem key={item.label} item={item} />
+          }
+          return (
+            <NavLink
+              key={item.label}
+              to={item.to!}
+              className={({ isActive }) =>
+                cn(
+                  "group flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition-all",
+                  isActive || (item.to && location.pathname.startsWith(item.to))
+                    ? "border-l-4 border-l-lime-400 bg-emerald-700 text-white"
+                    : "text-emerald-300 hover:bg-emerald-900/40"
+                )
+              }
+            >
+              {item.icon}
+              {item.label}
+            </NavLink>
+          )
+        })}
       </div>
     </div>
   )
