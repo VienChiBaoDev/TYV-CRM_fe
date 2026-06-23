@@ -66,7 +66,13 @@ export function FormSelect<T extends FieldValues>({
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>
-            <SelectContent position="popper" sideOffset={4}>
+            <SelectContent
+              position="popper"
+              sideOffset={4}
+              usePortal={false}
+              disableOutsidePointerEvents={false}
+              onCloseAutoFocus={(event) => event.preventDefault()}
+            >
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
