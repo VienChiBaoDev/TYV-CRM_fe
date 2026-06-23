@@ -10,12 +10,19 @@ import { useClinicStore } from "@/stores/clinic-store"
 import { GeneralInfoTab } from "./GeneralInfoTab"
 import { OtherInfoTab } from "./OtherInfoTab"
 import { IdentityCardSection } from "./IdentityCardSection"
+import { AppointmentForm } from "./AppointmentForm"
 import {
   emptyPatientForm,
   type PatientFormState,
   type SetPatientField,
 } from "./patientForm"
+import {
+  defaultAppointmentForm,
+  type AppointmentFormState,
+  type SetAppointmentField,
+} from "./appointmentState"
 import { createPatient } from "../../data/patientService"
+import { createAppointment } from "../../data/appointmentService"
 
 /** Chuyển dd-mm-yyyy người dùng nhập sang ISO yyyy-mm-dd, trả undefined nếu không hợp lệ. */
 function toIsoDate(input: string): string | undefined {
@@ -30,9 +37,16 @@ export default function PatientCreatePage() {
   const activeBranch = useClinicStore((state) => state.activeBranch)
   const [form, setForm] = useState<PatientFormState>(emptyPatientForm)
   const [submitting, setSubmitting] = useState(false)
+  const [createAppt, setCreateAppt] = useState(false)
+  const [apptForm, setApptForm] = useState<AppointmentFormState>(
+    defaultAppointmentForm,
+  )
 
   const setField: SetPatientField = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }))
+
+  const setApptField: SetAppointmentField = (key, value) =>
+    setApptForm((prev) => ({ ...prev, [key]: value }))
 
   const handleSave = async () => {
     if (!form.fullName.trim()) {
@@ -46,6 +60,7 @@ export default function PatientCreatePage() {
 
     setSubmitting(true)
     try {
+      const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
       const created = await createPatient({
         fullName: form.fullName.trim(),
         gender: form.gender,
@@ -53,10 +68,29 @@ export default function PatientCreatePage() {
         birthDate: form.birthDate ? toIsoDate(form.birthDate) : undefined,
         address: form.address.trim() || undefined,
         source: form.source || undefined,
-        clinicBranch:
-          activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG",
+        clinicBranch: branch,
       })
-      toast.success(`Đã lưu hồ sơ ${created.patientCode}`)
+
+      if (createAppt) {
+        const scheduledAt = new Date(
+          `${apptForm.date}T${apptForm.hour || "00"}:${apptForm.minute || "00"}:00`,
+        )
+        if (apptForm.date && !Number.isNaN(scheduledAt.getTime())) {
+          await createAppointment({
+            patientId: created.id,
+            scheduledAt: scheduledAt.toISOString(),
+            doctorName: apptForm.doctorName.trim() || undefined,
+            note: apptForm.note.trim() || undefined,
+            clinicBranch: branch,
+          })
+        }
+      }
+
+      toast.success(
+        createAppt
+          ? `Đã lưu hồ sơ ${created.patientCode} và lịch hẹn`
+          : `Đã lưu hồ sơ ${created.patientCode}`,
+      )
       navigate(urlPaths.medicalRecordList)
     } catch {
       toast.error("Lưu hồ sơ thất bại. Vui lòng thử lại.")
@@ -93,7 +127,12 @@ export default function PatientCreatePage() {
 
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
             <TabsContent value="general" className="m-0 border-none outline-none">
-              <GeneralInfoTab form={form} setField={setField} />
+              <GeneralInfoTab
+                form={form}
+                setField={setField}
+                createAppointment={createAppt}
+                onToggleAppointment={setCreateAppt}
+              />
             </TabsContent>
             <TabsContent value="other" className="m-0 border-none outline-none">
               <OtherInfoTab />
@@ -103,6 +142,11 @@ export default function PatientCreatePage() {
 
         {/* CMND/CC Section (Common for both tabs based on the design, or at least visible below them) */}
         <IdentityCardSection />
+
+        {/* Form lịch hẹn — hiện khi tích "Tạo lịch hẹn" */}
+        {createAppt && (
+          <AppointmentForm form={apptForm} setField={setApptField} />
+        )}
 
         {/* Footer Checkbox */}
         <div className="flex items-center gap-2 mt-6 mb-16">

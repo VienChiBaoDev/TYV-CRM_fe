@@ -11,9 +11,16 @@ import type { PatientFormState, SetPatientField } from "./patientForm"
 interface GeneralInfoTabProps {
   form: PatientFormState
   setField: SetPatientField
+  createAppointment: boolean
+  onToggleAppointment: (value: boolean) => void
 }
 
-export function GeneralInfoTab({ form, setField }: GeneralInfoTabProps) {
+export function GeneralInfoTab({
+  form,
+  setField,
+  createAppointment,
+  onToggleAppointment,
+}: GeneralInfoTabProps) {
   return (
     <div className="grid grid-cols-4 gap-6 p-6">
       {/* Cột 1: Avatar */}
@@ -50,7 +57,10 @@ export function GeneralInfoTab({ form, setField }: GeneralInfoTabProps) {
             Nữ
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer ml-4">
-            <Checkbox />
+            <Checkbox
+              checked={createAppointment}
+              onChange={(e) => onToggleAppointment(e.target.checked)}
+            />
             Tạo lịch hẹn
           </label>
         </div>
