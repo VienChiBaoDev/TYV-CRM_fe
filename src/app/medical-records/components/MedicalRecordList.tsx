@@ -9,9 +9,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { Row } from "@tanstack/react-table"
-import { EyeIcon, TrashIcon } from "lucide-react"
+import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import ModalCustomer from "./MedicalRecordList/ModalCustomer"
+import {
+  MODAL_CUSTOMER_MODE,
+  type ModalCustomerModeType,
+} from "@/constants/common"
 
 const medicalRecords = [
   {
@@ -43,6 +48,9 @@ const medicalRecords = [
 export default function MedicalRecordList() {
   const navigate = useNavigate()
   const [records, setRecords] = useState(medicalRecords)
+  const [openModalCustomer, setOpenModalCustomer] = useState(false)
+  const [modeModalCustomer, setModeModalCustomer] =
+    useState<ModalCustomerModeType>(MODAL_CUSTOMER_MODE.ADD)
 
   const handleDelete = (id: number) => {
     setRecords((prev) => prev.filter((x) => x.id !== id))
@@ -88,6 +96,15 @@ export default function MedicalRecordList() {
                 <EyeIcon />
                 Xem chi tiết
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setOpenModalCustomer(true)
+                  setModeModalCustomer(MODAL_CUSTOMER_MODE.EDIT)
+                }}
+              >
+                <PencilIcon />
+                Sửa thông tin
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDelete(row.original.id)}>
                 <TrashIcon />
                 Xóa điều trị
@@ -102,13 +119,29 @@ export default function MedicalRecordList() {
   return (
     <div className="h-full bg-[#e1e5e1] p-4">
       <DataTable
-        title="Danh sách bệnh nhân"
+        title="Danh sách khách hàng"
+        actions={
+          <Button
+            className="bg-emerald-800 text-white hover:bg-emerald-900"
+            onClick={() => {
+              setOpenModalCustomer(true)
+              setModeModalCustomer(MODAL_CUSTOMER_MODE.ADD)
+            }}
+          >
+            Thêm mới
+          </Button>
+        }
         columns={columns}
         data={records}
         loading={false}
         pageIndex={0}
         pageCount={2}
         onPageChange={() => {}}
+      />
+      <ModalCustomer
+        open={openModalCustomer}
+        onOpenChange={setOpenModalCustomer}
+        mode={modeModalCustomer}
       />
     </div>
   )
