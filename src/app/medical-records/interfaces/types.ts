@@ -3,6 +3,20 @@ export interface Herb {
   weight: string
 }
 
+export type TreatmentStatus =
+  | "Đang điều trị"
+  | "Cần theo dõi"
+  | "Kết thúc đợt"
+
+export interface VisitFollowUpPlan {
+  /** ISO date (yyyy-MM-dd) — maps to PatientFollowUp.followUpDate */
+  followUpDate: string
+  /** Days before follow-up to assess — BE derives assessmentDate */
+  reminderDaysBefore: number
+  /** Maps to Patient.customer_status when persisting */
+  treatmentStatus: TreatmentStatus
+}
+
 export interface Visit {
   id: number
   visitNumber: number
@@ -25,6 +39,7 @@ export interface Visit {
   clinicalImages?: string[] // array of base64 or object URLs
   labResults?: string
   status: "Khám đầu" | "Tái khám" | "Online" | "Cần TD" | "Kế hoạch"
+  followUpPlan?: VisitFollowUpPlan
 }
 
 export interface Patient {

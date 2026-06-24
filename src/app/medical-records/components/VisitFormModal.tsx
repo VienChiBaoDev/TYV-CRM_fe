@@ -1,6 +1,14 @@
 import { Edit, Plus, X } from "lucide-react"
 import type { Visit } from "@/app/medical-records/interfaces/types"
-import { VISIT_STATUSES } from "@/app/medical-records/constants/visit-form"
+import {
+  VISIT_STATUSES,
+  REMINDER_DAYS_OPTIONS,
+  TREATMENT_STATUS_OPTIONS,
+  computeAssessmentDateIso,
+  formatIsoDateToVi,
+  getDefaultFollowUpPlan,
+} from "@/app/medical-records/constants/visit-form"
+import type { VisitFollowUpPlan } from "@/app/medical-records/interfaces/types"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 
 const MODAL_CONFIG = {
@@ -49,6 +57,26 @@ export function VisitFormModal() {
 
   const updateVisit = (patch: Partial<Visit>) => {
     onVisitChange({ ...visit, ...patch })
+  }
+
+  const followUpPlan = {
+    ...getDefaultFollowUpPlan(),
+    ...visit.followUpPlan,
+  }
+
+  const assessmentDateIso = computeAssessmentDateIso(
+    followUpPlan.followUpDate,
+    followUpPlan.reminderDaysBefore
+  )
+
+  const updateFollowUpPlan = (patch: Partial<VisitFollowUpPlan>) => {
+    onVisitChange({
+      ...visit,
+      followUpPlan: {
+        ...followUpPlan,
+        ...patch,
+      },
+    })
   }
 
   return (
@@ -365,6 +393,72 @@ export function VisitFormModal() {
               className={inputClassName}
               placeholder="Nhập kết quả xét nghiệm (nếu có)"
             />
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <span className="mb-2 block text-[10px] font-bold text-slate-500 uppercase">
+              Chăm sóc tiếp theo
+            </span>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <label className="block text-[10px] font-medium text-slate-600">
+                  Lịch tái khám
+                </label>
+                <input
+                  type="date"
+                  value={followUpPlan.followUpDate}
+                  onChange={(e) =>
+                    updateFollowUpPlan({ followUpDate: e.target.value })
+                  }
+                  className="border-slate-250 mt-1 w-full rounded-md border bg-white px-2 py-1 text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-slate-600">
+                  Nhắc nhở tự động
+                </label>
+                <select
+                  value={followUpPlan.reminderDaysBefore}
+                  onChange={(e) =>
+                    updateFollowUpPlan({
+                      reminderDaysBefore: Number(e.target.value),
+                    })
+                  }
+                  className="border-slate-250 mt-1 w-full rounded-md border bg-white px-2 py-1 text-xs"
+                >
+                  {REMINDER_DAYS_OPTIONS.map((days) => (
+                    <option key={days} value={days}>
+                      {days} ngày trước
+                    </option>
+                  ))}
+                </select>
+                {assessmentDateIso && (
+                  <p className="mt-1 text-[10px] text-slate-500">
+                    Hỏi thăm: {formatIsoDateToVi(assessmentDateIso)}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-slate-600">
+                  Trạng thái điều trị
+                </label>
+                <select
+                  value={followUpPlan.treatmentStatus}
+                  onChange={(e) =>
+                    updateFollowUpPlan({
+                      treatmentStatus: e.target.value as VisitFollowUpPlan["treatmentStatus"],
+                    })
+                  }
+                  className="border-slate-250 mt-1 w-full rounded-md border bg-white px-2 py-1 text-xs"
+                >
+                  {TREATMENT_STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-3">

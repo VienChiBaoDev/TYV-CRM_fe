@@ -13,6 +13,8 @@ import {
 } from "@/app/medical-records/constants/tab-values"
 import {
   getDefaultVisitForm,
+  getDefaultFollowUpPlan,
+  formatIsoDateToVi,
   type VisitFormMode,
 } from "@/app/medical-records/constants/visit-form"
 
@@ -138,7 +140,13 @@ export function useMedicalRecords() {
 
   const openEditVisitModal = () => {
     if (!activeVisit) return
-    setVisitForm({ ...activeVisit })
+    setVisitForm({
+      ...activeVisit,
+      followUpPlan: {
+        ...getDefaultFollowUpPlan(),
+        ...activeVisit.followUpPlan,
+      },
+    })
     setVisitModalMode("edit")
   }
 
@@ -153,6 +161,10 @@ export function useMedicalRecords() {
 
     if (visitModalMode === "add") {
       const newId = activePatient.visits.length + 1
+      const followUpPlan = visitForm.followUpPlan?.followUpDate
+        ? visitForm.followUpPlan
+        : undefined
+
       const createdVisit: Visit = {
         id: newId,
         visitNumber: newId,
@@ -175,6 +187,7 @@ export function useMedicalRecords() {
         herbs: visitForm.herbs || [],
         clinicalImages: visitForm.clinicalImages || [],
         labResults: visitForm.labResults || "",
+        followUpPlan,
       }
 
       setPatients((prev) =>
@@ -185,6 +198,9 @@ export function useMedicalRecords() {
             ...p,
             metricVisitsCount: updatedVisits.length,
             metricTreatmentDays: p.metricTreatmentDays + 10,
+            metricNextExamination: followUpPlan?.followUpDate
+              ? formatIsoDateToVi(followUpPlan.followUpDate)
+              : p.metricNextExamination,
             visits: updatedVisits,
           }
         })
@@ -196,13 +212,22 @@ export function useMedicalRecords() {
     }
 
     if (visitModalMode === "edit") {
+      const followUpPlan = visitForm.followUpPlan?.followUpDate
+        ? visitForm.followUpPlan
+        : undefined
+
       setPatients((prev) =>
         prev.map((p) => {
           if (p.id !== activePatient.id) return p
           return {
             ...p,
+            metricNextExamination: followUpPlan?.followUpDate
+              ? formatIsoDateToVi(followUpPlan.followUpDate)
+              : p.metricNextExamination,
             visits: p.visits.map((v) =>
-              v.id === visitForm.id ? (visitForm as Visit) : v
+              v.id === visitForm.id
+                ? ({ ...visitForm, followUpPlan } as Visit)
+                : v
             ),
           }
         })
