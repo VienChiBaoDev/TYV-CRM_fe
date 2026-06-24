@@ -18,7 +18,7 @@ export interface VisitFollowUpPlan {
 }
 
 export interface Visit {
-  id: number
+  id: string
   visitNumber: number
   title: string // e.g., "Khám đầu tiên", "Tái khám lần 1"
   date: string // "DD/MM/YYYY" or "DD/MM"
@@ -44,6 +44,7 @@ export interface Visit {
 
 export interface Patient {
   id: string
+  patientCode: string
   name: string
   gender: "Nam" | "Nữ"
   age: number

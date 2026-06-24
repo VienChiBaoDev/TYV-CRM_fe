@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import { initialPatients } from "@/app/medical-records/data/data"
+import { useQuery } from "@tanstack/react-query"
 import type {
   Patient,
   Visit,
@@ -17,13 +17,39 @@ import {
   formatIsoDateToVi,
   type VisitFormMode,
 } from "@/app/medical-records/constants/visit-form"
+import { patientMedicalRecordQueryOptions } from "@/app/medical-records/queries/patient-medical-record-query"
+
+const EMPTY_PATIENT: Patient = {
+  id: "",
+  patientCode: "",
+  name: "",
+  gender: "Nam",
+  age: 0,
+  job: "",
+  phone: "",
+  address: "",
+  tags: [],
+  dietRestrictions: [],
+  metricVisitsCount: 0,
+  metricTreatmentDays: 0,
+  metricNextExamination: "—",
+  avatarInitials: "",
+  visits: [],
+}
 
 export function useMedicalRecords() {
   const { patientId } = useParams()
   const activeBranch = useClinicStore((state) => state.activeBranch)
 
-  const [patients, setPatients] = useState<Patient[]>(initialPatients)
-  const [activePatientId, setActivePatientId] = useState<string>("P001")
+  const {
+    data: fetchedPatient,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery(patientMedicalRecordQueryOptions(patientId ?? ""))
+
+  const [localPatient, setLocalPatient] = useState<Patient | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [activeTab, setActiveTab] = useState<MedicalRecordTab>(
     MEDICAL_RECORD_TABS.VISITS
@@ -34,16 +60,22 @@ export function useMedicalRecords() {
   const [visitForm, setVisitForm] =
     useState<Partial<Visit>>(getDefaultVisitForm)
   const [showExportModal, setShowExportModal] = useState(false)
-  const [selectedVisitIndex, setSelectedVisitIndex] = useState(3)
+  const [selectedVisitIndex, setSelectedVisitIndex] = useState(0)
   const [tempHerbName, setTempHerbName] = useState("")
   const [tempHerbWeight, setTempHerbWeight] = useState("")
   const [isDragging, setIsDragging] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const activePatient = useMemo(() => {
-    return patients.find((pat) => pat.id === activePatientId) || patients[0]
-  }, [patients, activePatientId])
+  useEffect(() => {
+    if (!fetchedPatient) return
+    setLocalPatient(null)
+    setSelectedVisitIndex(
+      Math.max(0, fetchedPatient.visits.length - 1)
+    )
+  }, [fetchedPatient])
+
+  const activePatient = localPatient ?? fetchedPatient ?? EMPTY_PATIENT
 
   const activeVisit = useMemo(() => {
     if (!activePatient?.visits?.length) return null
@@ -55,45 +87,31 @@ export function useMedicalRecords() {
   }, [activePatient, selectedVisitIndex])
 
   const filteredPatients = useMemo(() => {
-    if (!searchQuery) return patients
-    return patients.filter(
+    if (!activePatient.id) return []
+    if (!searchQuery) return [activePatient]
+    const query = searchQuery.toLowerCase()
+    return [activePatient].filter(
       (p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.phone.includes(searchQuery)
+        p.name.toLowerCase().includes(query) || p.phone.includes(searchQuery)
     )
-  }, [patients, searchQuery])
+  }, [activePatient, searchQuery])
 
-  useEffect(() => {
-    if (patientId) setActivePatientId(patientId)
-  }, [patientId])
-
-  useEffect(() => {
-    if (activeBranch === "Hàng Bông") {
-      setActivePatientId("P001")
-      setSelectedVisitIndex(3)
-      return
-    }
-    setActivePatientId("P002")
-    setSelectedVisitIndex(1)
-  }, [activeBranch])
+  const updatePatient = (updater: (patient: Patient) => Patient) => {
+    setLocalPatient((prev) => updater(prev ?? activePatient))
+  }
 
   const updateActiveVisitImages = (updater: (images: string[]) => string[]) => {
     if (!activeVisit) return
-    setPatients((prev) =>
-      prev.map((p) => {
-        if (p.id !== activePatient.id) return p
+    updatePatient((p) => ({
+      ...p,
+      visits: p.visits.map((v) => {
+        if (v.id !== activeVisit.id) return v
         return {
-          ...p,
-          visits: p.visits.map((v) => {
-            if (v.id !== activeVisit.id) return v
-            return {
-              ...v,
-              clinicalImages: updater(v.clinicalImages || []),
-            }
-          }),
+          ...v,
+          clinicalImages: updater(v.clinicalImages || []),
         }
-      })
-    )
+      }),
+    }))
   }
 
   const addImageFromFile = (file: File) => {
@@ -160,14 +178,14 @@ export function useMedicalRecords() {
     e.preventDefault()
 
     if (visitModalMode === "add") {
-      const newId = activePatient.visits.length + 1
+      const newVisitNumber = activePatient.visits.length + 1
       const followUpPlan = visitForm.followUpPlan?.followUpDate
         ? visitForm.followUpPlan
         : undefined
 
       const createdVisit: Visit = {
-        id: newId,
-        visitNumber: newId,
+        id: crypto.randomUUID(),
+        visitNumber: newVisitNumber,
         title: visitForm.title || "Tái khám định kỳ",
         date: visitForm.date || new Date().toLocaleDateString("vi-VN"),
         doctor: visitForm.doctor || "BS Phi Hưng",
@@ -190,21 +208,18 @@ export function useMedicalRecords() {
         followUpPlan,
       }
 
-      setPatients((prev) =>
-        prev.map((p) => {
-          if (p.id !== activePatient.id) return p
-          const updatedVisits = [...p.visits, createdVisit]
-          return {
-            ...p,
-            metricVisitsCount: updatedVisits.length,
-            metricTreatmentDays: p.metricTreatmentDays + 10,
-            metricNextExamination: followUpPlan?.followUpDate
-              ? formatIsoDateToVi(followUpPlan.followUpDate)
-              : p.metricNextExamination,
-            visits: updatedVisits,
-          }
-        })
-      )
+      updatePatient((p) => {
+        const updatedVisits = [...p.visits, createdVisit]
+        return {
+          ...p,
+          metricVisitsCount: updatedVisits.length,
+          metricTreatmentDays: p.metricTreatmentDays + 10,
+          metricNextExamination: followUpPlan?.followUpDate
+            ? formatIsoDateToVi(followUpPlan.followUpDate)
+            : p.metricNextExamination,
+          visits: updatedVisits,
+        }
+      })
 
       setSelectedVisitIndex(activePatient.visits.length)
       closeVisitModal()
@@ -216,22 +231,17 @@ export function useMedicalRecords() {
         ? visitForm.followUpPlan
         : undefined
 
-      setPatients((prev) =>
-        prev.map((p) => {
-          if (p.id !== activePatient.id) return p
-          return {
-            ...p,
-            metricNextExamination: followUpPlan?.followUpDate
-              ? formatIsoDateToVi(followUpPlan.followUpDate)
-              : p.metricNextExamination,
-            visits: p.visits.map((v) =>
-              v.id === visitForm.id
-                ? ({ ...visitForm, followUpPlan } as Visit)
-                : v
-            ),
-          }
-        })
-      )
+      updatePatient((p) => ({
+        ...p,
+        metricNextExamination: followUpPlan?.followUpDate
+          ? formatIsoDateToVi(followUpPlan.followUpDate)
+          : p.metricNextExamination,
+        visits: p.visits.map((v) =>
+          v.id === visitForm.id
+            ? ({ ...visitForm, followUpPlan } as Visit)
+            : v
+        ),
+      }))
       closeVisitModal()
     }
   }
@@ -262,7 +272,7 @@ export function useMedicalRecords() {
     setSearchQuery,
     filteredPatients,
     activePatient,
-    setActivePatientId,
+    setActivePatientId: () => undefined,
     selectedVisitIndex,
     setSelectedVisitIndex,
     activeVisit,
@@ -292,6 +302,11 @@ export function useMedicalRecords() {
     handleDragLeave,
     handleDrop,
     deleteClinicalImage,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    patientId,
   }
 }
 
