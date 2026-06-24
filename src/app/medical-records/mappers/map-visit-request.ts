@@ -35,7 +35,6 @@ interface VisitBodyApiPayload {
   prescriptionDosage?: string
   labResults?: string
   herbs?: Array<{ name: string; weight: string }>
-  clinicalImages?: Array<{ imageUrl: string }>
 }
 
 interface FollowUpPlanApiPayload {
@@ -144,9 +143,6 @@ function mapVisitBodyToApi(visit: Partial<Visit>): VisitBodyApiPayload {
           name: herb.name.trim(),
           weight: herb.weight.trim(),
         }))
-      : undefined,
-    clinicalImages: visit.clinicalImages?.length
-      ? visit.clinicalImages.map((imageUrl) => ({ imageUrl }))
       : undefined,
   }
 }

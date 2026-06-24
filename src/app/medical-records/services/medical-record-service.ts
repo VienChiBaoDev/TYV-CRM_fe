@@ -1,10 +1,18 @@
 import httpService from "@/services/httpService"
+import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
 import type { PatientDetailApiResponse } from "@/app/medical-records/mappers/map-patient-response"
 import type { MedicalVisitApiResponse } from "@/app/medical-records/mappers/map-patient-response"
 import type {
   CreateMedicalVisitApiPayload,
   UpdateMedicalVisitApiPayload,
 } from "@/app/medical-records/mappers/map-visit-request"
+
+export interface ClinicalImageApiResponse {
+  readonly id: string
+  readonly imageUrl: string
+  readonly category: ClinicalImageCategory
+  readonly sortOrder: number
+}
 
 export async function fetchPatientMedicalRecord(
   patientId: string
@@ -36,4 +44,31 @@ export async function updateMedicalVisit(
     payload
   )
   return data
+}
+
+export async function uploadClinicalImage(
+  patientId: string,
+  visitId: string,
+  file: File,
+  category: ClinicalImageCategory
+): Promise<ClinicalImageApiResponse> {
+  const formData = new FormData()
+  formData.append("file", file)
+  formData.append("category", category)
+
+  const { data } = await httpService.post<ClinicalImageApiResponse>(
+    `/patients/${patientId}/visits/${visitId}/clinical-images`,
+    formData
+  )
+  return data
+}
+
+export async function deleteClinicalImage(
+  patientId: string,
+  visitId: string,
+  imageId: string
+): Promise<void> {
+  await httpService.delete(
+    `/patients/${patientId}/visits/${visitId}/clinical-images/${imageId}`
+  )
 }

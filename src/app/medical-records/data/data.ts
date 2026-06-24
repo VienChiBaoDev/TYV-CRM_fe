@@ -53,7 +53,13 @@ export const initialPatients: Patient[] = [
           { name: "Sinh đại hoàng", weight: "6g" },
         ],
         clinicalImages: [
-          "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=80", // Medical generic/tongue placeholder
+          {
+            id: "mock-image-1",
+            imageUrl:
+              "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=80",
+            category: "DIAGNOSIS",
+            sortOrder: 0,
+          },
         ],
         labResults:
           "Xét nghiệm ban đầu: Acid Uric huyết thanh: 480 umol/L. Chỉ số mỡ máu Triglyceride hơi cao. Chức năng gan (AST/ALT) trong giới hạn bình thường.",

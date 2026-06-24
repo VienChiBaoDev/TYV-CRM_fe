@@ -6,6 +6,7 @@ import type {
   Visit,
   Herb,
 } from "@/app/medical-records/interfaces/types"
+import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
 import { useClinicStore } from "@/stores/clinic-store"
 import {
   MEDICAL_RECORD_TABS,
@@ -22,7 +23,9 @@ import {
 } from "@/app/medical-records/queries/patient-medical-record-query"
 import {
   createMedicalVisit,
+  deleteClinicalImage,
   updateMedicalVisit,
+  uploadClinicalImage,
 } from "@/app/medical-records/services/medical-record-service"
 import {
   getApiErrorMessage,
@@ -65,7 +68,6 @@ export function useMedicalRecords() {
     refetch,
   } = useQuery(patientMedicalRecordQueryOptions(patientId ?? ""))
 
-  const [localPatient, setLocalPatient] = useState<Patient | null>(null)
   const [selectVisitAfterRefetch, setSelectVisitAfterRefetch] =
     useState<VisitSelectionIntent | null>(null)
   const loadedPatientIdRef = useRef<string | null>(null)
@@ -82,15 +84,14 @@ export function useMedicalRecords() {
   const [selectedVisitIndex, setSelectedVisitIndex] = useState(0)
   const [tempHerbName, setTempHerbName] = useState("")
   const [tempHerbWeight, setTempHerbWeight] = useState("")
-  const [isDragging, setIsDragging] = useState(false)
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [clinicalImageError, setClinicalImageError] = useState<string | null>(
+    null
+  )
 
   useEffect(() => {
     loadedPatientIdRef.current = null
     setSelectedVisitIndex(0)
     setSelectVisitAfterRefetch(null)
-    setLocalPatient(null)
   }, [patientId])
 
   useEffect(() => {
@@ -108,7 +109,6 @@ export function useMedicalRecords() {
         if (idx >= 0) setSelectedVisitIndex(idx)
       }
       setSelectVisitAfterRefetch(null)
-      setLocalPatient(null)
       return
     }
 
@@ -117,9 +117,29 @@ export function useMedicalRecords() {
       setSelectedVisitIndex(
         Math.max(0, fetchedPatient.visits.length - 1)
       )
-      setLocalPatient(null)
     }
   }, [fetchedPatient, patientId, selectVisitAfterRefetch])
+
+  const activePatient = fetchedPatient ?? EMPTY_PATIENT
+
+  const activeVisit = useMemo(() => {
+    if (!activePatient?.visits?.length) return null
+    const idx =
+      selectedVisitIndex >= activePatient.visits.length
+        ? activePatient.visits.length - 1
+        : selectedVisitIndex
+    return activePatient.visits[idx >= 0 ? idx : 0]
+  }, [activePatient, selectedVisitIndex])
+
+  const filteredPatients = useMemo(() => {
+    if (!activePatient.id) return []
+    if (!searchQuery) return [activePatient]
+    const query = searchQuery.toLowerCase()
+    return [activePatient].filter(
+      (p) =>
+        p.name.toLowerCase().includes(query) || p.phone.includes(searchQuery)
+    )
+  }, [activePatient, searchQuery])
 
   const visitMutation = useMutation({
     mutationFn: async ({
@@ -159,81 +179,105 @@ export function useMedicalRecords() {
     },
   })
 
-  const activePatient = localPatient ?? fetchedPatient ?? EMPTY_PATIENT
+  const uploadImageMutation = useMutation({
+    mutationFn: async ({
+      file,
+      category,
+    }: {
+      file: File
+      category: ClinicalImageCategory
+    }) => {
+      if (!patientId || !activeVisit?.id) {
+        throw new Error("Không xác định được lần khám để tải ảnh.")
+      }
 
-  const activeVisit = useMemo(() => {
-    if (!activePatient?.visits?.length) return null
-    const idx =
-      selectedVisitIndex >= activePatient.visits.length
-        ? activePatient.visits.length - 1
-        : selectedVisitIndex
-    return activePatient.visits[idx >= 0 ? idx : 0]
-  }, [activePatient, selectedVisitIndex])
+      return uploadClinicalImage(patientId, activeVisit.id, file, category)
+    },
+    onSuccess: async (uploadedImage) => {
+      setClinicalImageError(null)
 
-  const filteredPatients = useMemo(() => {
-    if (!activePatient.id) return []
-    if (!searchQuery) return [activePatient]
-    const query = searchQuery.toLowerCase()
-    return [activePatient].filter(
-      (p) =>
-        p.name.toLowerCase().includes(query) || p.phone.includes(searchQuery)
-    )
-  }, [activePatient, searchQuery])
+      if (patientId && activeVisit?.id) {
+        queryClient.setQueryData<Patient>(
+          medicalRecordKeys.detail(patientId),
+          (current) => {
+            if (!current) return current
 
-  const updatePatient = (updater: (patient: Patient) => Patient) => {
-    setLocalPatient((prev) => updater(prev ?? activePatient))
-  }
+            return {
+              ...current,
+              visits: current.visits.map((visit) => {
+                if (visit.id !== activeVisit.id) return visit
 
-  const updateActiveVisitImages = (updater: (images: string[]) => string[]) => {
-    if (!activeVisit) return
-    updatePatient((p) => ({
-      ...p,
-      visits: p.visits.map((v) => {
-        if (v.id !== activeVisit.id) return v
-        return {
-          ...v,
-          clinicalImages: updater(v.clinicalImages || []),
-        }
-      }),
-    }))
-  }
+                const clinicalImages = [...(visit.clinicalImages ?? [])]
+                const exists = clinicalImages.some(
+                  (image) => image.id === uploadedImage.id
+                )
+                if (exists) return visit
 
-  const addImageFromFile = (file: File) => {
-    if (!activeVisit) return
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const base64String = event.target?.result as string
-      updateActiveVisitImages((images) => [...images, base64String])
-    }
-    reader.readAsDataURL(file)
-  }
+                clinicalImages.push({
+                  id: uploadedImage.id,
+                  imageUrl: uploadedImage.imageUrl,
+                  category: uploadedImage.category,
+                  sortOrder: uploadedImage.sortOrder,
+                })
 
-  const triggerImageUpload = () => fileInputRef.current?.click()
+                return { ...visit, clinicalImages }
+              }),
+            }
+          }
+        )
+      }
 
-  const handleImageUploaded = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) addImageFromFile(file)
-  }
+      await queryClient.refetchQueries({
+        queryKey: medicalRecordKeys.detail(patientId ?? ""),
+      })
+    },
+    onError: (mutationError) => {
+      setClinicalImageError(getApiErrorMessage(mutationError))
+    },
+  })
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
+  const deleteImageMutation = useMutation({
+    mutationFn: async (imageId: string) => {
+      if (!patientId || !activeVisit?.id) {
+        throw new Error("Không xác định được lần khám để xóa ảnh.")
+      }
 
-  const handleDragLeave = () => setIsDragging(false)
+      await deleteClinicalImage(patientId, activeVisit.id, imageId)
+    },
+    onSuccess: async (_result, imageId) => {
+      setClinicalImageError(null)
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) addImageFromFile(file)
-  }
+      if (patientId && activeVisit?.id) {
+        queryClient.setQueryData<Patient>(
+          medicalRecordKeys.detail(patientId),
+          (current) => {
+            if (!current) return current
 
-  const deleteClinicalImage = (indexToDelete: number) => {
-    updateActiveVisitImages((images) =>
-      images.filter((_, i) => i !== indexToDelete)
-    )
-  }
+            return {
+              ...current,
+              visits: current.visits.map((visit) => {
+                if (visit.id !== activeVisit.id) return visit
+
+                return {
+                  ...visit,
+                  clinicalImages: (visit.clinicalImages ?? []).filter(
+                    (image) => image.id !== imageId
+                  ),
+                }
+              }),
+            }
+          }
+        )
+      }
+
+      await queryClient.refetchQueries({
+        queryKey: medicalRecordKeys.detail(patientId ?? ""),
+      })
+    },
+    onError: (mutationError) => {
+      setClinicalImageError(getApiErrorMessage(mutationError))
+    },
+  })
 
   const openAddVisitModal = () => {
     visitMutation.reset()
@@ -274,6 +318,17 @@ export function useMedicalRecords() {
     }
   }
 
+  const handleClinicalImageUpload = (
+    file: File,
+    category: ClinicalImageCategory
+  ) => {
+    uploadImageMutation.mutate({ file, category })
+  }
+
+  const handleClinicalImageDelete = (imageId: string) => {
+    deleteImageMutation.mutate(imageId)
+  }
+
   const addHerbToVisit = () => {
     if (!tempHerbName || !tempHerbWeight) return
     const herb: Herb = { name: tempHerbName, weight: tempHerbWeight }
@@ -298,6 +353,9 @@ export function useMedicalRecords() {
     ? getApiErrorMessage(visitMutation.error)
     : null
 
+  const isClinicalImageBusy =
+    uploadImageMutation.isPending || deleteImageMutation.isPending
+
   return {
     activeBranch,
     searchQuery,
@@ -320,6 +378,10 @@ export function useMedicalRecords() {
     handleVisitSubmit,
     isSubmittingVisit: visitMutation.isPending,
     visitSubmitError,
+    handleClinicalImageUpload,
+    handleClinicalImageDelete,
+    isClinicalImageBusy,
+    clinicalImageError,
     tempHerbName,
     setTempHerbName,
     tempHerbWeight,
@@ -328,14 +390,6 @@ export function useMedicalRecords() {
     removeHerbFromVisit,
     showExportModal,
     setShowExportModal,
-    fileInputRef,
-    triggerImageUpload,
-    handleImageUploaded,
-    isDragging,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-    deleteClinicalImage,
     isLoading,
     isError,
     error,

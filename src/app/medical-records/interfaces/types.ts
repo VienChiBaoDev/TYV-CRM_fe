@@ -3,6 +3,16 @@ export interface Herb {
   weight: string
 }
 
+export type ClinicalImageCategory =
+  import("@/app/medical-records/constants/clinical-image").ClinicalImageCategory
+
+export interface ClinicalImage {
+  id: string
+  imageUrl: string
+  category: ClinicalImageCategory
+  sortOrder: number
+}
+
 export type TreatmentStatus =
   | "Đang điều trị"
   | "Cần theo dõi"
@@ -36,7 +46,7 @@ export interface Visit {
   prescriptionFormula: string // TIỂU SÀI HỒ GIA GIẢM
   prescriptionDosage: string // 7 THÁNG x 14 TÚI 150ML
   herbs: Herb[]
-  clinicalImages?: string[] // array of base64 or object URLs
+  clinicalImages?: ClinicalImage[]
   labResults?: string
   status: "Khám đầu" | "Tái khám" | "Online" | "Cần TD" | "Kế hoạch"
   followUpPlan?: VisitFollowUpPlan

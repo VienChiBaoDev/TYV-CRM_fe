@@ -67,6 +67,7 @@ export interface MedicalVisitApiResponse {
   readonly clinicalImages: ReadonlyArray<{
     readonly id: string
     readonly imageUrl: string
+    readonly category: "DIAGNOSIS" | "LAB_RESULT" | "OTHER"
     readonly sortOrder: number
   }>
   readonly followUpPlan: {
@@ -156,7 +157,12 @@ function mapVisit(
       name: herb.name,
       weight: herb.weight,
     })),
-    clinicalImages: visit.clinicalImages.map((image) => image.imageUrl),
+    clinicalImages: visit.clinicalImages.map((image) => ({
+      id: image.id,
+      imageUrl: image.imageUrl,
+      category: image.category,
+      sortOrder: image.sortOrder,
+    })),
     labResults: visit.labResults ?? "",
     status: VISIT_STATUS_LABEL[visit.status],
     followUpPlan: visit.followUpPlan

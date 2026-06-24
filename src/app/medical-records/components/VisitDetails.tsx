@@ -1,30 +1,53 @@
-import { Edit, Heart, Activity, Info, Leaf, Eye, Trash2 } from "lucide-react"
+import { Edit, Heart, Activity, Info, Leaf, Eye } from "lucide-react"
+import { useMemo } from "react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
+import { ClinicalImageZone } from "@/app/medical-records/components/ClinicalImageZone"
+import type { ClinicalImage } from "@/app/medical-records/interfaces/types"
+import { CLINICAL_IMAGE_CATEGORY_LABELS } from "@/app/medical-records/constants/clinical-image"
+import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
+
+const CLINICAL_IMAGE_SECTIONS: ClinicalImageCategory[] = [
+  "DIAGNOSIS",
+  "LAB_RESULT",
+  "OTHER",
+]
+
+function createEmptyClinicalImagesByCategory(): Record<
+  ClinicalImageCategory,
+  ClinicalImage[]
+> {
+  return {
+    DIAGNOSIS: [],
+    LAB_RESULT: [],
+    OTHER: [],
+  }
+}
 
 export default function VisitDetails() {
   const {
     activeVisit,
     openEditVisitModal,
-    deleteClinicalImage,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-    isDragging,
-    fileInputRef,
-    handleImageUploaded,
-    triggerImageUpload,
+    handleClinicalImageUpload,
+    handleClinicalImageDelete,
+    isClinicalImageBusy,
+    clinicalImageError,
   } = useMedicalRecordContext()
 
+  const imagesByCategory = useMemo(() => {
+    const grouped = createEmptyClinicalImagesByCategory()
+
+    for (const image of activeVisit?.clinicalImages ?? []) {
+      grouped[image.category].push(image)
+    }
+
+    return grouped
+  }, [activeVisit?.id, activeVisit?.clinicalImages])
+
   if (!activeVisit) return null
+
   return (
     <section className="relative" id="current-visit-details">
-      {/* Visual timeline node anchor icon next to card on large displays */}
-      {/* <div className="bg-emerald-850 absolute top-6 left-[-22px] z-10 hidden h-11 w-11 items-center justify-center rounded-full border-4 border-[#f3f6f4] font-bold text-white shadow-md select-none lg:flex">
-        {activeVisit.visitNumber}
-      </div> */}
-
       <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white p-6 pl-6 shadow-xs lg:p-8 lg:pl-10">
-        {/* Internal Left visual layout borderline mimicking point theme color */}
         <div
           className={`absolute top-0 bottom-0 left-0 w-1.5 ${
             activeVisit.status === "Cần TD"
@@ -35,7 +58,6 @@ export default function VisitDetails() {
           }`}
         ></div>
 
-        {/* Visit header elements */}
         <div className="mb-5 flex flex-col justify-between gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center gap-2">
@@ -60,7 +82,6 @@ export default function VisitDetails() {
             </p>
           </div>
 
-          {/* Completion statuses */}
           <div className="flex items-center gap-2 self-start sm:self-center">
             <span
               className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
@@ -85,7 +106,6 @@ export default function VisitDetails() {
           </div>
         </div>
 
-        {/* High vital card statistics indicator boxes */}
         {activeVisit.bloodPressure !== "--" && (
           <div
             className="mb-6 flex flex-wrap items-center gap-4"
@@ -121,11 +141,8 @@ export default function VisitDetails() {
           </div>
         )}
 
-        {/* Deep Clinical Detail Content split column layout */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* LEFT CLINICAL SIDE (Symptoms, Diagnosis, Herbs Prescription) */}
           <div className="space-y-6 lg:col-span-7">
-            {/* Symptoms Card */}
             <div id="symptoms-block" className="space-y-2">
               <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
                 <Info className="h-3.5 w-3.5" /> Triệu chứng & bệnh sử
@@ -139,7 +156,6 @@ export default function VisitDetails() {
               </div>
             </div>
 
-            {/* Pulse examination block (Tứ chẩn) */}
             <div id="pulse-analysis-block" className="space-y-2">
               <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
                 <Activity className="h-3.5 w-3.5" /> Mạch chẩn (Tứ chẩn)
@@ -171,7 +187,6 @@ export default function VisitDetails() {
               </div>
             </div>
 
-            {/* Herbal formulation block */}
             <div id="herbs-prescription-block" className="space-y-2">
               <div className="flex items-center justify-between">
                 <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
@@ -186,7 +201,6 @@ export default function VisitDetails() {
               </div>
 
               <div className="space-y-4 rounded-xl border border-amber-200/50 bg-amber-50/40 p-4 text-xs shadow-2xs">
-                {/* Formula Name */}
                 <div className="flex items-center justify-between border-b border-amber-100 pb-2">
                   <span className="text-sm font-extrabold tracking-tight text-amber-900">
                     🫖 {activeVisit.prescriptionFormula}
@@ -196,7 +210,6 @@ export default function VisitDetails() {
                   </span>
                 </div>
 
-                {/* Herbs grid elements list */}
                 {activeVisit.herbs && activeVisit.herbs.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {activeVisit.herbs.map((herb, idx) => (
@@ -220,213 +233,42 @@ export default function VisitDetails() {
                 )}
               </div>
             </div>
+
+            {activeVisit.labResults && (
+              <div id="lab-results-block" className="space-y-2">
+                <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
+                  Kết quả Lab
+                </h5>
+                <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 text-xs leading-relaxed text-slate-700 shadow-2xs">
+                  {activeVisit.labResults}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* RIGHT DIAGNOSTIC SIDE (Clinical Pictures & Lab Results) */}
           <div className="space-y-6 lg:col-span-5">
-            {/* Interactive Drag & Drop Tongue Image Upload or Showcase list */}
             <div id="clinical-pictures" className="space-y-2">
               <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
                 <Eye className="text-indigo-650 h-3.5 w-3.5" /> Hình ảnh lâm
                 sàng
               </h5>
 
-              <div className="space-y-3 rounded-xl border border-slate-200/60 bg-slate-50 p-4 shadow-2xs">
-                <p className="text-[10px] font-semibold text-slate-500">
-                  Thiết chẩn (Lưỡi / Mắt / Da dị ứng)
-                </p>
+              {clinicalImageError && (
+                <p className="text-xs text-red-600">{clinicalImageError}</p>
+              )}
 
-                {/* Selected Images Grid display */}
-                {activeVisit.clinicalImages &&
-                  activeVisit.clinicalImages.length > 0 && (
-                    <div className="mb-3 grid grid-cols-2 gap-2">
-                      {activeVisit.clinicalImages.map((imageSrc, idx) => (
-                        <div
-                          key={idx}
-                          className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
-                        >
-                          <img
-                            src={imageSrc}
-                            alt={`Thiết chẩn ${idx + 1}`}
-                            className="h-full w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                          <button
-                            onClick={() => deleteClinicalImage(idx)}
-                            className="bg-red-650 absolute top-1 right-1 cursor-pointer rounded-full p-1 text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:bg-red-700"
-                            title="Xóa hình"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                {/* Upload Dropzone Box */}
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={triggerImageUpload}
-                  className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-all ${
-                    isDragging
-                      ? "border-emerald-600 bg-emerald-50/50"
-                      : "border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/10"
-                  }`}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUploaded}
-                    className="hidden"
-                    accept="image/*"
+              <div className="space-y-3">
+                {CLINICAL_IMAGE_SECTIONS.map((category) => (
+                  <ClinicalImageZone
+                    key={category}
+                    category={category}
+                    sectionLabel={CLINICAL_IMAGE_CATEGORY_LABELS[category]}
+                    images={imagesByCategory[category]}
+                    isUploading={isClinicalImageBusy}
+                    onUpload={handleClinicalImageUpload}
+                    onDelete={handleClinicalImageDelete}
                   />
-
-                  {/* Tongue icon design placeholder representation */}
-                  <div className="shadow-3xs mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-rose-500 transition-transform duration-150 hover:scale-105">
-                    👅
-                  </div>
-
-                  <p className="text-xs font-semibold text-slate-700">
-                    Ảnh thiết chẩn (Lưỡi)
-                  </p>
-                  <p className="mt-1 text-[10px] text-slate-400">
-                    Kéo thả ảnh hoặc click để tải lên
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3 rounded-xl border border-slate-200/60 bg-slate-50 p-4 shadow-2xs">
-                <p className="text-[10px] font-semibold text-slate-500">
-                  Xét nghiệm / Kết quả
-                </p>
-
-                {/* Selected Images Grid display */}
-                {activeVisit.clinicalImages &&
-                  activeVisit.clinicalImages.length > 0 && (
-                    <div className="mb-3 grid grid-cols-2 gap-2">
-                      {activeVisit.clinicalImages.map((imageSrc, idx) => (
-                        <div
-                          key={idx}
-                          className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
-                        >
-                          <img
-                            src={imageSrc}
-                            alt={`Thiết chẩn ${idx + 1}`}
-                            className="h-full w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                          <button
-                            onClick={() => deleteClinicalImage(idx)}
-                            className="bg-red-650 absolute top-1 right-1 cursor-pointer rounded-full p-1 text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:bg-red-700"
-                            title="Xóa hình"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                {/* Upload Dropzone Box */}
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={triggerImageUpload}
-                  className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-all ${
-                    isDragging
-                      ? "border-emerald-600 bg-emerald-50/50"
-                      : "border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/10"
-                  }`}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUploaded}
-                    className="hidden"
-                    accept="image/*"
-                  />
-
-                  {/* Tongue icon design placeholder representation */}
-                  <div className="shadow-3xs mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-rose-500 transition-transform duration-150 hover:scale-105">
-                    🧪
-                  </div>
-
-                  <p className="text-xs font-semibold text-slate-700">
-                    KQ xét nghiệm / Siêu âm
-                  </p>
-                  <p className="mt-1 text-[10px] text-slate-400">
-                    Kéo thả ảnh hoặc click để tải lên
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3 rounded-xl border border-slate-200/60 bg-slate-50 p-4 shadow-2xs">
-                <p className="text-[10px] font-semibold text-slate-500">
-                  Ảnh lâm sàn khác
-                </p>
-
-                {/* Selected Images Grid display */}
-                {activeVisit.clinicalImages &&
-                  activeVisit.clinicalImages.length > 0 && (
-                    <div className="mb-3 grid grid-cols-2 gap-2">
-                      {activeVisit.clinicalImages.map((imageSrc, idx) => (
-                        <div
-                          key={idx}
-                          className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
-                        >
-                          <img
-                            src={imageSrc}
-                            alt={`Thiết chẩn ${idx + 1}`}
-                            className="h-full w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                          <button
-                            onClick={() => deleteClinicalImage(idx)}
-                            className="bg-red-650 absolute top-1 right-1 cursor-pointer rounded-full p-1 text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:bg-red-700"
-                            title="Xóa hình"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                {/* Upload Dropzone Box */}
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={triggerImageUpload}
-                  className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-all ${
-                    isDragging
-                      ? "border-emerald-600 bg-emerald-50/50"
-                      : "border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/10"
-                  }`}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUploaded}
-                    className="hidden"
-                    accept="image/*"
-                  />
-
-                  {/* Tongue icon design placeholder representation */}
-                  <div className="shadow-3xs mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-rose-500 transition-transform duration-150 hover:scale-105">
-                    🧪
-                  </div>
-
-                  <p className="text-xs font-semibold text-slate-700">
-                    Thêm ảnh khác
-                  </p>
-                  <p className="mt-1 text-[10px] text-slate-400">
-                    Kéo thả ảnh hoặc click để tải lên
-                  </p>
-                </div>
+                ))}
               </div>
             </div>
           </div>
