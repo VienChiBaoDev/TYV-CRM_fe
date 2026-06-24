@@ -1,5 +1,7 @@
 import { ArrowDown, Filter, Menu } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
+import { urlPaths } from "@/constants/urlPaths"
 import type { Patient } from "../../data/patientService"
 
 interface PatientTableProps {
@@ -13,6 +15,8 @@ export function PatientTable({
   loading,
   selectedReferrerName,
 }: PatientTableProps) {
+  const navigate = useNavigate()
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
       {/* Table Top Controls */}
@@ -83,7 +87,8 @@ export function PatientTable({
               patients.map((row, index) => (
                 <tr
                   key={row.id}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  onClick={() => navigate(urlPaths.medicalRecords(row.id))}
+                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <td className="px-4 py-4 text-center text-slate-500 border-r border-gray-200">
                     {index + 1}

@@ -18,7 +18,7 @@ export async function fetchPatientMedicalRecord(
   patientId: string
 ): Promise<PatientDetailApiResponse> {
   const { data } = await httpService.get<PatientDetailApiResponse>(
-    `/patients/${patientId}`
+    `/patients/${patientId}/medical-record`
   )
   return data
 }
