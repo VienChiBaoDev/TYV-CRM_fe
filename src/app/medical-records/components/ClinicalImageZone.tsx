@@ -3,7 +3,9 @@ import { Trash2 } from "lucide-react"
 import type { ClinicalImage } from "@/app/medical-records/interfaces/types"
 import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
 import { CLINICAL_IMAGE_ZONE_CONFIG } from "@/app/medical-records/constants/clinical-image"
-
+import Lightbox from "yet-another-react-lightbox"
+import "yet-another-react-lightbox/styles.css"
+import Zoom from "yet-another-react-lightbox/plugins/zoom"
 interface ClinicalImageZoneProps {
   category: ClinicalImageCategory
   sectionLabel: string
@@ -24,6 +26,8 @@ export function ClinicalImageZone({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const zone = CLINICAL_IMAGE_ZONE_CONFIG[category]
+  const [open, setOpen] = useState(false)
+  const [index, setIndex] = useState(0)
 
   const handleFile = (file: File | undefined) => {
     if (!file || isUploading) return
@@ -46,6 +50,10 @@ export function ClinicalImageZone({
                 alt={zone.uploadTitle}
                 className="h-full w-full object-cover"
                 referrerPolicy="no-referrer"
+                onClick={() => {
+                  setIndex(images.findIndex((img) => img.id === image.id))
+                  setOpen(true)
+                }}
               />
               <button
                 type="button"
@@ -102,6 +110,21 @@ export function ClinicalImageZone({
         </p>
         <p className="mt-1 text-[10px] text-slate-400">{zone.uploadHint}</p>
       </div>
+
+      <Lightbox
+        open={open}
+        close={() => setOpen(false)}
+        index={index}
+        slides={images.map((img) => ({
+          src: img.imageUrl,
+        }))}
+        plugins={[Zoom]}
+        zoom={{
+          maxZoomPixelRatio: 5,
+          zoomInMultiplier: 2,
+          doubleTapDelay: 300,
+        }}
+      />
     </div>
   )
 }
