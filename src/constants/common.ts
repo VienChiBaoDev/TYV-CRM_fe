@@ -36,3 +36,11 @@ export const CLINICAL_ASSESSMENT_SCALE_RESULT = {
     className: "text-red-500",
   },
 }
+
+export const MODAL_CUSTOMER_MODE = {
+  ADD: "add",
+  EDIT: "edit",
+}
+
+export type ModalCustomerModeType =
+  (typeof MODAL_CUSTOMER_MODE)[keyof typeof MODAL_CUSTOMER_MODE]

@@ -24,7 +24,7 @@ export default function PatientProfile() {
                 {activePatient.name}
               </h3>
               <span className="rounded-md border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                {activePatient.id}
+                {activePatient.patientCode}
               </span>
             </div>
 

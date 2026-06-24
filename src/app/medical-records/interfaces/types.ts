@@ -3,8 +3,32 @@ export interface Herb {
   weight: string
 }
 
+export type ClinicalImageCategory =
+  import("@/app/medical-records/constants/clinical-image").ClinicalImageCategory
+
+export interface ClinicalImage {
+  id: string
+  imageUrl: string
+  category: ClinicalImageCategory
+  sortOrder: number
+}
+
+export type TreatmentStatus =
+  | "Đang điều trị"
+  | "Cần theo dõi"
+  | "Kết thúc đợt"
+
+export interface VisitFollowUpPlan {
+  /** ISO date (yyyy-MM-dd) — maps to PatientFollowUp.followUpDate */
+  followUpDate: string
+  /** Days before follow-up to assess — BE derives assessmentDate */
+  reminderDaysBefore: number
+  /** Maps to Patient.customer_status when persisting */
+  treatmentStatus: TreatmentStatus
+}
+
 export interface Visit {
-  id: number
+  id: string
   visitNumber: number
   title: string // e.g., "Khám đầu tiên", "Tái khám lần 1"
   date: string // "DD/MM/YYYY" or "DD/MM"
@@ -22,13 +46,15 @@ export interface Visit {
   prescriptionFormula: string // TIỂU SÀI HỒ GIA GIẢM
   prescriptionDosage: string // 7 THÁNG x 14 TÚI 150ML
   herbs: Herb[]
-  clinicalImages?: string[] // array of base64 or object URLs
+  clinicalImages?: ClinicalImage[]
   labResults?: string
   status: "Khám đầu" | "Tái khám" | "Online" | "Cần TD" | "Kế hoạch"
+  followUpPlan?: VisitFollowUpPlan
 }
 
 export interface Patient {
   id: string
+  patientCode: string
   name: string
   gender: "Nam" | "Nữ"
   age: number

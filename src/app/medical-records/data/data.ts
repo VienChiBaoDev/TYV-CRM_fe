@@ -3,6 +3,7 @@ import type { Patient } from "../interfaces/types"
 export const initialPatients: Patient[] = [
   {
     id: "P001",
+    patientCode: "P001",
     name: "Hồ Nguyễn Việt Thư",
     gender: "Nam",
     age: 43,
@@ -17,7 +18,7 @@ export const initialPatients: Patient[] = [
     avatarInitials: "HT",
     visits: [
       {
-        id: 1,
+        id: "1",
         visitNumber: 1,
         title: "Khám đầu tiên",
         date: "06/05/2026",
@@ -52,13 +53,19 @@ export const initialPatients: Patient[] = [
           { name: "Sinh đại hoàng", weight: "6g" },
         ],
         clinicalImages: [
-          "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=80", // Medical generic/tongue placeholder
+          {
+            id: "mock-image-1",
+            imageUrl:
+              "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=80",
+            category: "DIAGNOSIS",
+            sortOrder: 0,
+          },
         ],
         labResults:
           "Xét nghiệm ban đầu: Acid Uric huyết thanh: 480 umol/L. Chỉ số mỡ máu Triglyceride hơi cao. Chức năng gan (AST/ALT) trong giới hạn bình thường.",
       },
       {
-        id: 2,
+        id: "2",
         visitNumber: 2,
         title: "Tái khám lần 1",
         date: "16/05/2026",
@@ -96,7 +103,7 @@ export const initialPatients: Patient[] = [
           "Xét nghiệm Acid Uric đợt 2: Giảm nhẹ về 430 umol/L. Crct (Creatinine) bình thường.",
       },
       {
-        id: 3,
+        id: "3",
         visitNumber: 3,
         title: "Tái khám Online",
         date: "25/05/2026",
@@ -131,7 +138,7 @@ export const initialPatients: Patient[] = [
         labResults: "Mọi chỉ số đều duy trì trạng thái tốt lành.",
       },
       {
-        id: 4,
+        id: "4",
         visitNumber: 4,
         title: "Cần theo dõi sát",
         date: "04/06/2026",
@@ -166,7 +173,7 @@ export const initialPatients: Patient[] = [
           "Acid Uric xét nghiệm nhanh tại phòng khám: 445 umol/L (tăng nhẹ trở lại sau bữa nhậu). Gan thận ổn.",
       },
       {
-        id: 5,
+        id: "5",
         visitNumber: 5,
         title: "Kế hoạch khám sau",
         date: "11/06/2026",
@@ -194,6 +201,7 @@ export const initialPatients: Patient[] = [
   },
   {
     id: "P002",
+    patientCode: "P002",
     name: "Nguyễn Thị Mai Anh",
     gender: "Nữ",
     age: 35,
@@ -208,7 +216,7 @@ export const initialPatients: Patient[] = [
     avatarInitials: "MA",
     visits: [
       {
-        id: 1,
+        id: "1",
         visitNumber: 1,
         title: "Khám đầu tiên",
         date: "10/05/2026",
@@ -244,7 +252,7 @@ export const initialPatients: Patient[] = [
           "Kết quả nội soi tại trung tâm Hòa Hảo: Viêm trợt hang vị mức độ trung bình, test HP âm tính.",
       },
       {
-        id: 2,
+        id: "2",
         visitNumber: 2,
         title: "Tái khám lần 1",
         date: "25/05/2026",

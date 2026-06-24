@@ -1,11 +1,12 @@
 import { useState, useRef, useMemo, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import { initialPatients } from "@/app/medical-records/data/data"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   Patient,
   Visit,
   Herb,
 } from "@/app/medical-records/interfaces/types"
+import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
 import { useClinicStore } from "@/stores/clinic-store"
 import {
   MEDICAL_RECORD_TABS,
@@ -13,15 +14,63 @@ import {
 } from "@/app/medical-records/constants/tab-values"
 import {
   getDefaultVisitForm,
+  getDefaultFollowUpPlan,
   type VisitFormMode,
 } from "@/app/medical-records/constants/visit-form"
+import {
+  medicalRecordKeys,
+  patientMedicalRecordQueryOptions,
+} from "@/app/medical-records/queries/patient-medical-record-query"
+import {
+  createMedicalVisit,
+  deleteClinicalImage,
+  updateMedicalVisit,
+  uploadClinicalImage,
+} from "@/app/medical-records/services/medical-record-service"
+import {
+  getApiErrorMessage,
+  mapVisitFormToCreatePayload,
+  mapVisitFormToUpdatePayload,
+} from "@/app/medical-records/mappers/map-visit-request"
+
+const EMPTY_PATIENT: Patient = {
+  id: "",
+  patientCode: "",
+  name: "",
+  gender: "Nam",
+  age: 0,
+  job: "",
+  phone: "",
+  address: "",
+  tags: [],
+  dietRestrictions: [],
+  metricVisitsCount: 0,
+  metricTreatmentDays: 0,
+  metricNextExamination: "—",
+  avatarInitials: "",
+  visits: [],
+}
+
+type VisitSelectionIntent =
+  | { kind: "last" }
+  | { kind: "id"; id: string }
 
 export function useMedicalRecords() {
   const { patientId } = useParams()
+  const queryClient = useQueryClient()
   const activeBranch = useClinicStore((state) => state.activeBranch)
 
-  const [patients, setPatients] = useState<Patient[]>(initialPatients)
-  const [activePatientId, setActivePatientId] = useState<string>("P001")
+  const {
+    data: fetchedPatient,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery(patientMedicalRecordQueryOptions(patientId ?? ""))
+
+  const [selectVisitAfterRefetch, setSelectVisitAfterRefetch] =
+    useState<VisitSelectionIntent | null>(null)
+  const loadedPatientIdRef = useRef<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [activeTab, setActiveTab] = useState<MedicalRecordTab>(
     MEDICAL_RECORD_TABS.VISITS
@@ -32,16 +81,46 @@ export function useMedicalRecords() {
   const [visitForm, setVisitForm] =
     useState<Partial<Visit>>(getDefaultVisitForm)
   const [showExportModal, setShowExportModal] = useState(false)
-  const [selectedVisitIndex, setSelectedVisitIndex] = useState(3)
+  const [selectedVisitIndex, setSelectedVisitIndex] = useState(0)
   const [tempHerbName, setTempHerbName] = useState("")
   const [tempHerbWeight, setTempHerbWeight] = useState("")
-  const [isDragging, setIsDragging] = useState(false)
+  const [clinicalImageError, setClinicalImageError] = useState<string | null>(
+    null
+  )
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    loadedPatientIdRef.current = null
+    setSelectedVisitIndex(0)
+    setSelectVisitAfterRefetch(null)
+  }, [patientId])
 
-  const activePatient = useMemo(() => {
-    return patients.find((pat) => pat.id === activePatientId) || patients[0]
-  }, [patients, activePatientId])
+  useEffect(() => {
+    if (!fetchedPatient || fetchedPatient.id !== patientId) return
+
+    if (selectVisitAfterRefetch) {
+      if (selectVisitAfterRefetch.kind === "last") {
+        setSelectedVisitIndex(
+          Math.max(0, fetchedPatient.visits.length - 1)
+        )
+      } else {
+        const idx = fetchedPatient.visits.findIndex(
+          (visit: Visit) => visit.id === selectVisitAfterRefetch.id
+        )
+        if (idx >= 0) setSelectedVisitIndex(idx)
+      }
+      setSelectVisitAfterRefetch(null)
+      return
+    }
+
+    if (loadedPatientIdRef.current !== fetchedPatient.id) {
+      loadedPatientIdRef.current = fetchedPatient.id
+      setSelectedVisitIndex(
+        Math.max(0, fetchedPatient.visits.length - 1)
+      )
+    }
+  }, [fetchedPatient, patientId, selectVisitAfterRefetch])
+
+  const activePatient = fetchedPatient ?? EMPTY_PATIENT
 
   const activeVisit = useMemo(() => {
     if (!activePatient?.visits?.length) return null
@@ -53,92 +132,169 @@ export function useMedicalRecords() {
   }, [activePatient, selectedVisitIndex])
 
   const filteredPatients = useMemo(() => {
-    if (!searchQuery) return patients
-    return patients.filter(
+    if (!activePatient.id) return []
+    if (!searchQuery) return [activePatient]
+    const query = searchQuery.toLowerCase()
+    return [activePatient].filter(
       (p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.phone.includes(searchQuery)
+        p.name.toLowerCase().includes(query) || p.phone.includes(searchQuery)
     )
-  }, [patients, searchQuery])
+  }, [activePatient, searchQuery])
 
-  useEffect(() => {
-    if (patientId) setActivePatientId(patientId)
-  }, [patientId])
+  const visitMutation = useMutation({
+    mutationFn: async ({
+      mode,
+      visit,
+    }: {
+      mode: VisitFormMode
+      visit: Partial<Visit>
+    }) => {
+      if (!patientId) {
+        throw new Error("Thiếu mã bệnh nhân trên URL.")
+      }
 
-  useEffect(() => {
-    if (activeBranch === "Hàng Bông") {
-      setActivePatientId("P001")
-      setSelectedVisitIndex(3)
-      return
-    }
-    setActivePatientId("P002")
-    setSelectedVisitIndex(1)
-  }, [activeBranch])
+      if (mode === "add") {
+        const payload = mapVisitFormToCreatePayload(visit)
+        return createMedicalVisit(patientId, payload)
+      }
 
-  const updateActiveVisitImages = (updater: (images: string[]) => string[]) => {
-    if (!activeVisit) return
-    setPatients((prev) =>
-      prev.map((p) => {
-        if (p.id !== activePatient.id) return p
-        return {
-          ...p,
-          visits: p.visits.map((v) => {
-            if (v.id !== activeVisit.id) return v
-            return {
-              ...v,
-              clinicalImages: updater(v.clinicalImages || []),
-            }
-          }),
-        }
+      if (!visit.id) {
+        throw new Error("Thiếu mã lần khám.")
+      }
+
+      const payload = mapVisitFormToUpdatePayload(visit)
+      return updateMedicalVisit(patientId, visit.id, payload)
+    },
+    onSuccess: async (visitResponse, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: medicalRecordKeys.detail(patientId ?? ""),
       })
-    )
-  }
 
-  const addImageFromFile = (file: File) => {
-    if (!activeVisit) return
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const base64String = event.target?.result as string
-      updateActiveVisitImages((images) => [...images, base64String])
-    }
-    reader.readAsDataURL(file)
-  }
+      setSelectVisitAfterRefetch(
+        variables.mode === "add"
+          ? { kind: "last" }
+          : { kind: "id", id: visitResponse.id }
+      )
+      closeVisitModal()
+    },
+  })
 
-  const triggerImageUpload = () => fileInputRef.current?.click()
+  const uploadImageMutation = useMutation({
+    mutationFn: async ({
+      file,
+      category,
+    }: {
+      file: File
+      category: ClinicalImageCategory
+    }) => {
+      if (!patientId || !activeVisit?.id) {
+        throw new Error("Không xác định được lần khám để tải ảnh.")
+      }
 
-  const handleImageUploaded = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) addImageFromFile(file)
-  }
+      return uploadClinicalImage(patientId, activeVisit.id, file, category)
+    },
+    onSuccess: async (uploadedImage) => {
+      setClinicalImageError(null)
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
+      if (patientId && activeVisit?.id) {
+        queryClient.setQueryData<Patient>(
+          medicalRecordKeys.detail(patientId),
+          (current) => {
+            if (!current) return current
 
-  const handleDragLeave = () => setIsDragging(false)
+            return {
+              ...current,
+              visits: current.visits.map((visit) => {
+                if (visit.id !== activeVisit.id) return visit
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) addImageFromFile(file)
-  }
+                const clinicalImages = [...(visit.clinicalImages ?? [])]
+                const exists = clinicalImages.some(
+                  (image) => image.id === uploadedImage.id
+                )
+                if (exists) return visit
 
-  const deleteClinicalImage = (indexToDelete: number) => {
-    updateActiveVisitImages((images) =>
-      images.filter((_, i) => i !== indexToDelete)
-    )
-  }
+                clinicalImages.push({
+                  id: uploadedImage.id,
+                  imageUrl: uploadedImage.imageUrl,
+                  category: uploadedImage.category,
+                  sortOrder: uploadedImage.sortOrder,
+                })
+
+                return { ...visit, clinicalImages }
+              }),
+            }
+          }
+        )
+      }
+
+      await queryClient.refetchQueries({
+        queryKey: medicalRecordKeys.detail(patientId ?? ""),
+      })
+    },
+    onError: (mutationError) => {
+      setClinicalImageError(getApiErrorMessage(mutationError))
+    },
+  })
+
+  const deleteImageMutation = useMutation({
+    mutationFn: async (imageId: string) => {
+      if (!patientId || !activeVisit?.id) {
+        throw new Error("Không xác định được lần khám để xóa ảnh.")
+      }
+
+      await deleteClinicalImage(patientId, activeVisit.id, imageId)
+    },
+    onSuccess: async (_result, imageId) => {
+      setClinicalImageError(null)
+
+      if (patientId && activeVisit?.id) {
+        queryClient.setQueryData<Patient>(
+          medicalRecordKeys.detail(patientId),
+          (current) => {
+            if (!current) return current
+
+            return {
+              ...current,
+              visits: current.visits.map((visit) => {
+                if (visit.id !== activeVisit.id) return visit
+
+                return {
+                  ...visit,
+                  clinicalImages: (visit.clinicalImages ?? []).filter(
+                    (image) => image.id !== imageId
+                  ),
+                }
+              }),
+            }
+          }
+        )
+      }
+
+      await queryClient.refetchQueries({
+        queryKey: medicalRecordKeys.detail(patientId ?? ""),
+      })
+    },
+    onError: (mutationError) => {
+      setClinicalImageError(getApiErrorMessage(mutationError))
+    },
+  })
 
   const openAddVisitModal = () => {
+    visitMutation.reset()
     setVisitForm(getDefaultVisitForm())
     setVisitModalMode("add")
   }
 
   const openEditVisitModal = () => {
     if (!activeVisit) return
-    setVisitForm({ ...activeVisit })
+    visitMutation.reset()
+    setVisitForm({
+      ...activeVisit,
+      followUpPlan: {
+        ...getDefaultFollowUpPlan(),
+        ...activeVisit.followUpPlan,
+      },
+    })
     setVisitModalMode("edit")
   }
 
@@ -148,67 +304,29 @@ export function useMedicalRecords() {
     setTempHerbWeight("")
   }
 
-  const handleVisitSubmit = (e: React.FormEvent) => {
+  const handleVisitSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!visitModalMode) return
 
-    if (visitModalMode === "add") {
-      const newId = activePatient.visits.length + 1
-      const createdVisit: Visit = {
-        id: newId,
-        visitNumber: newId,
-        title: visitForm.title || "Tái khám định kỳ",
-        date: visitForm.date || new Date().toLocaleDateString("vi-VN"),
-        doctor: visitForm.doctor || "BS Phi Hưng",
-        mode: (visitForm.mode as Visit["mode"]) || "Trực tiếp",
-        location: visitForm.location || "Hàng Bông",
-        bloodPressure: visitForm.bloodPressure || "120/80",
-        pulse: visitForm.pulse || "75",
-        status: (visitForm.status as Visit["status"]) || "Tái khám",
-        symptoms: visitForm.symptoms || "",
-        pulseDiagnosis: {
-          ta: visitForm.pulseDiagnosis?.ta || "",
-          huu: visitForm.pulseDiagnosis?.huu || "",
-          bung: visitForm.pulseDiagnosis?.bung || "",
-        },
-        prescriptionFormula: visitForm.prescriptionFormula || "Chưa kê đơn",
-        prescriptionDosage: visitForm.prescriptionDosage || "",
-        herbs: visitForm.herbs || [],
-        clinicalImages: visitForm.clinicalImages || [],
-        labResults: visitForm.labResults || "",
-      }
-
-      setPatients((prev) =>
-        prev.map((p) => {
-          if (p.id !== activePatient.id) return p
-          const updatedVisits = [...p.visits, createdVisit]
-          return {
-            ...p,
-            metricVisitsCount: updatedVisits.length,
-            metricTreatmentDays: p.metricTreatmentDays + 10,
-            visits: updatedVisits,
-          }
-        })
-      )
-
-      setSelectedVisitIndex(activePatient.visits.length)
-      closeVisitModal()
-      return
+    try {
+      await visitMutation.mutateAsync({
+        mode: visitModalMode,
+        visit: visitForm,
+      })
+    } catch {
+      // Error surfaced via visitMutation.error
     }
+  }
 
-    if (visitModalMode === "edit") {
-      setPatients((prev) =>
-        prev.map((p) => {
-          if (p.id !== activePatient.id) return p
-          return {
-            ...p,
-            visits: p.visits.map((v) =>
-              v.id === visitForm.id ? (visitForm as Visit) : v
-            ),
-          }
-        })
-      )
-      closeVisitModal()
-    }
+  const handleClinicalImageUpload = (
+    file: File,
+    category: ClinicalImageCategory
+  ) => {
+    uploadImageMutation.mutate({ file, category })
+  }
+
+  const handleClinicalImageDelete = (imageId: string) => {
+    deleteImageMutation.mutate(imageId)
   }
 
   const addHerbToVisit = () => {
@@ -231,13 +349,20 @@ export function useMedicalRecords() {
 
   const openTreatmentTab = () => setActiveTab(MEDICAL_RECORD_TABS.TREATMENT)
 
+  const visitSubmitError = visitMutation.error
+    ? getApiErrorMessage(visitMutation.error)
+    : null
+
+  const isClinicalImageBusy =
+    uploadImageMutation.isPending || deleteImageMutation.isPending
+
   return {
     activeBranch,
     searchQuery,
     setSearchQuery,
     filteredPatients,
     activePatient,
-    setActivePatientId,
+    setActivePatientId: () => undefined,
     selectedVisitIndex,
     setSelectedVisitIndex,
     activeVisit,
@@ -251,6 +376,12 @@ export function useMedicalRecords() {
     openEditVisitModal,
     closeVisitModal,
     handleVisitSubmit,
+    isSubmittingVisit: visitMutation.isPending,
+    visitSubmitError,
+    handleClinicalImageUpload,
+    handleClinicalImageDelete,
+    isClinicalImageBusy,
+    clinicalImageError,
     tempHerbName,
     setTempHerbName,
     tempHerbWeight,
@@ -259,14 +390,11 @@ export function useMedicalRecords() {
     removeHerbFromVisit,
     showExportModal,
     setShowExportModal,
-    fileInputRef,
-    triggerImageUpload,
-    handleImageUploaded,
-    isDragging,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-    deleteClinicalImage,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    patientId,
   }
 }
 

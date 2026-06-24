@@ -8,6 +8,11 @@ import { ListFilters } from "./List/ListFilters"
 import { PatientTable } from "./List/PatientTable"
 import { getPatients, type Patient } from "../data/patientService"
 import { getReferrers, type Referrer } from "../data/referrerService"
+import ModalCustomer from "./MedicalRecordList/ModalCustomer"
+import {
+  MODAL_CUSTOMER_MODE,
+  type ModalCustomerModeType,
+} from "@/constants/common"
 
 export default function MedicalRecordList() {
   const activeBranch = useClinicStore((state) => state.activeBranch)
@@ -17,6 +22,9 @@ export default function MedicalRecordList() {
   const [referrers, setReferrers] = useState<Referrer[]>([])
   const [selectedReferrer, setSelectedReferrer] = useState<string>("all")
   const [loading, setLoading] = useState(true)
+  const [openModalCustomer, setOpenModalCustomer] = useState(false)
+  const [modeModalCustomer, setModeModalCustomer] =
+    useState<ModalCustomerModeType>(MODAL_CUSTOMER_MODE.ADD)
 
   // Nạp danh sách người giới thiệu cho dropdown (1 lần)
   useEffect(() => {
@@ -61,6 +69,12 @@ export default function MedicalRecordList() {
           />
         </div>
       </div>
+
+      <ModalCustomer
+        open={openModalCustomer}
+        onOpenChange={setOpenModalCustomer}
+        mode={modeModalCustomer}
+      />
     </div>
   )
 }
