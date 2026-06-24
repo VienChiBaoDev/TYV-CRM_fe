@@ -31,6 +31,8 @@ export function VisitFormModal() {
     visitForm,
     setVisitForm,
     handleVisitSubmit,
+    isSubmittingVisit,
+    visitSubmitError,
     tempHerbName,
     setTempHerbName,
     tempHerbWeight,
@@ -462,18 +464,25 @@ export function VisitFormModal() {
           </div>
 
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-3">
+            {visitSubmitError && (
+              <p className="mr-auto self-center text-xs text-red-600">
+                {visitSubmitError}
+              </p>
+            )}
             <button
               type="button"
               onClick={onClose}
-              className="cursor-pointer rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              disabled={isSubmittingVisit}
+              className="cursor-pointer rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Hủy bỏ
             </button>
             <button
               type="submit"
-              className="hover:bg-emerald-750 cursor-pointer rounded-lg bg-emerald-800 px-5 py-2 text-xs font-bold text-white shadow-sm"
+              disabled={isSubmittingVisit}
+              className="hover:bg-emerald-750 cursor-pointer rounded-lg bg-emerald-800 px-5 py-2 text-xs font-bold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitLabel}
+              {isSubmittingVisit ? "Đang lưu..." : submitLabel}
             </button>
           </div>
         </form>

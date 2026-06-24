@@ -12,7 +12,7 @@ export const VISIT_STATUSES = [
   "Kế hoạch",
 ] as const satisfies readonly Visit["status"][]
 
-export const REMINDER_DAYS_OPTIONS = [7, 14] as const
+export const REMINDER_DAYS_OPTIONS = [3, 7, 14] as const
 
 export const TREATMENT_STATUS_OPTIONS = [
   "Đang điều trị",

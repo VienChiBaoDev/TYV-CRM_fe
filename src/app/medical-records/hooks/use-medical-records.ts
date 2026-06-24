@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   Patient,
   Visit,
@@ -14,10 +14,21 @@ import {
 import {
   getDefaultVisitForm,
   getDefaultFollowUpPlan,
-  formatIsoDateToVi,
   type VisitFormMode,
 } from "@/app/medical-records/constants/visit-form"
-import { patientMedicalRecordQueryOptions } from "@/app/medical-records/queries/patient-medical-record-query"
+import {
+  medicalRecordKeys,
+  patientMedicalRecordQueryOptions,
+} from "@/app/medical-records/queries/patient-medical-record-query"
+import {
+  createMedicalVisit,
+  updateMedicalVisit,
+} from "@/app/medical-records/services/medical-record-service"
+import {
+  getApiErrorMessage,
+  mapVisitFormToCreatePayload,
+  mapVisitFormToUpdatePayload,
+} from "@/app/medical-records/mappers/map-visit-request"
 
 const EMPTY_PATIENT: Patient = {
   id: "",
@@ -37,8 +48,13 @@ const EMPTY_PATIENT: Patient = {
   visits: [],
 }
 
+type VisitSelectionIntent =
+  | { kind: "last" }
+  | { kind: "id"; id: string }
+
 export function useMedicalRecords() {
   const { patientId } = useParams()
+  const queryClient = useQueryClient()
   const activeBranch = useClinicStore((state) => state.activeBranch)
 
   const {
@@ -50,6 +66,9 @@ export function useMedicalRecords() {
   } = useQuery(patientMedicalRecordQueryOptions(patientId ?? ""))
 
   const [localPatient, setLocalPatient] = useState<Patient | null>(null)
+  const [selectVisitAfterRefetch, setSelectVisitAfterRefetch] =
+    useState<VisitSelectionIntent | null>(null)
+  const loadedPatientIdRef = useRef<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [activeTab, setActiveTab] = useState<MedicalRecordTab>(
     MEDICAL_RECORD_TABS.VISITS
@@ -68,12 +87,77 @@ export function useMedicalRecords() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (!fetchedPatient) return
+    loadedPatientIdRef.current = null
+    setSelectedVisitIndex(0)
+    setSelectVisitAfterRefetch(null)
     setLocalPatient(null)
-    setSelectedVisitIndex(
-      Math.max(0, fetchedPatient.visits.length - 1)
-    )
-  }, [fetchedPatient])
+  }, [patientId])
+
+  useEffect(() => {
+    if (!fetchedPatient || fetchedPatient.id !== patientId) return
+
+    if (selectVisitAfterRefetch) {
+      if (selectVisitAfterRefetch.kind === "last") {
+        setSelectedVisitIndex(
+          Math.max(0, fetchedPatient.visits.length - 1)
+        )
+      } else {
+        const idx = fetchedPatient.visits.findIndex(
+          (visit: Visit) => visit.id === selectVisitAfterRefetch.id
+        )
+        if (idx >= 0) setSelectedVisitIndex(idx)
+      }
+      setSelectVisitAfterRefetch(null)
+      setLocalPatient(null)
+      return
+    }
+
+    if (loadedPatientIdRef.current !== fetchedPatient.id) {
+      loadedPatientIdRef.current = fetchedPatient.id
+      setSelectedVisitIndex(
+        Math.max(0, fetchedPatient.visits.length - 1)
+      )
+      setLocalPatient(null)
+    }
+  }, [fetchedPatient, patientId, selectVisitAfterRefetch])
+
+  const visitMutation = useMutation({
+    mutationFn: async ({
+      mode,
+      visit,
+    }: {
+      mode: VisitFormMode
+      visit: Partial<Visit>
+    }) => {
+      if (!patientId) {
+        throw new Error("Thiếu mã bệnh nhân trên URL.")
+      }
+
+      if (mode === "add") {
+        const payload = mapVisitFormToCreatePayload(visit)
+        return createMedicalVisit(patientId, payload)
+      }
+
+      if (!visit.id) {
+        throw new Error("Thiếu mã lần khám.")
+      }
+
+      const payload = mapVisitFormToUpdatePayload(visit)
+      return updateMedicalVisit(patientId, visit.id, payload)
+    },
+    onSuccess: async (visitResponse, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: medicalRecordKeys.detail(patientId ?? ""),
+      })
+
+      setSelectVisitAfterRefetch(
+        variables.mode === "add"
+          ? { kind: "last" }
+          : { kind: "id", id: visitResponse.id }
+      )
+      closeVisitModal()
+    },
+  })
 
   const activePatient = localPatient ?? fetchedPatient ?? EMPTY_PATIENT
 
@@ -152,12 +236,14 @@ export function useMedicalRecords() {
   }
 
   const openAddVisitModal = () => {
+    visitMutation.reset()
     setVisitForm(getDefaultVisitForm())
     setVisitModalMode("add")
   }
 
   const openEditVisitModal = () => {
     if (!activeVisit) return
+    visitMutation.reset()
     setVisitForm({
       ...activeVisit,
       followUpPlan: {
@@ -174,75 +260,17 @@ export function useMedicalRecords() {
     setTempHerbWeight("")
   }
 
-  const handleVisitSubmit = (e: React.FormEvent) => {
+  const handleVisitSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!visitModalMode) return
 
-    if (visitModalMode === "add") {
-      const newVisitNumber = activePatient.visits.length + 1
-      const followUpPlan = visitForm.followUpPlan?.followUpDate
-        ? visitForm.followUpPlan
-        : undefined
-
-      const createdVisit: Visit = {
-        id: crypto.randomUUID(),
-        visitNumber: newVisitNumber,
-        title: visitForm.title || "Tái khám định kỳ",
-        date: visitForm.date || new Date().toLocaleDateString("vi-VN"),
-        doctor: visitForm.doctor || "BS Phi Hưng",
-        mode: (visitForm.mode as Visit["mode"]) || "Trực tiếp",
-        location: visitForm.location || "Hàng Bông",
-        bloodPressure: visitForm.bloodPressure || "120/80",
-        pulse: visitForm.pulse || "75",
-        status: (visitForm.status as Visit["status"]) || "Tái khám",
-        symptoms: visitForm.symptoms || "",
-        pulseDiagnosis: {
-          ta: visitForm.pulseDiagnosis?.ta || "",
-          huu: visitForm.pulseDiagnosis?.huu || "",
-          bung: visitForm.pulseDiagnosis?.bung || "",
-        },
-        prescriptionFormula: visitForm.prescriptionFormula || "Chưa kê đơn",
-        prescriptionDosage: visitForm.prescriptionDosage || "",
-        herbs: visitForm.herbs || [],
-        clinicalImages: visitForm.clinicalImages || [],
-        labResults: visitForm.labResults || "",
-        followUpPlan,
-      }
-
-      updatePatient((p) => {
-        const updatedVisits = [...p.visits, createdVisit]
-        return {
-          ...p,
-          metricVisitsCount: updatedVisits.length,
-          metricTreatmentDays: p.metricTreatmentDays + 10,
-          metricNextExamination: followUpPlan?.followUpDate
-            ? formatIsoDateToVi(followUpPlan.followUpDate)
-            : p.metricNextExamination,
-          visits: updatedVisits,
-        }
+    try {
+      await visitMutation.mutateAsync({
+        mode: visitModalMode,
+        visit: visitForm,
       })
-
-      setSelectedVisitIndex(activePatient.visits.length)
-      closeVisitModal()
-      return
-    }
-
-    if (visitModalMode === "edit") {
-      const followUpPlan = visitForm.followUpPlan?.followUpDate
-        ? visitForm.followUpPlan
-        : undefined
-
-      updatePatient((p) => ({
-        ...p,
-        metricNextExamination: followUpPlan?.followUpDate
-          ? formatIsoDateToVi(followUpPlan.followUpDate)
-          : p.metricNextExamination,
-        visits: p.visits.map((v) =>
-          v.id === visitForm.id
-            ? ({ ...visitForm, followUpPlan } as Visit)
-            : v
-        ),
-      }))
-      closeVisitModal()
+    } catch {
+      // Error surfaced via visitMutation.error
     }
   }
 
@@ -266,6 +294,10 @@ export function useMedicalRecords() {
 
   const openTreatmentTab = () => setActiveTab(MEDICAL_RECORD_TABS.TREATMENT)
 
+  const visitSubmitError = visitMutation.error
+    ? getApiErrorMessage(visitMutation.error)
+    : null
+
   return {
     activeBranch,
     searchQuery,
@@ -286,6 +318,8 @@ export function useMedicalRecords() {
     openEditVisitModal,
     closeVisitModal,
     handleVisitSubmit,
+    isSubmittingVisit: visitMutation.isPending,
+    visitSubmitError,
     tempHerbName,
     setTempHerbName,
     tempHerbWeight,
