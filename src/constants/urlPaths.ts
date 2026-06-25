@@ -12,4 +12,5 @@ export const urlPaths = {
   medicalRecordList: "/medical-record",
   medicalRecordCreate: "/medical-record/create",
   referrers: "/referrers",
+  settings: "/settings",
 } as const

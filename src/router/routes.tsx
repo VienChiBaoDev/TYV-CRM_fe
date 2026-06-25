@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { ComingSoonPage } from "@/components/pages/coming-soon-page"
 import { urlPaths } from "@/constants/urlPaths"
 import LoginPage from "@/app/auth/LoginPage"
+import SettingsPage from "@/app/settings/SettingsPage"
 import MedicalRecords from "@/app/medical-records/components/MedicalRecords"
 import { StandardMedicalRecord } from "@/app/standard-medical-record/components/StandardMedicalRecord"
 import MedicalRecordList from "@/app/medical-records/components/MedicalRecordList"
@@ -42,6 +43,10 @@ export const router = createBrowserRouter([
       {
         path: urlPaths.medicalRecordList,
         element: <MedicalRecordList />,
+      },
+      {
+        path: urlPaths.settings,
+        element: <SettingsPage />,
       },
       {
         path: urlPaths.dashboard,

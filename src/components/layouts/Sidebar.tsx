@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronRight,
   LogOut,
+  Settings,
 } from "lucide-react"
 
 import { urlPaths } from "@/constants/urlPaths"
@@ -68,6 +69,14 @@ const SALES_NAV_ITEMS: NavItem[] = [
     to: urlPaths.herbsProducts,
     label: "Dược liệu & Sản phẩm",
     icon: <Leaf className="h-4.5 w-4.5" />,
+  },
+]
+
+const ADMIN_NAV_ITEMS: NavItem[] = [
+  {
+    to: urlPaths.settings,
+    label: "Cài đặt",
+    icon: <Settings className="h-4.5 w-4.5" />,
   },
 ]
 
@@ -230,6 +239,9 @@ export function Sidebar() {
           <NavGroup title="VẬN HÀNH" items={OPERATION_NAV_ITEMS} />
           <NavGroup title="NHÂN SỰ & KPI" items={KPI_NAV_ITEMS} />
           <NavGroup title="BÁN HÀNG" items={SALES_NAV_ITEMS} />
+          {user?.role === "ADMIN" ? (
+            <NavGroup title="QUẢN TRỊ" items={ADMIN_NAV_ITEMS} />
+          ) : null}
         </nav>
       </div>
 
