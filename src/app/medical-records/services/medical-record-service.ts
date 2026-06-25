@@ -14,6 +14,7 @@ export interface ClinicalImageApiResponse {
   readonly sortOrder: number
 }
 
+// Chi tiết mỗi lần khám của khách hàng
 export async function fetchPatientMedicalRecord(
   patientId: string
 ): Promise<PatientDetailApiResponse> {
@@ -22,7 +23,7 @@ export async function fetchPatientMedicalRecord(
   )
   return data
 }
-
+// Tạo lần khám mới
 export async function createMedicalVisit(
   patientId: string,
   payload: CreateMedicalVisitApiPayload
@@ -34,6 +35,7 @@ export async function createMedicalVisit(
   return data
 }
 
+// Cập nhật lần khám
 export async function updateMedicalVisit(
   patientId: string,
   visitId: string,
@@ -45,7 +47,7 @@ export async function updateMedicalVisit(
   )
   return data
 }
-
+// Tải ảnh khám lên
 export async function uploadClinicalImage(
   patientId: string,
   visitId: string,
@@ -62,7 +64,7 @@ export async function uploadClinicalImage(
   )
   return data
 }
-
+// Xóa ảnh khám
 export async function deleteClinicalImage(
   patientId: string,
   visitId: string,

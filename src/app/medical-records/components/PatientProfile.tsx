@@ -1,9 +1,18 @@
 import { AlertCircle, Printer, Plus } from "lucide-react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
+import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
 
 export default function PatientProfile() {
-  const { activePatient, setShowExportModal, openAddVisitModal } =
-    useMedicalRecordContext()
+  const {
+    activePatient,
+    activeVisit,
+    setShowExportModal,
+    openAddVisitModal,
+  } = useMedicalRecordContext()
+
+  const followUpDisplayDate = activeVisit?.followUpPlan?.followUpDate
+    ? formatIsoDateToVi(activeVisit.followUpPlan.followUpDate)
+    : activePatient.metricNextExamination
 
   return (
     <section
@@ -80,7 +89,7 @@ export default function PatientProfile() {
 
           <div className="min-w-[70px] rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-2 text-center shadow-2xs">
             <p className="font-mono text-2xl leading-none font-bold text-indigo-700">
-              {activePatient.metricNextExamination}
+              {followUpDisplayDate}
             </p>
             <p className="mt-1 text-[9px] font-bold tracking-wider text-indigo-600 uppercase">
               Tái khám
