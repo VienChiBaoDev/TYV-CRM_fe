@@ -10,29 +10,38 @@ import API_PATHS from "@/constants/apiPaths"
 import type { PaginatedResponse } from "@/types/pagination"
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/types/pagination"
 
-export async function fetchUpcomingFollowUps(params?: {
-  branch?: ClinicBranchCode
-  daysAhead?: number
-}): Promise<FollowUpScheduleApiResponse[]> {
-  const { data } = await httpService.get<FollowUpScheduleApiResponse[]>(
-    API_PATHS.followUps.upcoming,
-    { params }
-  )
-  return data
-}
-
-export async function fetchPendingAssessments(params?: {
+interface FollowUpListParams {
   branch?: ClinicBranchCode
   page?: number
   limit?: number
-}): Promise<PaginatedResponse<PendingAssessmentApiResponse>> {
+}
+
+export async function fetchUpcomingFollowUps(
+  params?: FollowUpListParams & { daysAhead?: number }
+): Promise<PaginatedResponse<FollowUpScheduleApiResponse>> {
+  const { data } = await httpService.get<
+    PaginatedResponse<FollowUpScheduleApiResponse>
+  >(API_PATHS.followUps.upcoming, {
+    params: {
+      branch: params?.branch,
+      daysAhead: params?.daysAhead,
+      page: params?.page ?? DEFAULT_PAGE,
+      limit: params?.limit ?? DEFAULT_LIMIT,
+    },
+  })
+  return data
+}
+
+export async function fetchPendingAssessments(
+  params?: FollowUpListParams
+): Promise<PaginatedResponse<PendingAssessmentApiResponse>> {
   const { data } = await httpService.get<
     PaginatedResponse<PendingAssessmentApiResponse>
   >(API_PATHS.followUps.pendingAssessment, {
     params: {
+      branch: params?.branch,
       page: params?.page ?? DEFAULT_PAGE,
       limit: params?.limit ?? DEFAULT_LIMIT,
-      branch: params?.branch,
     },
   })
   return data
