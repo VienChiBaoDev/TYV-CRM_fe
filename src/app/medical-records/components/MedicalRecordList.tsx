@@ -2,8 +2,6 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { useClinicStore } from "@/stores/clinic-store"
-import { ListHeader } from "./List/ListHeader"
-import { SummaryCards } from "./List/SummaryCards"
 import { ListFilters } from "./List/ListFilters"
 import { PatientTable } from "./List/PatientTable"
 import { getPatients, type Patient } from "../data/patientService"
@@ -51,16 +49,16 @@ export default function MedicalRecordList() {
       : (referrers.find((r) => r.id === selectedReferrer)?.fullName ?? null)
 
   return (
-    <div className="h-full bg-slate-50 p-6 overflow-y-auto">
-      <div className="max-w-7xl mx-auto space-y-2">
-        <ListHeader />
-        <SummaryCards />
+    <div className="h-full overflow-y-auto bg-slate-50 p-6">
+      <div className="mx-auto max-w-7xl space-y-2">
+        {/* <ListHeader /> */}
+        {/* <SummaryCards /> */}
 
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+        <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
           <ListFilters
-            referrers={referrers}
-            selectedReferrer={selectedReferrer}
-            onReferrerChange={setSelectedReferrer}
+          // referrers={referrers}
+          // selectedReferrer={selectedReferrer}
+          // onReferrerChange={setSelectedReferrer}
           />
           <PatientTable
             patients={patients}

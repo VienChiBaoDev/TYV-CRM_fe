@@ -51,9 +51,7 @@ const EMPTY_PATIENT: Patient = {
   visits: [],
 }
 
-type VisitSelectionIntent =
-  | { kind: "last" }
-  | { kind: "id"; id: string }
+type VisitSelectionIntent = { kind: "last" } | { kind: "id"; id: string }
 
 export function useMedicalRecords() {
   const { patientId } = useParams()
@@ -90,6 +88,7 @@ export function useMedicalRecords() {
 
   useEffect(() => {
     loadedPatientIdRef.current = null
+    /* eslint-disable react-hooks/set-state-in-effect */
     setSelectedVisitIndex(0)
     setSelectVisitAfterRefetch(null)
   }, [patientId])
@@ -99,9 +98,7 @@ export function useMedicalRecords() {
 
     if (selectVisitAfterRefetch) {
       if (selectVisitAfterRefetch.kind === "last") {
-        setSelectedVisitIndex(
-          Math.max(0, fetchedPatient.visits.length - 1)
-        )
+        setSelectedVisitIndex(Math.max(0, fetchedPatient.visits.length - 1))
       } else {
         const idx = fetchedPatient.visits.findIndex(
           (visit: Visit) => visit.id === selectVisitAfterRefetch.id
@@ -114,13 +111,12 @@ export function useMedicalRecords() {
 
     if (loadedPatientIdRef.current !== fetchedPatient.id) {
       loadedPatientIdRef.current = fetchedPatient.id
-      setSelectedVisitIndex(
-        Math.max(0, fetchedPatient.visits.length - 1)
-      )
+      setSelectedVisitIndex(Math.max(0, fetchedPatient.visits.length - 1))
     }
   }, [fetchedPatient, patientId, selectVisitAfterRefetch])
 
   const activePatient = fetchedPatient ?? EMPTY_PATIENT
+  console.log({ activePatient })
 
   const activeVisit = useMemo(() => {
     if (!activePatient?.visits?.length) return null
@@ -199,7 +195,7 @@ export function useMedicalRecords() {
       if (patientId && activeVisit?.id) {
         queryClient.setQueryData<Patient>(
           medicalRecordKeys.detail(patientId),
-          (current) => {
+          (current: Patient) => {
             if (!current) return current
 
             return {
@@ -250,7 +246,7 @@ export function useMedicalRecords() {
       if (patientId && activeVisit?.id) {
         queryClient.setQueryData<Patient>(
           medicalRecordKeys.detail(patientId),
-          (current) => {
+          (current: Patient) => {
             if (!current) return current
 
             return {

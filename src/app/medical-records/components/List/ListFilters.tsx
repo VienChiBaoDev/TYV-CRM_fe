@@ -1,37 +1,22 @@
+import { UserPlus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import {
-  Calendar,
-  Stethoscope,
-  Activity,
-  CreditCard,
-  FolderOpen,
-  ChevronDown,
-  UserPlus,
-  Users,
-} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { urlPaths } from "@/constants/urlPaths"
-import type { Referrer } from "../../data/referrerService"
+// import type { Referrer } from "../../data/referrerService"
 
-interface ListFiltersProps {
-  referrers: Referrer[]
-  selectedReferrer: string
-  onReferrerChange: (value: string) => void
-}
+// interface ListFiltersProps {
+//   referrers: Referrer[]
+//   selectedReferrer: string
+//   onReferrerChange: (value: string) => void
+// }
 
-export function ListFilters({
-  referrers,
-  selectedReferrer,
-  onReferrerChange,
-}: ListFiltersProps) {
+export function ListFilters() {
+  //   {
+  //   referrers,
+  //   selectedReferrer,
+  //   onReferrerChange,
+  // }: ListFiltersProps
   const navigate = useNavigate()
 
   return (
@@ -41,14 +26,14 @@ export function ListFilters({
           <h2 className="text-sm font-semibold text-slate-800">
             Danh sách khách hàng
           </h2>
-          <p className="text-xs text-slate-500 mb-4">
+          <p className="mb-4 text-xs text-slate-500">
             Danh sách khách hàng theo ngày tạo hồ sơ, chốt dịch vụ, điều trị,
             thanh toán hoặc ngày checked in
           </p>
         </div>
         <Button
           onClick={() => navigate(urlPaths.medicalRecordCreate)}
-          className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="shrink-0 bg-emerald-600 text-white hover:bg-emerald-700"
         >
           <UserPlus className="h-4 w-4" />
           Tạo mới hồ sơ
@@ -57,7 +42,7 @@ export function ListFilters({
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
         {/* Date Range Picker (Mock) */}
-        <div className="flex items-center border border-gray-200 rounded-md bg-white text-sm shrink-0">
+        {/* <div className="flex items-center border border-gray-200 rounded-md bg-white text-sm shrink-0">
           <button className="flex items-center gap-1 px-3 py-1.5 border-r border-gray-200 hover:bg-gray-50 text-slate-700">
             Hôm nay <ChevronDown className="h-4 w-4" />
           </button>
@@ -67,10 +52,10 @@ export function ListFilters({
             </div>
             23-06-2026 to 23-06-2026
           </div>
-        </div>
+        </div> */}
 
         {/* Bộ lọc người giới thiệu */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        {/* <div className="flex shrink-0 items-center gap-1.5">
           <Users className="h-4 w-4 text-emerald-600" />
           <Select value={selectedReferrer} onValueChange={onReferrerChange}>
             <SelectTrigger className="w-[200px] bg-white text-sm">
@@ -85,29 +70,29 @@ export function ListFilters({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
 
         {/* Filter Tabs */}
-        <button className="flex items-center gap-2 px-4 py-1.5 rounded-md border border-emerald-500 bg-white text-emerald-600 font-medium text-sm shrink-0 hover:bg-emerald-50 transition-colors">
+        {/* <button className="flex shrink-0 items-center gap-2 rounded-md border border-emerald-500 bg-white px-4 py-1.5 text-sm font-medium text-emerald-600 transition-colors hover:bg-emerald-50">
           <Calendar className="h-4 w-4" />
           Lịch hẹn
         </button>
-        <button className="flex items-center gap-2 px-4 py-1.5 rounded-md border border-gray-200 bg-white text-slate-600 text-sm shrink-0 hover:bg-gray-50 transition-colors">
+        <button className="flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-1.5 text-sm text-slate-600 transition-colors hover:bg-gray-50">
           <Stethoscope className="h-4 w-4" />
           Dịch vụ
         </button>
-        <button className="flex items-center gap-2 px-4 py-1.5 rounded-md border border-gray-200 bg-white text-slate-600 text-sm shrink-0 hover:bg-gray-50 transition-colors">
+        <button className="flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-1.5 text-sm text-slate-600 transition-colors hover:bg-gray-50">
           <Activity className="h-4 w-4" />
           Điều trị
         </button>
-        <button className="flex items-center gap-2 px-4 py-1.5 rounded-md border border-gray-200 bg-white text-slate-600 text-sm shrink-0 hover:bg-gray-50 transition-colors">
+        <button className="flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-1.5 text-sm text-slate-600 transition-colors hover:bg-gray-50">
           <CreditCard className="h-4 w-4" />
           Thanh toán
         </button>
-        <button className="flex items-center gap-2 px-4 py-1.5 rounded-md border border-gray-200 bg-white text-slate-600 text-sm shrink-0 hover:bg-gray-50 transition-colors">
+        <button className="flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-1.5 text-sm text-slate-600 transition-colors hover:bg-gray-50">
           <FolderOpen className="h-4 w-4" />
           Hồ sơ
-        </button>
+        </button> */}
       </div>
     </div>
   )
