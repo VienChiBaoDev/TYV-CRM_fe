@@ -1,8 +1,10 @@
 import { createBrowserRouter, Navigate } from "react-router-dom"
 
 import MainLayout from "@/components/layouts/MainLayout"
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { ComingSoonPage } from "@/components/pages/coming-soon-page"
 import { urlPaths } from "@/constants/urlPaths"
+import LoginPage from "@/app/auth/LoginPage"
 import MedicalRecords from "@/app/medical-records/components/MedicalRecords"
 import { StandardMedicalRecord } from "@/app/standard-medical-record/components/StandardMedicalRecord"
 import MedicalRecordList from "@/app/medical-records/components/MedicalRecordList"
@@ -11,7 +13,15 @@ import ReferrersPage from "@/app/medical-records/components/Referrers/ReferrersP
 
 export const router = createBrowserRouter([
   {
-    element: <MainLayout />,
+    path: urlPaths.login,
+    element: <LoginPage />,
+  },
+  {
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,

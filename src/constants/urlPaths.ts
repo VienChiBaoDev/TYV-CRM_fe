@@ -1,4 +1,5 @@
 export const urlPaths = {
+  login: "/login",
   dashboard: "/dashboard",
   appointments: "/appointments",
   patients: "/patients",

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { NavLink, useLocation } from "react-router-dom"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import {
   LayoutDashboard,
   Calendar,
@@ -10,9 +10,12 @@ import {
   Leaf,
   ChevronDown,
   ChevronRight,
+  LogOut,
 } from "lucide-react"
 
 import { urlPaths } from "@/constants/urlPaths"
+import { ROLE_LABEL } from "@/interfaces/auth"
+import { useAuthStore } from "@/stores/auth-store"
 import { useClinicStore } from "@/stores/clinic-store"
 import { cn } from "@/lib/utils"
 
@@ -159,8 +162,17 @@ function NavGroup({ title, items }: { title: string; items: NavItem[] }) {
 }
 
 export function Sidebar() {
+  const navigate = useNavigate()
   const activeBranch = useClinicStore((state) => state.activeBranch)
   const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
+
+  function handleLogout() {
+    logout()
+    navigate(urlPaths.login, { replace: true })
+  }
+
   return (
     <aside
       className="sticky top-0 flex h-screen w-full shrink-0 flex-col justify-between bg-emerald-950 text-white shadow-lg md:w-64"
@@ -222,14 +234,24 @@ export function Sidebar() {
       </div>
 
       <div className="text-emerald-250 border-t border-emerald-900/40 bg-emerald-950/40 p-4 text-[11px]">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-white">Phòng khám BS Hưng</p>
-            <p className="text-emerald-400">Vai trò: Quản trị viên</p>
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-white">
+              {user?.fullName ?? "Khách"}
+            </p>
+            <p className="text-emerald-400">
+              Vai trò: {user ? ROLE_LABEL[user.role] : "—"}
+            </p>
           </div>
-          <span className="rounded border border-emerald-800/50 bg-emerald-900 px-2 py-0.5 font-mono text-[9px] text-lime-400">
-            Hệ Thống
-          </span>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Đăng xuất"
+            className="flex shrink-0 items-center gap-1 rounded border border-emerald-800/50 bg-emerald-900 px-2 py-1 text-[10px] font-medium text-lime-400 transition-colors hover:bg-emerald-800"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Đăng xuất
+          </button>
         </div>
       </div>
     </aside>
