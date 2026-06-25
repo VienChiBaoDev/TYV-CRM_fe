@@ -17,7 +17,6 @@ import {
 import { urlPaths } from "@/constants/urlPaths"
 import { ROLE_LABEL } from "@/interfaces/auth"
 import { useAuthStore } from "@/stores/auth-store"
-import { useClinicStore } from "@/stores/clinic-store"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
@@ -172,8 +171,6 @@ function NavGroup({ title, items }: { title: string; items: NavItem[] }) {
 
 export function Sidebar() {
   const navigate = useNavigate()
-  const activeBranch = useClinicStore((state) => state.activeBranch)
-  const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
@@ -204,38 +201,7 @@ export function Sidebar() {
           </div>
         </div>
 
-        <div className="p-4">
-          <div className="flex gap-1 rounded-full border border-emerald-800/40 bg-emerald-950/60 p-1">
-            <button
-              id="branch-hang-bong"
-              type="button"
-              onClick={() => setActiveBranch("Hàng Bông")}
-              className={cn(
-                "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full py-1.5 text-xs font-semibold transition-all duration-300",
-                activeBranch === "Hàng Bông"
-                  ? "bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-600"
-                  : "text-emerald-300 hover:text-white"
-              )}
-            >
-              <span>🌸</span> Hàng Bông
-            </button>
-            <button
-              id="branch-cau-giay"
-              type="button"
-              onClick={() => setActiveBranch("Cầu Giấy")}
-              className={cn(
-                "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full py-1.5 text-xs font-semibold transition-all duration-300",
-                activeBranch === "Cầu Giấy"
-                  ? "bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-600"
-                  : "text-emerald-300 hover:text-white"
-              )}
-            >
-              <span>🌿</span> Cầu Giấy
-            </button>
-          </div>
-        </div>
-
-        <nav className="space-y-6 px-3 py-2" id="nav-groups">
+        <nav className="space-y-6 px-3 py-2 pt-4" id="nav-groups">
           <NavGroup title="VẬN HÀNH" items={OPERATION_NAV_ITEMS} />
           <NavGroup title="NHÂN SỰ & KPI" items={KPI_NAV_ITEMS} />
           <NavGroup title="BÁN HÀNG" items={SALES_NAV_ITEMS} />
