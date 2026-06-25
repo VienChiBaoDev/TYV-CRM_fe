@@ -27,7 +27,6 @@ export function upcomingFollowUpsQueryOptions(
       const rows = await fetchUpcomingFollowUps({ branch, daysAhead })
       return rows.map(mapToFollowUpSchedule)
     },
-    staleTime: 30_000,
   })
 }
 
@@ -38,6 +37,5 @@ export function pendingAssessmentsQueryOptions(branch?: ClinicBranchCode) {
       const rows = await fetchPendingAssessments({ branch })
       return rows.map(mapToClinicalAssessment)
     },
-    staleTime: 30_000,
   })
 }

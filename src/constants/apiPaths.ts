@@ -5,7 +5,7 @@ const API_PATHS = {
     scheduleFollowUp: (followUpId: string) =>
       `/follow-ups/${followUpId}/schedule`,
     submitAssessment: (followUpId: string) =>
-      `/follow-ups/${followUpId}/submit-assessment`,
+      `/follow-ups/${followUpId}/assessment`,
   },
 }
 

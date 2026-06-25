@@ -8,6 +8,8 @@ import { FOLLOW_UP_SCHEDULE_STATUS } from "@/constants/common"
 import { upcomingFollowUpsQueryOptions } from "../queries/follow-up-query"
 import type { FollowUpSchedule } from "../interfaces/StandardMedicalRecord"
 import { QuickScheduleDialog } from "./QuickScheduleDialog"
+import { Link } from "react-router-dom"
+import { urlPaths } from "@/constants/urlPaths"
 // import { QuickScheduleDialog } from "./QuickScheduleDialog"
 
 export function FollowUpSchedule() {
@@ -21,7 +23,17 @@ export function FollowUpSchedule() {
   const [selectedRow, setSelectedRow] = useState<FollowUpSchedule | null>(null)
 
   const columns: ColumnDef<FollowUpSchedule>[] = [
-    { accessorKey: "name", header: "Tên bệnh nhân" },
+    {
+      accessorKey: "name",
+      header: "Tên bệnh nhân",
+      cell: ({ row }) => {
+        return (
+          <Link to={urlPaths.medicalRecords(row.original.patientId)}>
+            {row.original.name}
+          </Link>
+        )
+      },
+    },
     {
       accessorKey: "followUpAppointmentDate",
       header: "Hạn tái khám",
