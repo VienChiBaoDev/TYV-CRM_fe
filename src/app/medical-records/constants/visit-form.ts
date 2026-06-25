@@ -39,14 +39,14 @@ export function computeAssessmentDateIso(
   const [year, month, day] = followUpDateIso.split("-").map(Number)
   if (!year || !month || !day) return null
 
-  const followUp = new Date(year, month - 1, day)
+  const followUp = new Date(Date.UTC(year, month - 1, day))
   if (Number.isNaN(followUp.getTime())) return null
 
-  followUp.setDate(followUp.getDate() - reminderDaysBefore)
+  followUp.setUTCDate(followUp.getUTCDate() - reminderDaysBefore)
 
-  const y = followUp.getFullYear()
-  const m = String(followUp.getMonth() + 1).padStart(2, "0")
-  const d = String(followUp.getDate()).padStart(2, "0")
+  const y = followUp.getUTCFullYear()
+  const m = String(followUp.getUTCMonth() + 1).padStart(2, "0")
+  const d = String(followUp.getUTCDate()).padStart(2, "0")
   return `${y}-${m}-${d}`
 }
 

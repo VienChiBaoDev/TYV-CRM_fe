@@ -21,6 +21,7 @@ import {
   medicalRecordKeys,
   patientMedicalRecordQueryOptions,
 } from "@/app/medical-records/queries/patient-medical-record-query"
+import { followUpKeys } from "@/app/standard-medical-record/queries/follow-up-query"
 import {
   createMedicalVisit,
   deleteClinicalImage,
@@ -116,7 +117,6 @@ export function useMedicalRecords() {
   }, [fetchedPatient, patientId, selectVisitAfterRefetch])
 
   const activePatient = fetchedPatient ?? EMPTY_PATIENT
-  console.log({ activePatient })
 
   const activeVisit = useMemo(() => {
     if (!activePatient?.visits?.length) return null
@@ -164,6 +164,9 @@ export function useMedicalRecords() {
     onSuccess: async (visitResponse, variables) => {
       await queryClient.invalidateQueries({
         queryKey: medicalRecordKeys.detail(patientId ?? ""),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: followUpKeys.all,
       })
 
       setSelectVisitAfterRefetch(
