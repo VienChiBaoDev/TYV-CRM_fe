@@ -7,6 +7,8 @@ import type {
   SubmitAssessmentPayload,
 } from "../interfaces/StandardMedicalRecord"
 import API_PATHS from "@/constants/apiPaths"
+import type { PaginatedResponse } from "@/types/pagination"
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/types/pagination"
 
 export async function fetchUpcomingFollowUps(params?: {
   branch?: ClinicBranchCode
@@ -21,11 +23,18 @@ export async function fetchUpcomingFollowUps(params?: {
 
 export async function fetchPendingAssessments(params?: {
   branch?: ClinicBranchCode
-}): Promise<PendingAssessmentApiResponse[]> {
-  const { data } = await httpService.get<PendingAssessmentApiResponse[]>(
-    API_PATHS.followUps.pendingAssessment,
-    { params }
-  )
+  page?: number
+  limit?: number
+}): Promise<PaginatedResponse<PendingAssessmentApiResponse>> {
+  const { data } = await httpService.get<
+    PaginatedResponse<PendingAssessmentApiResponse>
+  >(API_PATHS.followUps.pendingAssessment, {
+    params: {
+      page: params?.page ?? DEFAULT_PAGE,
+      limit: params?.limit ?? DEFAULT_LIMIT,
+      branch: params?.branch,
+    },
+  })
   return data
 }
 

@@ -4,7 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { ClinicalAssessmentScale } from "../interfaces/StandardMedicalRecord"
 import { CLINICAL_ASSESSMENT_SCALE_RESULT } from "@/constants/common"
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { FormInput } from "@/components/FieldCustom/FormInput"
 import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
@@ -22,6 +22,7 @@ import { useSubmitAssessmentMutation } from "../hooks/use-follow-up-mutations"
 import { mapFeResultToApi } from "../mappers/map-follow-up-response"
 import { Link } from "react-router-dom"
 import { urlPaths } from "@/constants/urlPaths"
+import { DEFAULT_LIMIT } from "@/types/pagination"
 
 export function ClinicalAssessmentScale() {
   const [open, setOpen] = useState(false)
@@ -29,13 +30,21 @@ export function ClinicalAssessmentScale() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null)
 
   const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    setPage(1)
+  }, [branch])
+
   const form = useForm<ClinicalAssessmentScaleFormValues>({
     resolver: zodResolver(clinicalAssessmentScaleFormSchema),
     defaultValues: clinicalAssessmentScaleFormDefaultValues,
   })
-  const { data = [], isLoading } = useQuery(
-    pendingAssessmentsQueryOptions(branch)
+  const { data, isLoading } = useQuery(
+    pendingAssessmentsQueryOptions({ branch, page, limit: DEFAULT_LIMIT })
   )
+  const rows = data?.data ?? []
+  const meta = data?.meta
   const assessmentMutation = useSubmitAssessmentMutation()
   const handleOpenDialog = useCallback(
     (row: ClinicalAssessmentScale) => {
@@ -151,11 +160,11 @@ export function ClinicalAssessmentScale() {
         title="Đánh giá lâm sàng gần nhất (Hỏi thăm)"
         classNameTable="mt-4"
         columns={columns}
-        data={data}
+        data={rows}
         loading={isLoading}
-        pageIndex={0}
-        pageCount={2}
-        onPageChange={() => {}}
+        pageIndex={page - 1}
+        pageCount={Math.max(meta?.totalPages ?? 1, 1)}
+        onPageChange={(nextPageIndex) => setPage(nextPageIndex + 1)}
       />
       <DialogCommon
         open={open}
