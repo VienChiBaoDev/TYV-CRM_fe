@@ -45,3 +45,8 @@ export async function getPatients(params?: {
   const { data } = await httpService.get<Patient[]>("/patients", { params })
   return data
 }
+
+export async function getPatientById(patientId: string): Promise<Patient> {
+  const { data } = await httpService.get<Patient>(`/patients/${patientId}`)
+  return data
+}

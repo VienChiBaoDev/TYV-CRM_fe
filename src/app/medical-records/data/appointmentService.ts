@@ -2,6 +2,24 @@ import httpService from "@/services/httpService"
 
 import type { ClinicBranchCode } from "./patientService"
 
+export const APPOINTMENT_STATUSES = [
+  "BOOKED",
+  "CONFIRMED",
+  "CHECKED_IN",
+  "DONE",
+  "NO_SHOW",
+  "CANCELLED",
+] as const
+
+export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number]
+
+export interface AppointmentPatient {
+  id: string
+  fullName: string
+  patientCode: string
+  phone: string
+}
+
 export interface CreateAppointmentPayload {
   patientId: string
   scheduledAt: string
@@ -10,15 +28,42 @@ export interface CreateAppointmentPayload {
   clinicBranch?: ClinicBranchCode
 }
 
+export interface UpdateAppointmentPayload {
+  scheduledAt?: string
+  doctorName?: string
+  clinicBranch?: ClinicBranchCode
+  status?: AppointmentStatus
+  note?: string
+}
+
 export interface Appointment {
   id: string
   patientId: string
   scheduledAt: string
   doctorName: string | null
   clinicBranch: ClinicBranchCode
-  status: string
+  status: AppointmentStatus
   note: string | null
+  visitId: string | null
   createdAt: string
+  updatedAt: string
+  patient?: AppointmentPatient
+}
+
+interface FetchAppointmentsParams {
+  branch?: ClinicBranchCode
+  from: string
+  to: string
+  status?: AppointmentStatus
+}
+
+export async function fetchAppointments(
+  params: FetchAppointmentsParams,
+): Promise<Appointment[]> {
+  const { data } = await httpService.get<Appointment[]>("/appointments", {
+    params,
+  })
+  return data
 }
 
 export async function createAppointment(
@@ -26,4 +71,19 @@ export async function createAppointment(
 ): Promise<Appointment> {
   const { data } = await httpService.post<Appointment>("/appointments", payload)
   return data
+}
+
+export async function updateAppointment(
+  id: string,
+  payload: UpdateAppointmentPayload,
+): Promise<Appointment> {
+  const { data } = await httpService.patch<Appointment>(
+    `/appointments/${id}`,
+    payload,
+  )
+  return data
+}
+
+export async function cancelAppointment(id: string): Promise<Appointment> {
+  return updateAppointment(id, { status: "CANCELLED" })
 }

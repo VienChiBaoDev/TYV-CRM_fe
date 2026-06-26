@@ -7,6 +7,10 @@ const API_PATHS = {
     submitAssessment: (followUpId: string) =>
       `/follow-ups/${followUpId}/assessment`,
   },
+  appointments: {
+    list: "/appointments",
+    detail: (id: string) => `/appointments/${id}`,
+  },
 }
 
 export default API_PATHS

@@ -1,13 +1,5 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-
 import { Button } from "@/components/ui/button"
+import { FormDialog } from "./FormDialog"
 
 interface AppDialogProps {
   open: boolean
@@ -40,28 +32,25 @@ export function DialogCommon({
   hideFooter,
 }: AppDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-
-          {description && <DialogDescription>{description}</DialogDescription>}
-        </DialogHeader>
-
-        {children}
-
-        {!hideFooter && (
-          <DialogFooter>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      footer={
+        hideFooter ? undefined : (
+          <>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               {cancelText}
             </Button>
-
             <Button onClick={onSubmit} disabled={loading}>
               {loading ? "Đang xử lý..." : submitText}
             </Button>
-          </DialogFooter>
-        )}
-      </DialogContent>
-    </Dialog>
+          </>
+        )
+      }
+    >
+      {children}
+    </FormDialog>
   )
 }

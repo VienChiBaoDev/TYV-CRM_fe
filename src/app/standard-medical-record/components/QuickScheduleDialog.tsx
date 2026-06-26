@@ -4,6 +4,8 @@ import { z } from "zod"
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
 import { Form } from "@/components/ui/form"
 import { FormInput } from "@/components/FieldCustom/FormInput"
+import { FormDatetime } from "@/components/FieldCustom/FormDatetime"
+import { parseIsoDate, slotToFormDatetime } from "@/lib/date-vi"
 import { useScheduleFollowUpMutation } from "../hooks/use-follow-up-mutations"
 import type { FollowUpSchedule } from "../interfaces/StandardMedicalRecord"
 
@@ -21,6 +23,11 @@ interface QuickScheduleDialogProps {
   row: FollowUpSchedule
 }
 
+function getDefaultScheduledAt(followUpDateIso: string): string {
+  const date = parseIsoDate(followUpDateIso)
+  return date ? slotToFormDatetime(date, 9, 0) : ""
+}
+
 export function QuickScheduleDialog({
   open,
   onOpenChange,
@@ -31,8 +38,7 @@ export function QuickScheduleDialog({
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      // datetime-local cần format: 2026-06-28T09:00
-      scheduledAt: `${row.followUpAppointmentDate}T09:00`,
+      scheduledAt: getDefaultScheduledAt(row.followUpAppointmentDate),
       doctorName: row.physicianInCharge,
       note: "",
     },
@@ -63,11 +69,10 @@ export function QuickScheduleDialog({
           <p className="text-sm text-muted-foreground">
             Bệnh nhân: <strong>{row.name}</strong>
           </p>
-          <FormInput
+          <FormDatetime
             control={form.control}
             name="scheduledAt"
             label="Ngày giờ hẹn"
-            type="datetime-local"
             required
           />
           <FormInput control={form.control} name="doctorName" label="Bác sĩ" />

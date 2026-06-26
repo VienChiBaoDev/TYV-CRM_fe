@@ -8,6 +8,7 @@ import { StandardMedicalRecord } from "@/app/standard-medical-record/components/
 import MedicalRecordList from "@/app/medical-records/components/MedicalRecordList"
 import PatientCreatePage from "@/app/medical-records/components/PatientCreate/PatientCreatePage"
 import ReferrersPage from "@/app/medical-records/components/Referrers/ReferrersPage"
+import { AppointmentsPage } from "@/app/appointments/components/AppointmentsPage"
 
 export const router = createBrowserRouter([
   {
@@ -39,7 +40,7 @@ export const router = createBrowserRouter([
       },
       {
         path: urlPaths.appointments,
-        element: <ComingSoonPage title="Lịch Hẹn" />,
+        element: <AppointmentsPage />,
       },
       {
         path: urlPaths.patients,
