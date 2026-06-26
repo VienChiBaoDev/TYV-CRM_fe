@@ -1,15 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import {
-  Calendar,
-  Stethoscope,
-  Activity,
-  CreditCard,
-  FolderOpen,
-  ChevronDown,
-  UserPlus,
-  Users,
-  Building2,
-} from "lucide-react"
+import { UserPlus, Building2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -21,7 +11,6 @@ import {
 } from "@/components/ui/select"
 import { urlPaths } from "@/constants/urlPaths"
 import { useClinicStore } from "@/stores/clinic-store"
-import type { Referrer } from "../../data/referrerService"
 
 // interface ListFiltersProps {
 //   referrers: Referrer[]

@@ -1,4 +1,4 @@
-import { Search, Info, Filter } from "lucide-react"
+import { Search, Filter } from "lucide-react"
 
 export default function ReferrersPage() {
   return (

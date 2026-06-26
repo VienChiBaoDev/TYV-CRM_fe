@@ -83,9 +83,9 @@ function SelectContent({
     <SelectPrimitive.Content
       data-slot="select-content"
       data-align-trigger={position === "item-aligned"}
-      disableOutsidePointerEvents={
-        disableOutsidePointerEvents ?? usePortal
-      }
+      {...({
+        disableOutsidePointerEvents: disableOutsidePointerEvents ?? usePortal,
+      } as React.ComponentProps<typeof SelectPrimitive.Content>)}
       className={cn(
         "pointer-events-auto relative z-100 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) origin-(--radix-select-content-transform-origin) overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
         "data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",

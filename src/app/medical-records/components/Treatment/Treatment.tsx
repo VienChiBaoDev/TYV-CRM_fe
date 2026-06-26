@@ -7,7 +7,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type { Row } from "@tanstack/react-table"
 import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { useState } from "react"
 import TreatmentAction from "./TreatmentAction"
@@ -50,8 +49,7 @@ export default function Treatment() {
     },
     {
       header: "Hành động",
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      cell: ({ row }: { row: Row<Treatment> }) => {
+      cell: () => {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -6,19 +6,21 @@ import type {
 export const standardMedicalRecords = [
   {
     id: "1",
+    patientId: "1",
     name: "John Doe",
     followUpAppointmentDate: "2026-01-01",
     physicianInCharge: "100000",
     facility: "Hospital A",
-    status: "1",
+    status: 1,
   },
   {
     id: "2",
+    patientId: "2",
     name: "Jane Doe",
     followUpAppointmentDate: "2026-01-02",
     physicianInCharge: "200000",
     facility: "Hospital B",
-    status: "2",
+    status: 2,
   },
 ] as FollowUpSchedule[]
 
