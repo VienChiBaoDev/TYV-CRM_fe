@@ -92,7 +92,14 @@ export function WeeklyCalendarGrid({
 
               {TIME_SLOTS.map((slot) => (
                 <div key={slot.label} className="contents">
-                  <div className="sticky left-0 z-10 border-r border-b border-border bg-muted px-2 py-3 text-xs text-muted-foreground">
+                  <div
+                    className={cn(
+                      "sticky left-0 z-10 border-r border-b border-border bg-muted px-2 py-1.5 text-[11px]",
+                      slot.minute === 0
+                        ? "font-medium text-foreground"
+                        : "text-muted-foreground",
+                    )}
+                  >
                     {slot.label}
                   </div>
 

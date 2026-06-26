@@ -97,7 +97,7 @@ export function AppointmentsPage() {
             {String(DAY_END_HOUR).padStart(2, "0")}:00
           </Badge>
 
-          <Badge variant="outline">Slot {SLOT_MINUTES} phút</Badge>
+          <Badge variant="outline">Lưới {SLOT_MINUTES} phút</Badge>
 
           <Badge variant="secondary">
             {appointments.length} lịch trong tuần

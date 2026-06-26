@@ -1,6 +1,11 @@
-export const SLOT_MINUTES = 30 as const
+export const SLOT_MINUTES = 15 as const
 export const DAY_START_HOUR = 7
 export const DAY_END_HOUR = 18
+export const DEFAULT_APPOINTMENT_DURATION_MINUTES = 30 as const
+
+export function getCalendarRowCount(): number {
+  return ((DAY_END_HOUR - DAY_START_HOUR) * 60) / SLOT_MINUTES
+}
 
 export const WEEKDAY_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"] as const
 

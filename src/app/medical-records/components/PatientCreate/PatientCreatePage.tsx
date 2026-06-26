@@ -76,9 +76,13 @@ export default function PatientCreatePage() {
           `${apptForm.date}T${apptForm.hour || "00"}:${apptForm.minute || "00"}:00`,
         )
         if (apptForm.date && !Number.isNaN(scheduledAt.getTime())) {
+          const endedAt = new Date(
+            scheduledAt.getTime() + 30 * 60 * 1000,
+          )
           await createAppointment({
             patientId: created.id,
             scheduledAt: scheduledAt.toISOString(),
+            endedAt: endedAt.toISOString(),
             doctorName: apptForm.doctorName.trim() || undefined,
             note: apptForm.note.trim() || undefined,
             clinicBranch: branch,

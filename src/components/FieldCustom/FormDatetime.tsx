@@ -6,7 +6,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import type { TimeSlotOption } from "@/lib/date-vi"
 import { DatetimePickerField } from "./DatetimePickerField"
 
 interface FormDatetimeProps<T extends FieldValues> {
@@ -19,7 +18,6 @@ interface FormDatetimeProps<T extends FieldValues> {
   labelClassName?: string
   disabled?: boolean
   required?: boolean
-  timeSlots?: TimeSlotOption[]
   fromDate?: Date
   toDate?: Date
 }
@@ -34,7 +32,6 @@ export function FormDatetime<T extends FieldValues>({
   labelClassName,
   disabled,
   required,
-  timeSlots,
   fromDate,
   toDate,
 }: FormDatetimeProps<T>) {
@@ -54,7 +51,6 @@ export function FormDatetime<T extends FieldValues>({
             datePlaceholder={datePlaceholder}
             timePlaceholder={timePlaceholder}
             disabled={disabled}
-            timeSlots={timeSlots}
             fromDate={fromDate}
             toDate={toDate}
           />

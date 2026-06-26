@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 
 import { FormDialog } from "@/components/UiCustom/FormDialog"
 import { AppointmentStatusBadge } from "@/components/UiCustom/AppointmentStatusBadge"
-import { FormDatetime } from "@/components/FieldCustom/FormDatetime"
+import { FormAppointmentTimeRange } from "@/components/FieldCustom/FormAppointmentTimeRange"
 import { FormInput } from "@/components/FieldCustom/FormInput"
 import { FormPatientSearch } from "@/components/FieldCustom/FormPatientSearch"
 import { FormSelect } from "@/components/FieldCustom/FormSelect"
@@ -15,7 +15,7 @@ import { Form } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator"
 import type { Appointment } from "@/app/medical-records/data/appointmentService"
 import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
-import { APPOINTMENT_STATUS_OPTIONS } from "../constants/calendar"
+import { APPOINTMENT_STATUS_OPTIONS, DEFAULT_APPOINTMENT_DURATION_MINUTES } from "../constants/calendar"
 import {
   useCancelAppointmentMutation,
   useCreateAppointmentMutation,
@@ -25,6 +25,7 @@ import {
   appointmentFormSchema,
   type AppointmentFormValues,
 } from "../schemas/appointment-form"
+import { addMinutesToFormDatetime } from "@/lib/date-vi"
 import { slotToDatetimeLocal, toDatetimeLocalValue } from "../utils/time-slots"
 
 export interface AppointmentDialogContext {
@@ -46,9 +47,11 @@ function buildDefaultValues(
   context: AppointmentDialogContext | null
 ): AppointmentFormValues {
   if (context?.mode === "edit" && context.appointment) {
+    const scheduledAt = toDatetimeLocalValue(context.appointment.scheduledAt)
     return {
       patientId: context.appointment.patientId,
-      scheduledAt: toDatetimeLocalValue(context.appointment.scheduledAt),
+      scheduledAt,
+      endedAt: toDatetimeLocalValue(context.appointment.endedAt),
       doctorName: context.appointment.doctorName ?? "",
       note: context.appointment.note ?? "",
       status: context.appointment.status,
@@ -56,12 +59,17 @@ function buildDefaultValues(
   }
 
   if (context?.mode === "create" && context.day != null) {
+    const scheduledAt = slotToDatetimeLocal(
+      context.day,
+      context.hour ?? 9,
+      context.minute ?? 0,
+    )
     return {
       patientId: "",
-      scheduledAt: slotToDatetimeLocal(
-        context.day,
-        context.hour ?? 9,
-        context.minute ?? 0
+      scheduledAt,
+      endedAt: addMinutesToFormDatetime(
+        scheduledAt,
+        DEFAULT_APPOINTMENT_DURATION_MINUTES,
       ),
       doctorName: "",
       note: "",
@@ -72,6 +80,7 @@ function buildDefaultValues(
   return {
     patientId: "",
     scheduledAt: "",
+    endedAt: "",
     doctorName: "",
     note: "",
     status: "BOOKED",
@@ -108,12 +117,14 @@ export function AppointmentDialog({
 
   const onSubmit = form.handleSubmit(async (values) => {
     const scheduledAt = new Date(values.scheduledAt).toISOString()
+    const endedAt = new Date(values.endedAt).toISOString()
 
     if (isEdit && appointment) {
       await updateMutation.mutateAsync({
         id: appointment.id,
         payload: {
           scheduledAt,
+          endedAt,
           doctorName: values.doctorName || undefined,
           note: values.note,
           status: values.status,
@@ -123,6 +134,7 @@ export function AppointmentDialog({
       await createMutation.mutateAsync({
         patientId: values.patientId,
         scheduledAt,
+        endedAt,
         doctorName: values.doctorName || undefined,
         note: values.note,
         clinicBranch: branch,
@@ -202,11 +214,13 @@ export function AppointmentDialog({
 
           <Separator />
 
-          <FormDatetime
+          <FormAppointmentTimeRange
             control={form.control}
-            name="scheduledAt"
-            label="Ngày giờ hẹn"
+            startName="scheduledAt"
+            endName="endedAt"
+            label="Thời gian hẹn"
             required
+            defaultDurationMinutes={DEFAULT_APPOINTMENT_DURATION_MINUTES}
           />
           <FormInput control={form.control} name="doctorName" label="Bác sĩ" />
           <FormTextarea control={form.control} name="note" label="Ghi chú" />

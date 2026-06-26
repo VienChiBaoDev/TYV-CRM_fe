@@ -62,7 +62,7 @@ export function TimeSlotCell({
         }
       }}
       className={cn(
-        "group min-h-14 border-r border-b border-border p-1 transition-colors",
+        "group min-h-10 border-r border-b border-border p-0.5 transition-colors",
 
         isToday && "bg-primary/5",
 

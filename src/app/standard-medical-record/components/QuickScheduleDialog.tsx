@@ -4,16 +4,38 @@ import { z } from "zod"
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
 import { Form } from "@/components/ui/form"
 import { FormInput } from "@/components/FieldCustom/FormInput"
-import { FormDatetime } from "@/components/FieldCustom/FormDatetime"
-import { parseIsoDate, slotToFormDatetime } from "@/lib/date-vi"
+import { FormAppointmentTimeRange } from "@/components/FieldCustom/FormAppointmentTimeRange"
+import { DEFAULT_APPOINTMENT_DURATION_MINUTES } from "@/app/appointments/constants/calendar"
+import {
+  addMinutesToFormDatetime,
+  parseFormDatetime,
+  parseIsoDate,
+  slotToFormDatetime,
+} from "@/lib/date-vi"
 import { useScheduleFollowUpMutation } from "../hooks/use-follow-up-mutations"
 import type { FollowUpSchedule } from "../interfaces/StandardMedicalRecord"
 
-const schema = z.object({
-  scheduledAt: z.string().min(1, "Vui lòng chọn ngày giờ"),
-  doctorName: z.string().optional(),
-  note: z.string().optional(),
-})
+const schema = z
+  .object({
+    scheduledAt: z.string().min(1, "Vui lòng chọn ngày và giờ bắt đầu"),
+    endedAt: z.string().min(1, "Vui lòng chọn giờ kết thúc"),
+    doctorName: z.string().optional(),
+    note: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const start = parseFormDatetime(data.scheduledAt)
+    const end = parseFormDatetime(data.endedAt)
+
+    if (!start || !end) return
+
+    if (end <= start) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Giờ kết thúc phải sau giờ bắt đầu",
+        path: ["endedAt"],
+      })
+    }
+  })
 
 type FormValues = z.infer<typeof schema>
 
@@ -23,9 +45,23 @@ interface QuickScheduleDialogProps {
   row: FollowUpSchedule
 }
 
-function getDefaultScheduledAt(followUpDateIso: string): string {
+function getDefaultTimes(followUpDateIso: string): {
+  scheduledAt: string
+  endedAt: string
+} {
   const date = parseIsoDate(followUpDateIso)
-  return date ? slotToFormDatetime(date, 9, 0) : ""
+  if (!date) {
+    return { scheduledAt: "", endedAt: "" }
+  }
+
+  const scheduledAt = slotToFormDatetime(date, 9, 0)
+  return {
+    scheduledAt,
+    endedAt: addMinutesToFormDatetime(
+      scheduledAt,
+      DEFAULT_APPOINTMENT_DURATION_MINUTES,
+    ),
+  }
 }
 
 export function QuickScheduleDialog({
@@ -34,11 +70,13 @@ export function QuickScheduleDialog({
   row,
 }: QuickScheduleDialogProps) {
   const mutation = useScheduleFollowUpMutation()
+  const defaults = getDefaultTimes(row.followUpAppointmentDate)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      scheduledAt: getDefaultScheduledAt(row.followUpAppointmentDate),
+      scheduledAt: defaults.scheduledAt,
+      endedAt: defaults.endedAt,
       doctorName: row.physicianInCharge,
       note: "",
     },
@@ -49,6 +87,7 @@ export function QuickScheduleDialog({
       followUpId: row.id,
       payload: {
         scheduledAt: new Date(values.scheduledAt).toISOString(),
+        endedAt: new Date(values.endedAt).toISOString(),
         doctorName: values.doctorName,
         note: values.note,
       },
@@ -69,11 +108,13 @@ export function QuickScheduleDialog({
           <p className="text-sm text-muted-foreground">
             Bệnh nhân: <strong>{row.name}</strong>
           </p>
-          <FormDatetime
+          <FormAppointmentTimeRange
             control={form.control}
-            name="scheduledAt"
-            label="Ngày giờ hẹn"
+            startName="scheduledAt"
+            endName="endedAt"
+            label="Thời gian hẹn"
             required
+            defaultDurationMinutes={DEFAULT_APPOINTMENT_DURATION_MINUTES}
           />
           <FormInput control={form.control} name="doctorName" label="Bác sĩ" />
           <FormInput control={form.control} name="note" label="Ghi chú" />

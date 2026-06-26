@@ -1,13 +1,30 @@
 import { z } from "zod"
 
 import { APPOINTMENT_STATUSES } from "@/app/medical-records/data/appointmentService"
+import { parseFormDatetime } from "@/lib/date-vi"
 
-export const appointmentFormSchema = z.object({
-  patientId: z.string().uuid("Vui lòng chọn bệnh nhân"),
-  scheduledAt: z.string().min(1, "Vui lòng chọn ngày và giờ hẹn"),
-  doctorName: z.string().optional(),
-  note: z.string().optional(),
-  status: z.enum(APPOINTMENT_STATUSES).optional(),
-})
+export const appointmentFormSchema = z
+  .object({
+    patientId: z.string().uuid("Vui lòng chọn bệnh nhân"),
+    scheduledAt: z.string().min(1, "Vui lòng chọn ngày và giờ bắt đầu"),
+    endedAt: z.string().min(1, "Vui lòng chọn giờ kết thúc"),
+    doctorName: z.string().optional(),
+    note: z.string().optional(),
+    status: z.enum(APPOINTMENT_STATUSES).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const start = parseFormDatetime(data.scheduledAt)
+    const end = parseFormDatetime(data.endedAt)
+
+    if (!start || !end) return
+
+    if (end <= start) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Giờ kết thúc phải sau giờ bắt đầu",
+        path: ["endedAt"],
+      })
+    }
+  })
 
 export type AppointmentFormValues = z.infer<typeof appointmentFormSchema>

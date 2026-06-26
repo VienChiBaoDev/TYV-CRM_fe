@@ -10,6 +10,8 @@ import { urlPaths } from "@/constants/urlPaths"
 
 import { cn } from "@/lib/utils"
 
+import { formatAppointmentTimeRangeVi } from "@/lib/date-vi"
+
 import { APPOINTMENT_STATUS_STYLES } from "../constants/calendar"
 
 interface AppointmentCardProps {
@@ -64,6 +66,13 @@ export function AppointmentCard({
           className="hidden shrink-0 sm:inline-flex"
         />
       </div>
+
+      <p className="truncate px-2 text-[10px] opacity-80">
+        {formatAppointmentTimeRangeVi(
+          appointment.scheduledAt,
+          appointment.endedAt,
+        )}
+      </p>
 
       {appointment.doctorName ? (
         <p className="truncate px-2 text-[10px] opacity-80">

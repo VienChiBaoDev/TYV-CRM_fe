@@ -1,18 +1,10 @@
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  buildClinicTimeSlotOptions,
   combineDateAndTime,
   formatDatetimeVi,
   splitFormDatetime,
   toFormDatetimeValue,
-  type TimeSlotOption,
 } from "@/lib/date-vi"
 import { DatePickerField } from "./DatePickerField"
 
@@ -23,7 +15,6 @@ interface DatetimePickerFieldProps {
   timePlaceholder?: string
   disabled?: boolean
   className?: string
-  timeSlots?: TimeSlotOption[]
   fromDate?: Date
   toDate?: Date
 }
@@ -35,7 +26,6 @@ export function DatetimePickerField({
   timePlaceholder = "Chọn giờ",
   disabled,
   className,
-  timeSlots = buildClinicTimeSlotOptions(),
   fromDate,
   toDate,
 }: DatetimePickerFieldProps) {
@@ -80,31 +70,15 @@ export function DatetimePickerField({
 
         <div className="space-y-2">
           <Label className="text-sm font-medium sm:sr-only">Giờ</Label>
-          <Select
+          <Input
+            type="time"
+            step={60}
             value={timeValue}
-            onValueChange={handleTimeChange}
+            onChange={(event) => handleTimeChange(event.target.value)}
             disabled={disabled}
-          >
-            <SelectTrigger className="h-8 w-full">
-              <SelectValue placeholder={timePlaceholder} />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              side="bottom"
-              sideOffset={4}
-              align="start"
-              usePortal={false}
-              disableOutsidePointerEvents={false}
-              className="z-[200]"
-              onCloseAutoFocus={(event) => event.preventDefault()}
-            >
-              {timeSlots.map((slot) => (
-                <SelectItem key={slot.value} value={slot.value}>
-                  {slot.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder={timePlaceholder}
+            className="bg-background"
+          />
         </div>
       </div>
 

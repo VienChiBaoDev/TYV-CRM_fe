@@ -123,4 +123,28 @@ export function slotToFormDatetime(
   return toFormDatetimeValue(combineDateAndTime(day, hour, minute))
 }
 
+export function addMinutesToFormDatetime(
+  value: string,
+  minutes: number,
+): string {
+  const parsed = parseFormDatetime(value)
+  if (!parsed) return ""
+  const next = new Date(parsed)
+  next.setMinutes(next.getMinutes() + minutes)
+  return toFormDatetimeValue(next)
+}
+
+export function formatTimeVi(input: Date | string): string {
+  const date =
+    typeof input === "string"
+      ? (parseFormDatetime(input) ?? new Date(input))
+      : input
+  if (!isValid(date)) return ""
+  return format(date, "HH:mm")
+}
+
+export function formatAppointmentTimeRangeVi(start: string, end: string): string {
+  return `${formatTimeVi(start)} – ${formatTimeVi(end)}`
+}
+
 export { vi as viLocale }
