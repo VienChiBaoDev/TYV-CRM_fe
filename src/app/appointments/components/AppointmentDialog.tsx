@@ -43,7 +43,7 @@ interface AppointmentDialogProps {
 }
 
 function buildDefaultValues(
-  context: AppointmentDialogContext | null,
+  context: AppointmentDialogContext | null
 ): AppointmentFormValues {
   if (context?.mode === "edit" && context.appointment) {
     return {
@@ -61,7 +61,7 @@ function buildDefaultValues(
       scheduledAt: slotToDatetimeLocal(
         context.day,
         context.hour ?? 9,
-        context.minute ?? 0,
+        context.minute ?? 0
       ),
       doctorName: "",
       note: "",
@@ -172,11 +172,7 @@ export function AppointmentDialog({
               Đóng
             </Button>
             <Button type="button" disabled={isPending} onClick={onSubmit}>
-              {isPending
-                ? "Đang xử lý..."
-                : isEdit
-                  ? "Cập nhật"
-                  : "Đặt lịch"}
+              {isPending ? "Đang xử lý..." : isEdit ? "Cập nhật" : "Đặt lịch"}
             </Button>
           </div>
         </>
