@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { urlPaths } from "@/constants/urlPaths"
+import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import { GeneralInfoTab } from "./GeneralInfoTab"
 import { OtherInfoTab } from "./OtherInfoTab"
@@ -60,7 +61,7 @@ export default function PatientCreatePage() {
 
     setSubmitting(true)
     try {
-      const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
+      const branch = toClinicBranchCode(activeBranch)
       const created = await createPatient({
         fullName: form.fullName.trim(),
         gender: form.gender,

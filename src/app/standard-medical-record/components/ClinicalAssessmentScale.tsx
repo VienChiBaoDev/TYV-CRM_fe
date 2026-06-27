@@ -16,6 +16,7 @@ import {
 } from "../schemas/clinical-assessment-scale-form"
 import { FormSelect } from "@/components/FieldCustom/FormSelect"
 import { pendingAssessmentsQueryOptions } from "../queries/follow-up-query"
+import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import { useQuery } from "@tanstack/react-query"
 import { useSubmitAssessmentMutation } from "../hooks/use-follow-up-mutations"
@@ -29,7 +30,7 @@ export function ClinicalAssessmentScale() {
   const [open, setOpen] = useState(false)
   const activeBranch = useClinicStore((s) => s.activeBranch)
   const [activeRowId, setActiveRowId] = useState<string | null>(null)
-  const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
+  const branch = toClinicBranchCode(activeBranch)
   const [page, setPage] = useState(1)
 
   useEffect(() => {

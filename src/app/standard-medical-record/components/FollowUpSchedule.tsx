@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/data-table/data-table"
+import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import { FOLLOW_UP_SCHEDULE_STATUS } from "@/constants/common"
 import { upcomingFollowUpsQueryOptions } from "../queries/follow-up-query"
@@ -17,7 +18,7 @@ const UPCOMING_DAYS_AHEAD = 3
 
 export function FollowUpSchedule() {
   const activeBranch = useClinicStore((s) => s.activeBranch)
-  const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
+  const branch = toClinicBranchCode(activeBranch)
   const [page, setPage] = useState(1)
 
   useEffect(() => {

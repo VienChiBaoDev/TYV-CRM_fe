@@ -12,9 +12,18 @@ import {
   ChevronRight,
 } from "lucide-react"
 
+import { CLINIC_BRANCHES } from "@/constants/clinic-branches"
 import { urlPaths } from "@/constants/urlPaths"
-import { useClinicStore } from "@/stores/clinic-store"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { getBranchEmoji } from "@/lib/clinic-branch"
 import { cn } from "@/lib/utils"
+import { useClinicStore, type ClinicBranch } from "@/stores/clinic-store"
 
 interface NavItem {
   to?: string
@@ -70,15 +79,15 @@ const SALES_NAV_ITEMS: NavItem[] = [
 
 function CollapsibleNavItem({ item }: { item: NavItem }) {
   const location = useLocation()
-  
+
   const activeChildTo = item.children?.reduce((prev, curr) => {
     if (location.pathname.startsWith(curr.to) && curr.to.length > prev.length) {
-      return curr.to;
+      return curr.to
     }
-    return prev;
-  }, "");
+    return prev
+  }, "")
 
-  const isActive = activeChildTo !== "";
+  const isActive = activeChildTo !== ""
   const [isOpen, setIsOpen] = useState(isActive || false)
 
   return (
@@ -96,10 +105,14 @@ function CollapsibleNavItem({ item }: { item: NavItem }) {
           {item.icon}
           {item.label}
         </div>
-        {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        {isOpen ? (
+          <ChevronDown className="h-4 w-4" />
+        ) : (
+          <ChevronRight className="h-4 w-4" />
+        )}
       </button>
       {isOpen && (
-        <div className="ml-9 mt-1 flex flex-col space-y-1 border-l border-emerald-800/50 pl-2">
+        <div className="mt-1 ml-9 flex flex-col space-y-1 border-l border-emerald-800/50 pl-2">
           {item.children?.map((child) => {
             const isChildActive = child.to === activeChildTo
             return (
@@ -109,7 +122,7 @@ function CollapsibleNavItem({ item }: { item: NavItem }) {
                 className={cn(
                   "rounded-md px-3 py-1.5 text-xs transition-all",
                   isChildActive
-                    ? "bg-emerald-700/50 text-white font-medium"
+                    ? "bg-emerald-700/50 font-medium text-white"
                     : "text-emerald-400 hover:bg-emerald-900/30 hover:text-emerald-200"
                 )}
               >
@@ -169,9 +182,11 @@ export function Sidebar() {
       <div>
         <div className="border-b border-emerald-900/40 p-6">
           <div className="flex items-center gap-3">
-            <span className="font-display text-2xl font-semibold tracking-wide text-lime-400">
-              §
-            </span>
+            <img
+              src="../public/Logo.jpg"
+              alt="Thượng Y Viên"
+              className="h-20 w-20 rounded-xl object-cover"
+            />
             <div>
               <h1 className="font-display text-lg font-bold tracking-tight text-white">
                 Thượng Y Viên
@@ -184,33 +199,42 @@ export function Sidebar() {
         </div>
 
         <div className="p-4">
-          <div className="flex gap-1 rounded-full border border-emerald-800/40 bg-emerald-950/60 p-1">
-            <button
-              id="branch-hang-bong"
-              type="button"
-              onClick={() => setActiveBranch("Hàng Bông")}
-              className={cn(
-                "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full py-1.5 text-xs font-semibold transition-all duration-300",
-                activeBranch === "Hàng Bông"
-                  ? "bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-600"
-                  : "text-emerald-300 hover:text-white"
-              )}
+          <div className="space-y-1.5">
+            <p className="px-1 text-[10px] font-bold tracking-wider text-emerald-400 uppercase">
+              Cơ sở
+            </p>
+            <Select
+              value={activeBranch}
+              onValueChange={(value) => setActiveBranch(value as ClinicBranch)}
             >
-              <span>🌸</span> Hàng Bông
-            </button>
-            <button
-              id="branch-cau-giay"
-              type="button"
-              onClick={() => setActiveBranch("Cầu Giấy")}
-              className={cn(
-                "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full py-1.5 text-xs font-semibold transition-all duration-300",
-                activeBranch === "Cầu Giấy"
-                  ? "bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-600"
-                  : "text-emerald-300 hover:text-white"
-              )}
-            >
-              <span>🌿</span> Cầu Giấy
-            </button>
+              <SelectTrigger
+                id="branch-select"
+                className="w-full border-emerald-800/40 bg-emerald-950/60 text-emerald-100 shadow-none hover:border-emerald-700/60 hover:bg-emerald-900/40 focus-visible:border-emerald-600 focus-visible:ring-emerald-600/30 data-[state=open]:border-emerald-600 data-[state=open]:ring-emerald-600/30 [&_svg]:text-emerald-300"
+              >
+                <SelectValue placeholder="Chọn cơ sở">
+                  <span className="flex items-center gap-1.5">
+                    <span>{getBranchEmoji(activeBranch)}</span>
+                    {activeBranch}
+                  </span>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent
+                position="popper"
+                sideOffset={4}
+                className="border-emerald-800/40 bg-emerald-950 text-emerald-100"
+              >
+                {CLINIC_BRANCHES.map((branch) => (
+                  <SelectItem
+                    key={branch.code}
+                    value={branch.label}
+                    className="text-emerald-100 focus:bg-emerald-900/60 focus:text-white data-[state=checked]:bg-emerald-800/50 data-[state=checked]:text-white"
+                  >
+                    <span>{branch.emoji}</span>
+                    {branch.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -224,7 +248,7 @@ export function Sidebar() {
       <div className="text-emerald-250 border-t border-emerald-900/40 bg-emerald-950/40 p-4 text-[11px]">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-semibold text-white">Phòng khám BS Hưng</p>
+            <p className="font-semibold text-white">Phòng khám Thượng Y Viên</p>
             <p className="text-emerald-400">Vai trò: Quản trị viên</p>
           </div>
           <span className="rounded border border-emerald-800/50 bg-emerald-900 px-2 py-0.5 font-mono text-[9px] text-lime-400">

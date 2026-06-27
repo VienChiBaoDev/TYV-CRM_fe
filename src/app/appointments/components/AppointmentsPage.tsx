@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 
 import { Card, CardContent } from "@/components/ui/card"
 
+import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 
 import type { Appointment } from "@/app/appointments/services/appointmentService"
@@ -36,7 +37,7 @@ import {
 export function AppointmentsPage() {
   const activeBranch = useClinicStore((state) => state.activeBranch)
 
-  const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
+  const branch = toClinicBranchCode(activeBranch)
 
   const [anchorDate, setAnchorDate] = useState(() => new Date())
 
