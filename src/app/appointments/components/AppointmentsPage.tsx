@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 
 import { useClinicStore } from "@/stores/clinic-store"
 
-import type { Appointment } from "@/app/medical-records/data/appointmentService"
+import type { Appointment } from "@/app/appointments/services/appointmentService"
 
 import { weekAppointmentsQueryOptions } from "../queries/appointment-query"
 

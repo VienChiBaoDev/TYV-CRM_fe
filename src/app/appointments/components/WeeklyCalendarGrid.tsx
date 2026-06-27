@@ -6,7 +6,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 import { cn } from "@/lib/utils"
 
-import type { Appointment } from "@/app/medical-records/data/appointmentService"
+import type { Appointment } from "@/app/appointments/services/appointmentService"
 
 import { formatDayHeader, getWeekDays, isSameDay } from "../utils/week-range"
 
@@ -97,7 +97,7 @@ export function WeeklyCalendarGrid({
                       "sticky left-0 z-10 border-r border-b border-border bg-muted px-2 py-1.5 text-[11px]",
                       slot.minute === 0
                         ? "font-medium text-foreground"
-                        : "text-muted-foreground",
+                        : "text-muted-foreground"
                     )}
                   >
                     {slot.label}

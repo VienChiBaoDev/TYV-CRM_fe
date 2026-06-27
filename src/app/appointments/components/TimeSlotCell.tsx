@@ -1,4 +1,4 @@
-import type { Appointment } from "@/app/medical-records/data/appointmentService"
+import type { Appointment } from "@/app/appointments/services/appointmentService"
 
 import { Badge } from "@/components/ui/badge"
 

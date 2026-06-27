@@ -9,7 +9,9 @@ const API_PATHS = {
   },
   appointments: {
     list: "/appointments",
-    detail: (id: string) => `/appointments/${id}`,
+    create: "/appointments",
+    update: (id: string) => `/appointments/${id}`,
+    cancel: (id: string) => `/appointments/${id}/cancel`,
   },
 }
 

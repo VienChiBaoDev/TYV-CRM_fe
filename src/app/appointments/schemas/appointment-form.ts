@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { APPOINTMENT_STATUSES } from "@/app/medical-records/data/appointmentService"
+import { APPOINTMENT_STATUSES } from "@/app/appointments/services/appointmentService"
 import { parseFormDatetime } from "@/lib/date-vi"
 
 export const appointmentFormSchema = z

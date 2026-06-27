@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import {
   fetchAppointments,
   type Appointment,
-} from "@/app/medical-records/data/appointmentService"
+} from "@/app/appointments/services/appointmentService"
 import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
 
 export const appointmentKeys = {

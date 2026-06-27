@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 
-import type { Appointment } from "@/app/medical-records/data/appointmentService"
+import type { Appointment } from "@/app/appointments/services/appointmentService"
 
 import { AppointmentStatusBadge } from "@/components/UiCustom/AppointmentStatusBadge"
 
@@ -70,7 +70,7 @@ export function AppointmentCard({
       <p className="truncate px-2 text-[10px] opacity-80">
         {formatAppointmentTimeRangeVi(
           appointment.scheduledAt,
-          appointment.endedAt,
+          appointment.endedAt
         )}
       </p>
 

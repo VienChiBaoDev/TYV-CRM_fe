@@ -1,4 +1,4 @@
-import type { Appointment } from "@/app/medical-records/data/appointmentService"
+import type { Appointment } from "@/app/appointments/services/appointmentService"
 import { SLOT_MINUTES } from "../constants/calendar"
 
 export type SlotKey = string
@@ -21,7 +21,7 @@ function snapToSlot(date: Date): { hour: number; minute: number } {
 }
 
 export function groupAppointmentsBySlot(
-  appointments: Appointment[],
+  appointments: Appointment[]
 ): Map<SlotKey, Appointment[]> {
   const map = new Map<SlotKey, Appointment[]>()
 

@@ -1,60 +1,35 @@
 import { DataTable } from "@/components/data-table/data-table"
-
 import { Button } from "@/components/ui/button"
-
 import type { ColumnDef } from "@tanstack/react-table"
-
 import type { ClinicalAssessmentScale } from "../interfaces/StandardMedicalRecord"
-
 import { CLINICAL_ASSESSMENT_SCALE_RESULT } from "@/constants/common"
-
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
-
 import { useCallback, useEffect, useState } from "react"
-
 import { FormInput } from "@/components/FieldCustom/FormInput"
-
 import { Form } from "@/components/ui/form"
-
 import { useForm } from "react-hook-form"
-
 import { zodResolver } from "@hookform/resolvers/zod"
-
 import {
   clinicalAssessmentScaleFormDefaultValues,
   clinicalAssessmentScaleFormSchema,
   type ClinicalAssessmentScaleFormValues,
 } from "../schemas/clinical-assessment-scale-form"
-
 import { FormSelect } from "@/components/FieldCustom/FormSelect"
-
 import { pendingAssessmentsQueryOptions } from "../queries/follow-up-query"
-
 import { useClinicStore } from "@/stores/clinic-store"
-
 import { useQuery } from "@tanstack/react-query"
-
 import { useSubmitAssessmentMutation } from "../hooks/use-follow-up-mutations"
-
 import { mapFeResultToApi } from "../mappers/map-follow-up-response"
-
 import { Link } from "react-router-dom"
-
 import { urlPaths } from "@/constants/urlPaths"
-
 import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
-
 import { DEFAULT_LIMIT } from "@/types/pagination"
 
 export function ClinicalAssessmentScale() {
   const [open, setOpen] = useState(false)
-
   const activeBranch = useClinicStore((s) => s.activeBranch)
-
   const [activeRowId, setActiveRowId] = useState<string | null>(null)
-
   const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
-
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -72,46 +47,32 @@ export function ClinicalAssessmentScale() {
   )
 
   const rows = data?.data ?? []
-
   const pageCount = Math.max(data?.meta.totalPages ?? 0, 1)
-
   const assessmentMutation = useSubmitAssessmentMutation()
-
   const handleOpenDialog = useCallback(
     (row: ClinicalAssessmentScale) => {
       setActiveRowId(row.id)
-
       form.reset({
         name: row.name,
-
         appointmentDate: row.appointmentDate,
-
         physicianInCharge: row.physicianInCharge,
-
         result: row.result?.toString() ?? "",
-
         note: row.note ?? "",
       })
-
       setOpen(true)
     },
-
     [form]
   )
 
   const onSubmit = async (data: ClinicalAssessmentScaleFormValues) => {
     if (!activeRowId) return
-
     await assessmentMutation.mutateAsync({
       followUpId: activeRowId,
-
       payload: {
         assessmentResult: mapFeResultToApi(data.result),
-
         assessmentNote: data.note,
       },
     })
-
     setOpen(false)
   }
 
@@ -120,9 +81,7 @@ export function ClinicalAssessmentScale() {
   const columns: ColumnDef<ClinicalAssessmentScale>[] = [
     {
       accessorKey: "name",
-
       header: "Tên bệnh nhân",
-
       cell: ({ row }) => {
         return (
           <Link to={urlPaths.medicalRecords(row.original.patientId)}>
@@ -134,31 +93,24 @@ export function ClinicalAssessmentScale() {
 
     {
       accessorKey: "followUpDate",
-
       header: "Hạn tái khám",
-
       cell: ({ row }) => formatIsoDateToVi(row.original.followUpDate),
     },
 
     {
       accessorKey: "appointmentDate",
-
       header: "Ngày hỏi thăm",
-
       cell: ({ row }) => formatIsoDateToVi(row.original.appointmentDate),
     },
 
     {
       accessorKey: "physicianInCharge",
-
       header: "Bác sĩ phụ trách",
     },
 
     {
       accessorKey: "result",
-
       header: "Kết quả",
-
       cell: ({ row }) => {
         return (
           <div>
@@ -189,9 +141,7 @@ export function ClinicalAssessmentScale() {
 
     {
       accessorKey: "note",
-
       header: "Ghi chú",
-
       cell: ({ row }) => {
         return <div>{row.original.note}</div>
       },
@@ -199,9 +149,7 @@ export function ClinicalAssessmentScale() {
 
     {
       accessorKey: "actions",
-
       header: "Thao tác",
-
       cell: ({ row }) => {
         return (
           <div>
@@ -252,7 +200,6 @@ export function ClinicalAssessmentScale() {
               options={Object.values(CLINICAL_ASSESSMENT_SCALE_RESULT).map(
                 (item) => ({
                   label: item.name,
-
                   value: item.value.toString(),
                 })
               )}

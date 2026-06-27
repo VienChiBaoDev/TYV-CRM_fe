@@ -14,6 +14,7 @@ import {
 } from "@/lib/date-vi"
 import { useScheduleFollowUpMutation } from "../hooks/use-follow-up-mutations"
 import type { FollowUpSchedule } from "../interfaces/StandardMedicalRecord"
+import { useEffect } from "react"
 
 const schema = z
   .object({
@@ -54,12 +55,13 @@ function getDefaultTimes(followUpDateIso: string): {
     return { scheduledAt: "", endedAt: "" }
   }
 
-  const scheduledAt = slotToFormDatetime(date, 9, 0)
+  const scheduledAt = slotToFormDatetime(date, 9, 0) // 9h00
+  // Thời gian kết thúc là thời gian bắt đầu + 30 phút
   return {
     scheduledAt,
     endedAt: addMinutesToFormDatetime(
       scheduledAt,
-      DEFAULT_APPOINTMENT_DURATION_MINUTES,
+      DEFAULT_APPOINTMENT_DURATION_MINUTES
     ),
   }
 }
@@ -83,6 +85,7 @@ export function QuickScheduleDialog({
   })
 
   const onSubmit = form.handleSubmit(async (values) => {
+    // Chuyển đổi thời gian từ giá trị form datetime sang ISO string
     await mutation.mutateAsync({
       followUpId: row.id,
       payload: {
@@ -95,6 +98,16 @@ export function QuickScheduleDialog({
     onOpenChange(false)
   })
 
+  useEffect(() => {
+    if (!open) return
+    const defaults = getDefaultTimes(row.followUpAppointmentDate)
+    form.reset({
+      scheduledAt: defaults.scheduledAt,
+      endedAt: defaults.endedAt,
+      doctorName: row.physicianInCharge,
+      note: "",
+    })
+  }, [open, row, form])
   return (
     <DialogCommon
       open={open}

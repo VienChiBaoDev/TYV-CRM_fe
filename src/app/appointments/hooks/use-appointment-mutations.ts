@@ -7,7 +7,7 @@ import {
   updateAppointment,
   type CreateAppointmentPayload,
   type UpdateAppointmentPayload,
-} from "@/app/medical-records/data/appointmentService"
+} from "@/app/appointments/services/appointmentService"
 import { appointmentKeys } from "../queries/appointment-query"
 
 export function useCreateAppointmentMutation() {

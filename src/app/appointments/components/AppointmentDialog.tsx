@@ -13,9 +13,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator"
-import type { Appointment } from "@/app/medical-records/data/appointmentService"
+import type { Appointment } from "@/app/appointments/services/appointmentService"
 import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
-import { APPOINTMENT_STATUS_OPTIONS, DEFAULT_APPOINTMENT_DURATION_MINUTES } from "../constants/calendar"
+import {
+  APPOINTMENT_STATUS_OPTIONS,
+  DEFAULT_APPOINTMENT_DURATION_MINUTES,
+} from "../constants/calendar"
 import {
   useCancelAppointmentMutation,
   useCreateAppointmentMutation,
@@ -62,14 +65,14 @@ function buildDefaultValues(
     const scheduledAt = slotToDatetimeLocal(
       context.day,
       context.hour ?? 9,
-      context.minute ?? 0,
+      context.minute ?? 0
     )
     return {
       patientId: "",
       scheduledAt,
       endedAt: addMinutesToFormDatetime(
         scheduledAt,
-        DEFAULT_APPOINTMENT_DURATION_MINUTES,
+        DEFAULT_APPOINTMENT_DURATION_MINUTES
       ),
       doctorName: "",
       note: "",

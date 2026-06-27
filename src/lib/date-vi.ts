@@ -29,7 +29,7 @@ export interface TimeSlotOption {
 export function buildClinicTimeSlotOptions(
   startHour = DEFAULT_CLINIC_START_HOUR,
   endHour = DEFAULT_CLINIC_END_HOUR,
-  stepMinutes = DEFAULT_SLOT_MINUTES,
+  stepMinutes = DEFAULT_SLOT_MINUTES
 ): TimeSlotOption[] {
   const slots: TimeSlotOption[] = []
 
@@ -90,7 +90,7 @@ export function parseFormDatetime(value: string): Date | undefined {
 export function combineDateAndTime(
   date: Date,
   hour: number,
-  minute: number,
+  minute: number
 ): Date {
   const combined = new Date(date)
   combined.setHours(hour, minute, 0, 0)
@@ -115,17 +115,19 @@ export function splitFormDatetime(value: string): {
   }
 }
 
+// Chuyển đổi slot thành giá trị form datetime
 export function slotToFormDatetime(
   day: Date,
   hour: number,
-  minute: number,
+  minute: number
 ): string {
+  // Kết hợp ngày và thời gian
   return toFormDatetimeValue(combineDateAndTime(day, hour, minute))
 }
 
 export function addMinutesToFormDatetime(
   value: string,
-  minutes: number,
+  minutes: number
 ): string {
   const parsed = parseFormDatetime(value)
   if (!parsed) return ""
@@ -143,7 +145,10 @@ export function formatTimeVi(input: Date | string): string {
   return format(date, "HH:mm")
 }
 
-export function formatAppointmentTimeRangeVi(start: string, end: string): string {
+export function formatAppointmentTimeRangeVi(
+  start: string,
+  end: string
+): string {
   return `${formatTimeVi(start)} – ${formatTimeVi(end)}`
 }
 
