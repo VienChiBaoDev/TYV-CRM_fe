@@ -10,6 +10,7 @@ import {
   Leaf,
   ChevronDown,
   ChevronRight,
+  Stethoscope,
 } from "lucide-react"
 
 import { CLINIC_BRANCHES } from "@/constants/clinic-branches"
@@ -53,6 +54,11 @@ const OPERATION_NAV_ITEMS: NavItem[] = [
     to: urlPaths.standardMedicalRecords,
     label: "Bệnh án chuẩn",
     icon: <Briefcase className="h-4.5 w-4.5" />,
+  },
+  {
+    to: urlPaths.treatmentServices,
+    label: "Dịch vụ điều trị",
+    icon: <Stethoscope className="h-4.5 w-4.5" />,
   },
 ]
 

@@ -17,6 +17,7 @@ interface AppDialogProps {
   loading?: boolean
 
   hideFooter?: boolean
+  contentClassName?: string
 }
 
 export function DialogCommon({
@@ -30,6 +31,7 @@ export function DialogCommon({
   onSubmit,
   loading,
   hideFooter,
+  contentClassName,
 }: AppDialogProps) {
   return (
     <FormDialog
@@ -37,6 +39,7 @@ export function DialogCommon({
       onOpenChange={onOpenChange}
       title={title}
       description={description}
+      contentClassName={contentClassName}
       footer={
         hideFooter ? undefined : (
           <>

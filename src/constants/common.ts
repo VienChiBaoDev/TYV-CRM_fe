@@ -37,10 +37,9 @@ export const CLINICAL_ASSESSMENT_SCALE_RESULT = {
   },
 }
 
-export const MODAL_CUSTOMER_MODE = {
+export const MODAL_MODE = {
   ADD: "add",
   EDIT: "edit",
-}
+} as const
 
-export type ModalCustomerModeType =
-  (typeof MODAL_CUSTOMER_MODE)[keyof typeof MODAL_CUSTOMER_MODE]
+export type ModalModeType = (typeof MODAL_MODE)[keyof typeof MODAL_MODE]
