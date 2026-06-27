@@ -209,7 +209,7 @@ export function Sidebar() {
             >
               <SelectTrigger
                 id="branch-select"
-                className="w-full border-emerald-800/40 bg-emerald-950/60 text-emerald-100 shadow-none hover:border-emerald-700/60 hover:bg-emerald-900/40 focus-visible:border-emerald-600 focus-visible:ring-emerald-600/30 data-[state=open]:border-emerald-600 data-[state=open]:ring-emerald-600/30 [&_svg]:text-emerald-300"
+                className="w-full border-emerald-800/40 bg-emerald-950/60 text-emerald-100 shadow-none hover:border-emerald-700/60 hover:bg-emerald-900/40 focus-visible:ring-emerald-600/30 data-[state=open]:border-emerald-600 data-[state=open]:ring-emerald-600/30 [&_svg]:text-white"
               >
                 <SelectValue placeholder="Chọn cơ sở">
                   <span className="flex items-center gap-1.5">
