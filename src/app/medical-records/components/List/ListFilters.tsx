@@ -1,9 +1,27 @@
-import { UserPlus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import {
+  Calendar,
+  Stethoscope,
+  Activity,
+  CreditCard,
+  FolderOpen,
+  ChevronDown,
+  UserPlus,
+  Users,
+  Building2,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { urlPaths } from "@/constants/urlPaths"
-// import type { Referrer } from "../../data/referrerService"
+import { useClinicStore } from "@/stores/clinic-store"
+import type { Referrer } from "../../data/referrerService"
 
 // interface ListFiltersProps {
 //   referrers: Referrer[]
@@ -18,6 +36,8 @@ export function ListFilters() {
   //   onReferrerChange,
   // }: ListFiltersProps
   const navigate = useNavigate()
+  const activeBranch = useClinicStore((state) => state.activeBranch)
+  const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
 
   return (
     <div className="mb-4">
@@ -53,6 +73,20 @@ export function ListFilters() {
             23-06-2026 to 23-06-2026
           </div>
         </div> */}
+
+        {/* Bộ lọc chi nhánh */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Building2 className="h-4 w-4 text-emerald-600" />
+          <Select value={activeBranch} onValueChange={setActiveBranch}>
+            <SelectTrigger className="w-[150px] bg-white text-sm">
+              <SelectValue placeholder="Chi nhánh" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Hàng Bông">Hàng Bông</SelectItem>
+              <SelectItem value="Cầu Giấy">Cầu Giấy</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Bộ lọc người giới thiệu */}
         {/* <div className="flex shrink-0 items-center gap-1.5">

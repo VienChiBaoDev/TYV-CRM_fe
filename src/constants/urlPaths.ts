@@ -1,4 +1,5 @@
 export const urlPaths = {
+  login: "/login",
   dashboard: "/dashboard",
   appointments: "/appointments",
   patients: "/patients",
@@ -12,4 +13,5 @@ export const urlPaths = {
   medicalRecordCreate: "/medical-record/create",
   referrers: "/referrers",
   treatmentServices: "/treatment-services",
+  settings: "/settings",
 } as const
