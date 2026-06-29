@@ -2,6 +2,8 @@ import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
+import { toast } from "sonner"
+
 import { FormDialog } from "@/components/UiCustom/FormDialog"
 import { AppointmentStatusBadge } from "@/components/UiCustom/AppointmentStatusBadge"
 import { FormAppointmentTimeRange } from "@/components/FieldCustom/FormAppointmentTimeRange"
@@ -28,7 +30,7 @@ import {
   appointmentFormSchema,
   type AppointmentFormValues,
 } from "../schemas/appointment-form"
-import { addMinutesToFormDatetime } from "@/lib/date-vi"
+import { addMinutesToFormDatetime, parseFormDatetime } from "@/lib/date-vi"
 import { slotToDatetimeLocal, toDatetimeLocalValue } from "../utils/time-slots"
 
 export interface AppointmentDialogContext {
@@ -37,6 +39,13 @@ export interface AppointmentDialogContext {
   hour?: number
   minute?: number
   appointment?: Appointment
+  /** BN cố định khi đặt lịch từ hồ sơ */
+  fixedPatient?: {
+    id: string
+    fullName: string
+    patientCode: string
+    phone: string
+  }
 }
 
 interface AppointmentDialogProps {
@@ -44,6 +53,8 @@ interface AppointmentDialogProps {
   onOpenChange: (open: boolean) => void
   branch: ClinicBranchCode
   context: AppointmentDialogContext | null
+  /** UUID bệnh nhân — ưu tiên hơn context.fixedPatient.id */
+  fixedPatientId?: string
 }
 
 function buildDefaultValues(
@@ -68,7 +79,7 @@ function buildDefaultValues(
       context.minute ?? 0
     )
     return {
-      patientId: "",
+      patientId: context.fixedPatient?.id ?? "",
       scheduledAt,
       endedAt: addMinutesToFormDatetime(
         scheduledAt,
@@ -95,6 +106,7 @@ export function AppointmentDialog({
   onOpenChange,
   branch,
   context,
+  fixedPatientId,
 }: AppointmentDialogProps) {
   const createMutation = useCreateAppointmentMutation()
   const updateMutation = useUpdateAppointmentMutation()
@@ -102,6 +114,8 @@ export function AppointmentDialog({
 
   const isEdit = context?.mode === "edit"
   const appointment = context?.appointment
+  const fixedPatient = context?.fixedPatient
+  const lockedPatientId = fixedPatientId ?? fixedPatient?.id
 
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentFormSchema),
@@ -118,9 +132,43 @@ export function AppointmentDialog({
     updateMutation.isPending ||
     cancelMutation.isPending
 
+  const submitCreate = async (
+    patientId: string,
+    values: AppointmentFormValues,
+  ) => {
+    if (!patientId) {
+      toast.error("Thiếu mã bệnh nhân")
+      return
+    }
+
+    const start = parseFormDatetime(values.scheduledAt)
+    const end = parseFormDatetime(values.endedAt)
+    if (!start || !end) {
+      toast.error("Thời gian không hợp lệ")
+      return
+    }
+
+    await createMutation.mutateAsync({
+      patientId,
+      scheduledAt: start.toISOString(),
+      endedAt: end.toISOString(),
+      doctorName: values.doctorName?.trim() || undefined,
+      note: values.note?.trim() || undefined,
+      clinicBranch: branch,
+    })
+    onOpenChange(false)
+  }
+
   const onSubmit = form.handleSubmit(async (values) => {
-    const scheduledAt = new Date(values.scheduledAt).toISOString()
-    const endedAt = new Date(values.endedAt).toISOString()
+    const start = parseFormDatetime(values.scheduledAt)
+    const end = parseFormDatetime(values.endedAt)
+    if (!start || !end) {
+      toast.error("Thời gian không hợp lệ")
+      return
+    }
+
+    const scheduledAt = start.toISOString()
+    const endedAt = end.toISOString()
 
     if (isEdit && appointment) {
       await updateMutation.mutateAsync({
@@ -128,24 +176,27 @@ export function AppointmentDialog({
         payload: {
           scheduledAt,
           endedAt,
-          doctorName: values.doctorName || undefined,
-          note: values.note,
+          doctorName: values.doctorName?.trim() || undefined,
+          note: values.note?.trim() || undefined,
           status: values.status,
         },
       })
-    } else {
-      await createMutation.mutateAsync({
-        patientId: values.patientId,
-        scheduledAt,
-        endedAt,
-        doctorName: values.doctorName || undefined,
-        note: values.note,
-        clinicBranch: branch,
-      })
+      onOpenChange(false)
+      return
     }
 
-    onOpenChange(false)
+    await submitCreate(values.patientId, values)
   })
+
+  const handleSubmitClick = async () => {
+    if (lockedPatientId && !isEdit) {
+      const isTimeValid = await form.trigger(["scheduledAt", "endedAt"])
+      if (!isTimeValid) return
+      await submitCreate(lockedPatientId, form.getValues())
+      return
+    }
+    await onSubmit()
+  }
 
   const handleCancelAppointment = async () => {
     if (!appointment) return
@@ -161,7 +212,9 @@ export function AppointmentDialog({
       description={
         isEdit
           ? "Cập nhật thông tin hoặc hủy lịch hẹn"
-          : "Chọn bệnh nhân và thời gian khám"
+          : lockedPatientId
+            ? "Chọn thời gian khám"
+            : "Chọn bệnh nhân và thời gian khám"
       }
       footerClassName="w-full sm:justify-between"
       footer={
@@ -186,7 +239,11 @@ export function AppointmentDialog({
             >
               Đóng
             </Button>
-            <Button type="button" disabled={isPending} onClick={onSubmit}>
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={() => void handleSubmitClick()}
+            >
               {isPending ? "Đang xử lý..." : isEdit ? "Cập nhật" : "Đặt lịch"}
             </Button>
           </div>
@@ -204,6 +261,14 @@ export function AppointmentDialog({
               <AlertDescription>
                 Mã BN: {appointment.patient?.patientCode ?? "—"} ·{" "}
                 {appointment.patient?.phone ?? "—"}
+              </AlertDescription>
+            </Alert>
+          ) : fixedPatient || lockedPatientId ? (
+            <Alert>
+              <AlertTitle>{fixedPatient?.fullName ?? "Bệnh nhân"}</AlertTitle>
+              <AlertDescription>
+                Mã BN: {fixedPatient?.patientCode ?? "—"} ·{" "}
+                {fixedPatient?.phone ?? "—"}
               </AlertDescription>
             </Alert>
           ) : (
