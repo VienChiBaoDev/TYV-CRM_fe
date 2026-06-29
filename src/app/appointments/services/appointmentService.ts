@@ -96,7 +96,7 @@ export async function updateAppointment(
 
 export async function cancelAppointment(id: string): Promise<Appointment> {
   const { data } = await httpService.patch<Appointment>(
-    API_PATHS.appointments.cancel(id),
+    API_PATHS.appointments.update(id),
     { status: "CANCELLED" }
   )
   return data
