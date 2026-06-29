@@ -67,7 +67,7 @@ export function mapFormValuesToApiPayload(
     minPriceVat: String(values.minPriceVat),
     maxPriceVat: String(values.maxPriceVat),
     unit: values.unit,
-    status: "ACTIVE",
+    status: values.status,
     treatmentCount: 1,
     expiryDays: values.expiryDays,
     note: values.note.trim() || null,

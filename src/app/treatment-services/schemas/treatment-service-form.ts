@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { SERVICE_ITEM_TYPE } from "../types/treatment-service"
+import { CATALOG_SERVICE_STATUS, SERVICE_ITEM_TYPE } from "../types/treatment-service"
 
 export const treatmentServiceFormSchema = z.object({
   code: z.string(),
@@ -14,6 +14,10 @@ export const treatmentServiceFormSchema = z.object({
   }),
   unit: z.string().min(1, "Vui lòng chọn đơn vị"),
   groupId: z.string().min(1, "Vui lòng chọn nhóm"),
+  status: z.enum([
+    CATALOG_SERVICE_STATUS.ACTIVE,
+    CATALOG_SERVICE_STATUS.INACTIVE,
+  ]),
   minPrice: z.coerce.number().min(0, "Giá không được âm"),
   maxPrice: z.coerce.number().min(0, "Giá không được âm"),
   minPriceVat: z.coerce.number().min(0, "Giá không được âm"),
@@ -36,6 +40,7 @@ export const treatmentServiceFormDefaultValues: TreatmentServiceFormInput = {
   itemType: SERVICE_ITEM_TYPE.SERVICE,
   unit: "Buổi",
   groupId: "",
+  status: CATALOG_SERVICE_STATUS.ACTIVE,
   minPrice: 0,
   maxPrice: 0,
   minPriceVat: 0,

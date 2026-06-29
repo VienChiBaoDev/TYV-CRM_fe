@@ -17,6 +17,7 @@ import {
   type TreatmentServiceFormValues,
 } from "../schemas/treatment-service-form"
 import {
+  CATALOG_SERVICE_STATUS,
   SERVICE_ITEM_TYPE,
   type ServiceGroup,
   type TreatmentService,
@@ -31,6 +32,11 @@ import { ServicePriceField } from "./ServicePriceField"
 const ITEM_TYPE_OPTIONS = [
   { value: SERVICE_ITEM_TYPE.SERVICE, label: "Dịch vụ" },
   { value: SERVICE_ITEM_TYPE.PRODUCT, label: "Sản phẩm" },
+] as const
+
+const STATUS_OPTIONS = [
+  { value: CATALOG_SERVICE_STATUS.ACTIVE, label: "Đang sử dụng" },
+  { value: CATALOG_SERVICE_STATUS.INACTIVE, label: "Ngừng hoạt động" },
 ] as const
 
 interface TreatmentServiceDialogProps {
@@ -161,6 +167,18 @@ export function TreatmentServiceDialog({
             required
             className="sm:col-span-2"
           />
+
+          {mode === MODAL_MODE.EDIT ? (
+            <FormSelect
+              control={form.control}
+              name="status"
+              label="Tình trạng"
+              placeholder="Chọn tình trạng"
+              options={STATUS_OPTIONS}
+              required
+              className="sm:col-span-2"
+            />
+          ) : null}
 
           <ServicePriceField
             control={form.control}

@@ -201,10 +201,7 @@ export function TreatmentServices() {
 
       await updateServiceMutation.mutateAsync({
         id: editingService.id,
-        payload: {
-          ...mapFormValuesToApiPayload(values),
-          status: editingService.status,
-        },
+        payload: mapFormValuesToApiPayload(values),
       })
       return true
     } catch {
