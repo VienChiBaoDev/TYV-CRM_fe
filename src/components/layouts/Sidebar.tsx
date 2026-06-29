@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import {
   LayoutDashboard,
@@ -10,6 +10,7 @@ import {
   Leaf,
   ChevronDown,
   ChevronRight,
+  ChevronsDown,
   Stethoscope,
   LogOut,
   Settings,
@@ -189,12 +190,94 @@ function NavGroup({ title, items }: { title: string; items: NavItem[] }) {
   )
 }
 
+interface ScrollFadeState {
+  top: boolean
+  bottom: boolean
+}
+
+function SidebarNavScroll({ isAdmin }: { isAdmin: boolean }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [fade, setFade] = useState<ScrollFadeState>({ top: false, bottom: false })
+
+  const updateScrollFade = useCallback(() => {
+    const scrollEl = scrollRef.current
+    if (!scrollEl) return
+
+    const hasOverflow = scrollEl.scrollHeight > scrollEl.clientHeight
+    const isAtTop = scrollEl.scrollTop <= 1
+    const isAtBottom =
+      scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 1
+
+    setFade({
+      top: hasOverflow && !isAtTop,
+      bottom: hasOverflow && !isAtBottom,
+    })
+  }, [])
+
+  useEffect(() => {
+    const scrollEl = scrollRef.current
+    if (!scrollEl) return
+
+    updateScrollFade()
+
+    const resizeObserver = new ResizeObserver(updateScrollFade)
+    resizeObserver.observe(scrollEl)
+
+    const nav = scrollEl.firstElementChild
+    if (nav) {
+      resizeObserver.observe(nav)
+    }
+
+    return () => resizeObserver.disconnect()
+  }, [isAdmin, updateScrollFade])
+
+  return (
+    <div className="relative min-h-0 overflow-hidden">
+      <div
+        ref={scrollRef}
+        onScroll={updateScrollFade}
+        className="scrollbar-hide h-full overflow-y-auto overscroll-contain"
+      >
+        <nav className="space-y-6 px-3 py-2 pt-4 pb-3" id="nav-groups">
+          <NavGroup title="VẬN HÀNH" items={OPERATION_NAV_ITEMS} />
+          <NavGroup title="NHÂN SỰ & KPI" items={KPI_NAV_ITEMS} />
+          <NavGroup title="BÁN HÀNG" items={SALES_NAV_ITEMS} />
+          {isAdmin ? (
+            <NavGroup title="QUẢN TRỊ" items={ADMIN_NAV_ITEMS} />
+          ) : null}
+        </nav>
+      </div>
+
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-linear-to-b from-emerald-950 via-emerald-950/70 to-transparent transition-opacity duration-300",
+          fade.top ? "opacity-100" : "opacity-0"
+        )}
+      />
+
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 bottom-0 z-10 transition-opacity duration-300",
+          fade.bottom ? "opacity-100" : "opacity-0"
+        )}
+      >
+        <div className="h-14 bg-linear-to-t from-emerald-950 via-emerald-950/80 to-transparent" />
+        <ChevronsDown className="absolute bottom-1.5 left-1/2 h-4 w-4 -translate-x-1/2 text-lime-400/80" />
+      </div>
+    </div>
+  )
+}
+
 export function Sidebar() {
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
   const activeBranch = useClinicStore((state) => state.activeBranch)
   const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
+  const isAdmin = user?.role === "ADMIN"
+
   function handleLogout() {
     logout()
     navigate(urlPaths.login, { replace: true })
@@ -202,7 +285,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="sticky top-0 flex h-screen w-full shrink-0 flex-col justify-between bg-emerald-950 text-white shadow-lg md:w-64"
+      className="sticky top-0 grid h-screen w-full shrink-0 grid-rows-[auto_1fr_auto] overflow-hidden bg-emerald-950 text-white shadow-lg md:w-64"
       id="app-sidebar"
     >
       <div>
@@ -263,19 +346,11 @@ export function Sidebar() {
             </Select>
           </div>
         </div>
-
-        {/* <nav className="space-y-6 px-3 py-2" id="nav-groups"> */}
-        <nav className="space-y-6 px-3 py-2 pt-4" id="nav-groups">
-          <NavGroup title="VẬN HÀNH" items={OPERATION_NAV_ITEMS} />
-          <NavGroup title="NHÂN SỰ & KPI" items={KPI_NAV_ITEMS} />
-          <NavGroup title="BÁN HÀNG" items={SALES_NAV_ITEMS} />
-          {user?.role === "ADMIN" ? (
-            <NavGroup title="QUẢN TRỊ" items={ADMIN_NAV_ITEMS} />
-          ) : null}
-        </nav>
       </div>
 
-      <div className="text-emerald-250 border-t border-emerald-900/40 bg-emerald-950/40 p-4 text-[11px]">
+      <SidebarNavScroll isAdmin={isAdmin} />
+
+      <div className="border-t border-emerald-900/40 bg-emerald-950/40 p-4 text-[11px] text-emerald-250">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-semibold text-white">
