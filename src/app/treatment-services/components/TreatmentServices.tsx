@@ -1,12 +1,24 @@
 import { useMemo, useState } from "react"
-import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
 
 import { MODAL_MODE, type ModalModeType } from "@/constants/common"
 
 import {
-  MOCK_SERVICE_GROUPS,
-  MOCK_TREATMENT_SERVICES,
-} from "../data/mock-data"
+  useCreateCatalogServiceMutation,
+  useCreateServiceGroupMutation,
+  useUpdateCatalogServiceMutation,
+  useUpdateServiceGroupMutation,
+} from "../hooks/use-treatment-service-mutations"
+import type { FetchCatalogServicesParams } from "../interfaces/treatment-services.interfaces"
+import {
+  mapCatalogServiceFromApi,
+  mapFormValuesToApiPayload,
+  mapServiceGroupFromApi,
+} from "../mappers/map-service-catalog"
+import {
+  catalogServicesQueryOptions,
+  serviceGroupQueryOptions,
+} from "../queries/treatment-service-query"
 import type { ServiceGroupFormValues } from "../schemas/service-group-form"
 import type { TreatmentServiceFormValues } from "../schemas/treatment-service-form"
 import type {
@@ -14,9 +26,6 @@ import type {
   ServiceGroup,
   TreatmentService,
 } from "../types/treatment-service"
-import {
-  mapFormValuesToService,
-} from "../utils/treatment-service-form"
 import { ServiceGroupDialog } from "./ServiceGroupDialog"
 import { ServiceGroupSidebar } from "./ServiceGroupSidebar"
 import { ServiceListPanel } from "./ServiceListPanel"
@@ -24,82 +33,47 @@ import { TreatmentServiceDialog } from "./TreatmentServiceDialog"
 
 const DEFAULT_FILTERS: ServiceFilters = {
   search: "",
-  status: "active",
+  status: "ACTIVE",
   unit: "Tất cả đơn vị",
   itemType: "all",
 }
 
-function filterServices(
-  services: TreatmentService[],
-  groupId: string | null,
+function buildApiFilters(
+  selectedGroupId: string | null,
   filters: ServiceFilters
-): TreatmentService[] {
-  return services.filter((service) => {
-    if (groupId && service.groupId !== groupId) return false
+): FetchCatalogServicesParams {
+  const params: FetchCatalogServicesParams = {}
 
-    if (filters.status !== "all" && service.status !== filters.status) {
-      return false
-    }
+  if (selectedGroupId) {
+    params.groupId = selectedGroupId
+  }
 
-    if (
-      filters.unit !== "Tất cả đơn vị" &&
-      service.unit !== filters.unit
-    ) {
-      return false
-    }
+  const search = filters.search.trim()
+  if (search) {
+    params.search = search
+  }
 
-    if (filters.itemType !== "all" && service.itemType !== filters.itemType) {
-      return false
-    }
+  if (filters.status !== "all") {
+    params.status = filters.status
+  }
 
-    if (filters.search.trim()) {
-      const query = filters.search.trim().toLowerCase()
-      const haystack = `${service.code} ${service.name}`.toLowerCase()
-      if (!haystack.includes(query)) return false
-    }
+  if (filters.unit !== "Tất cả đơn vị") {
+    params.unit = filters.unit
+  }
 
-    return true
-  })
-}
+  if (filters.itemType !== "all") {
+    params.itemType = filters.itemType
+  }
 
-function createGroupId(): string {
-  return `grp-${crypto.randomUUID()}`
-}
-
-function createServiceId(): string {
-  return `svc-${crypto.randomUUID()}`
-}
-
-function countServicesByGroup(
-  services: TreatmentService[],
-  groupId: string
-): number {
-  return services.filter((service) => service.groupId === groupId).length
-}
-
-function syncGroupCounts(
-  groups: ServiceGroup[],
-  services: TreatmentService[]
-): ServiceGroup[] {
-  return groups.map((group) => ({
-    ...group,
-    serviceCount: countServicesByGroup(services, group.id),
-  }))
+  return params
 }
 
 export function TreatmentServices() {
-  const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>(
-    () => syncGroupCounts([...MOCK_SERVICE_GROUPS], MOCK_TREATMENT_SERVICES)
-  )
-  const [services, setServices] = useState<TreatmentService[]>(
-    () => [...MOCK_TREATMENT_SERVICES]
-  )
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(
-    MOCK_SERVICE_GROUPS[0]?.id ?? null
-  )
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [showServices, setShowServices] = useState(true)
   const [showProducts, setShowProducts] = useState(true)
-  const [draftFilters, setDraftFilters] = useState<ServiceFilters>(DEFAULT_FILTERS)
+  const [draftFilters, setDraftFilters] =
+    useState<ServiceFilters>(DEFAULT_FILTERS)
   const [appliedFilters, setAppliedFilters] =
     useState<ServiceFilters>(DEFAULT_FILTERS)
   const [groupDialogOpen, setGroupDialogOpen] = useState(false)
@@ -115,13 +89,49 @@ export function TreatmentServices() {
     null
   )
 
-  const selectedGroup = serviceGroups.find(
-    (group) => group.id === selectedGroupId
+  const { data: groupsApi = [], isLoading: isGroupsLoading } = useQuery(
+    serviceGroupQueryOptions()
+  )
+  // map service groups from api to service groups
+  const serviceGroups = useMemo(
+    () => groupsApi.map(mapServiceGroupFromApi),
+    [groupsApi]
+  )
+  // Get active group id
+  const activeGroupId = selectedGroupId ?? serviceGroups[0]?.id ?? null
+  // Build api filters
+  const apiFilters = useMemo(
+    () => buildApiFilters(activeGroupId, appliedFilters),
+    [activeGroupId, appliedFilters]
   )
 
-  const filteredServices = useMemo(
-    () => filterServices(services, selectedGroupId, appliedFilters),
-    [services, selectedGroupId, appliedFilters]
+  const { data: servicesApi = [], isLoading: isServicesLoading } = useQuery(
+    catalogServicesQueryOptions(apiFilters)
+  )
+  // Map services from api to services
+  const services = useMemo(
+    () => servicesApi.map(mapCatalogServiceFromApi),
+    [servicesApi]
+  )
+
+  const { data: allServicesApi = [] } = useQuery({
+    ...catalogServicesQueryOptions({}),
+    enabled: serviceDialogOpen,
+  })
+  // Map all services from api to services
+  const allServices = useMemo(
+    () => allServicesApi.map(mapCatalogServiceFromApi),
+    [allServicesApi]
+  )
+
+  const createGroupMutation = useCreateServiceGroupMutation()
+  const updateGroupMutation = useUpdateServiceGroupMutation()
+  const createServiceMutation = useCreateCatalogServiceMutation()
+  const updateServiceMutation = useUpdateCatalogServiceMutation()
+
+  // Get selected group
+  const selectedGroup = serviceGroups.find(
+    (group: ServiceGroup) => group.id === activeGroupId
   )
 
   const openAddGroupDialog = () => {
@@ -151,92 +161,55 @@ export function TreatmentServices() {
   const handleSaveGroup = async (
     values: ServiceGroupFormValues
   ): Promise<boolean> => {
-    const normalizedCode = values.code.trim()
-    const duplicateCode = serviceGroups.some(
-      (group) =>
-        group.code.toLowerCase() === normalizedCode.toLowerCase() &&
-        group.id !== editingGroup?.id
-    )
-
-    if (duplicateCode) {
-      toast.error("Mã nhóm đã tồn tại, vui lòng chọn mã khác.")
-      return false
+    const payload = {
+      code: values.code.trim(),
+      name: values.name.trim(),
+      itemType: values.itemType,
     }
 
-    if (groupDialogMode === MODAL_MODE.ADD) {
-      const newGroup: ServiceGroup = {
-        id: createGroupId(),
-        code: normalizedCode,
-        name: values.name.trim(),
-        itemType: values.itemType,
-        serviceCount: 0,
+    try {
+      if (groupDialogMode === MODAL_MODE.ADD) {
+        const created = await createGroupMutation.mutateAsync(payload)
+        setSelectedGroupId(created.id)
+        return true
       }
 
-      setServiceGroups((prev) => [...prev, newGroup])
-      setSelectedGroupId(newGroup.id)
-      toast.success("Đã thêm nhóm dịch vụ mới.")
+      if (!editingGroup) return false
+
+      await updateGroupMutation.mutateAsync({
+        id: editingGroup.id,
+        payload,
+      })
       return true
+    } catch {
+      return false
     }
-
-    if (!editingGroup) return false
-
-    setServiceGroups((prev) =>
-      prev.map((group) =>
-        group.id === editingGroup.id
-          ? {
-              ...group,
-              code: normalizedCode,
-              name: values.name.trim(),
-              itemType: values.itemType,
-            }
-          : group
-      )
-    )
-    toast.success("Đã cập nhật nhóm dịch vụ.")
-    return true
   }
 
   const handleSaveService = async (
     values: TreatmentServiceFormValues
   ): Promise<boolean> => {
-    const duplicateCode = services.some(
-      (service) =>
-        service.code.toLowerCase() === values.code.toLowerCase() &&
-        service.id !== editingService?.id
-    )
-
-    if (duplicateCode) {
-      toast.error("Mã dịch vụ/sản phẩm đã tồn tại.")
-      return false
-    }
-
-    if (serviceDialogMode === MODAL_MODE.ADD) {
-      const newService: TreatmentService = {
-        id: createServiceId(),
-        ...mapFormValuesToService(values),
+    try {
+      if (serviceDialogMode === MODAL_MODE.ADD) {
+        await createServiceMutation.mutateAsync(
+          mapFormValuesToApiPayload(values)
+        )
+        return true
       }
 
-      const nextServices = [...services, newService]
-      setServices(nextServices)
-      setServiceGroups(syncGroupCounts(serviceGroups, nextServices))
-      toast.success("Đã thêm dịch vụ mới.")
+      if (!editingService) return false
+
+      await updateServiceMutation.mutateAsync({
+        id: editingService.id,
+        payload: {
+          ...mapFormValuesToApiPayload(values),
+          status: editingService.status,
+        },
+      })
       return true
+    } catch {
+      return false
     }
-
-    if (!editingService) return false
-
-    const nextServices = services.map((service) =>
-      service.id === editingService.id
-        ? {
-            id: editingService.id,
-            ...mapFormValuesToService(values, editingService),
-          }
-        : service
-    )
-    setServices(nextServices)
-    setServiceGroups(syncGroupCounts(serviceGroups, nextServices))
-    toast.success("Đã cập nhật dịch vụ.")
-    return true
   }
 
   const handleSelectGroup = (groupId: string) => {
@@ -251,9 +224,10 @@ export function TreatmentServices() {
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#e8ece9] md:flex-row">
       <ServiceGroupSidebar
         groups={serviceGroups}
-        selectedGroupId={selectedGroupId}
+        selectedGroupId={activeGroupId}
         showServices={showServices}
         showProducts={showProducts}
+        loading={isGroupsLoading}
         onSelectGroup={handleSelectGroup}
         onShowServicesChange={setShowServices}
         onShowProductsChange={setShowProducts}
@@ -262,9 +236,10 @@ export function TreatmentServices() {
       />
 
       <ServiceListPanel
-        services={filteredServices}
+        services={services}
         filters={draftFilters}
         selectedGroupName={selectedGroup?.name ?? null}
+        loading={isGroupsLoading || isServicesLoading}
         onFiltersChange={setDraftFilters}
         onApplyFilters={handleApplyFilters}
         onAddService={openAddServiceDialog}
@@ -284,9 +259,9 @@ export function TreatmentServices() {
         onOpenChange={setServiceDialogOpen}
         mode={serviceDialogMode}
         service={editingService}
-        services={services}
+        services={allServices.length > 0 ? allServices : services}
         serviceGroups={serviceGroups}
-        defaultGroupId={selectedGroupId}
+        defaultGroupId={activeGroupId}
         onSave={handleSaveService}
       />
     </div>

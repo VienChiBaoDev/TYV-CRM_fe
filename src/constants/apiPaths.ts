@@ -13,6 +13,18 @@ const API_PATHS = {
     update: (id: string) => `/appointments/${id}`,
     cancel: (id: string) => `/appointments/${id}/cancel`,
   },
+  serviceCatalog: {
+    groups: {
+      list: "/service-groups",
+      create: "/service-groups",
+      update: (id: string) => `/service-groups/${id}`,
+    },
+    services: {
+      list: "/catalog-services",
+      create: "/catalog-services",
+      update: (id: string) => `/catalog-services/${id}`,
+    },
+  },
 }
 
 export default API_PATHS

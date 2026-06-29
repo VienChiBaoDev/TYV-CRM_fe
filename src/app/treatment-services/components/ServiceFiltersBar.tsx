@@ -58,9 +58,9 @@ export function ServiceFiltersBar({
           <SelectValue placeholder="Tình trạng" />
         </SelectTrigger>
         <SelectContent {...SELECT_CONTENT_PROPS}>
-          <SelectItem value="active">Đang sử dụng</SelectItem>
+          <SelectItem value="ACTIVE">Đang sử dụng</SelectItem>
           <SelectItem value="all">Tất cả</SelectItem>
-          <SelectItem value="inactive">Ngừng hoạt động</SelectItem>
+          <SelectItem value="INACTIVE">Ngừng hoạt động</SelectItem>
         </SelectContent>
       </Select>
 
@@ -94,8 +94,8 @@ export function ServiceFiltersBar({
         </SelectTrigger>
         <SelectContent {...SELECT_CONTENT_PROPS}>
           <SelectItem value="all">Loại</SelectItem>
-          <SelectItem value="service">Dịch vụ</SelectItem>
-          <SelectItem value="product">Sản phẩm</SelectItem>
+          <SelectItem value="SERVICE">Dịch vụ</SelectItem>
+          <SelectItem value="PRODUCT">Sản phẩm</SelectItem>
         </SelectContent>
       </Select>
 

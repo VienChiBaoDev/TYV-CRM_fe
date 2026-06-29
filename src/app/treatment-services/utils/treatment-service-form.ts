@@ -2,7 +2,10 @@ import type {
   ServiceItemType,
   TreatmentService,
 } from "../types/treatment-service"
-import { SERVICE_ITEM_TYPE, SERVICE_STATUS } from "../types/treatment-service"
+import {
+  CATALOG_SERVICE_STATUS,
+  SERVICE_ITEM_TYPE,
+} from "../types/treatment-service"
 import type { TreatmentServiceFormInput } from "../schemas/treatment-service-form"
 import type { TreatmentServiceFormValues } from "../schemas/treatment-service-form"
 import { treatmentServiceFormDefaultValues } from "../schemas/treatment-service-form"
@@ -72,7 +75,7 @@ export function mapFormValuesToService(
     minPriceVat: values.minPriceVat,
     maxPriceVat: values.maxPriceVat,
     unit: values.unit,
-    status: existing?.status ?? SERVICE_STATUS.ACTIVE,
+    status: existing?.status ?? CATALOG_SERVICE_STATUS.ACTIVE,
     treatmentCount: 1,
     expiryDays: values.expiryDays,
     note: values.note.trim(),

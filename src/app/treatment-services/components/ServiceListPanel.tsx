@@ -13,6 +13,7 @@ interface ServiceListPanelProps {
   services: TreatmentService[]
   filters: ServiceFilters
   selectedGroupName: string | null
+  loading?: boolean
   onFiltersChange: (filters: ServiceFilters) => void
   onApplyFilters: () => void
   onAddService: () => void
@@ -23,6 +24,7 @@ export function ServiceListPanel({
   services,
   filters,
   selectedGroupName,
+  loading = false,
   onFiltersChange,
   onApplyFilters,
   onAddService,
@@ -62,7 +64,7 @@ export function ServiceListPanel({
         <DataTable
           columns={columns}
           data={services}
-          loading={false}
+          loading={loading}
           classNameTable="border-0 p-0 shadow-none"
         />
       </div>

@@ -1,18 +1,18 @@
 export const SERVICE_ITEM_TYPE = {
-  SERVICE: "service",
-  PRODUCT: "product",
+  SERVICE: "SERVICE",
+  PRODUCT: "PRODUCT",
 } as const
 
 export type ServiceItemType =
   (typeof SERVICE_ITEM_TYPE)[keyof typeof SERVICE_ITEM_TYPE]
 
-export const SERVICE_STATUS = {
-  ACTIVE: "active",
-  INACTIVE: "inactive",
+export const CATALOG_SERVICE_STATUS = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
 } as const
 
-export type ServiceStatus =
-  (typeof SERVICE_STATUS)[keyof typeof SERVICE_STATUS]
+export type CatalogServiceStatus =
+  (typeof CATALOG_SERVICE_STATUS)[keyof typeof CATALOG_SERVICE_STATUS]
 
 export interface ServiceGroup {
   id: string
@@ -31,7 +31,7 @@ export interface TreatmentService {
   price: number
   alternatePrice: number
   unit: string
-  status: ServiceStatus
+  status: CatalogServiceStatus
   minPriceVat?: number
   maxPriceVat?: number
   treatmentCount?: number
@@ -41,7 +41,7 @@ export interface TreatmentService {
 
 export interface ServiceFilters {
   search: string
-  status: "all" | ServiceStatus
+  status: "all" | CatalogServiceStatus
   unit: string
   itemType: "all" | ServiceItemType
 }

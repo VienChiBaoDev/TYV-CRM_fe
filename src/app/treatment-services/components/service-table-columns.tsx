@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils"
 
 import { formatPrice } from "../utils/format-price"
 import {
-  SERVICE_STATUS,
+  CATALOG_SERVICE_STATUS,
   type TreatmentService,
 } from "../types/treatment-service"
 
 const STATUS_LABELS = {
-  [SERVICE_STATUS.ACTIVE]: "Hoạt động",
-  [SERVICE_STATUS.INACTIVE]: "Ngừng hoạt động",
+  [CATALOG_SERVICE_STATUS.ACTIVE]: "Hoạt động",
+  [CATALOG_SERVICE_STATUS.INACTIVE]: "Ngừng hoạt động",
 } as const
 
 interface ServiceTableColumnsOptions {
@@ -66,7 +66,7 @@ export function createServiceTableColumns({
         <span
           className={cn(
             "text-sm",
-            row.original.status === SERVICE_STATUS.ACTIVE
+            row.original.status === CATALOG_SERVICE_STATUS.ACTIVE
               ? "text-emerald-600"
               : "text-slate-400"
           )}

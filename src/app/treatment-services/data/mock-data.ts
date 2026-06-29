@@ -1,6 +1,6 @@
 import {
+  CATALOG_SERVICE_STATUS,
   SERVICE_ITEM_TYPE,
-  SERVICE_STATUS,
   type ServiceGroup,
   type TreatmentService,
 } from "../types/treatment-service"
@@ -74,7 +74,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 400_000,
     alternatePrice: 800_000,
     unit: "Buổi",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-002",
@@ -85,7 +85,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 350_000,
     alternatePrice: 700_000,
     unit: "Buổi",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-003",
@@ -96,7 +96,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 500_000,
     alternatePrice: 1_000_000,
     unit: "Buổi",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-004",
@@ -107,7 +107,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 200_000,
     alternatePrice: 400_000,
     unit: "Buổi",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-005",
@@ -118,7 +118,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 300_000,
     alternatePrice: 600_000,
     unit: "Buổi",
-    status: SERVICE_STATUS.INACTIVE,
+    status: CATALOG_SERVICE_STATUS.INACTIVE,
   },
   {
     id: "svc-006",
@@ -129,7 +129,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 800_000,
     alternatePrice: 1_600_000,
     unit: "Buổi",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-007",
@@ -140,7 +140,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 600_000,
     alternatePrice: 1_200_000,
     unit: "Lần",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-008",
@@ -151,7 +151,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 450_000,
     alternatePrice: 900_000,
     unit: "Buổi",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-009",
@@ -162,7 +162,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 550_000,
     alternatePrice: 1_100_000,
     unit: "Buổi",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-010",
@@ -173,7 +173,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 1_200_000,
     alternatePrice: 2_400_000,
     unit: "Gói",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-011",
@@ -184,7 +184,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 2_000_000,
     alternatePrice: 4_000_000,
     unit: "Gói",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-012",
@@ -195,7 +195,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 150_000,
     alternatePrice: 280_000,
     unit: "Hộp",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
   {
     id: "svc-013",
@@ -206,7 +206,7 @@ export const MOCK_TREATMENT_SERVICES: TreatmentService[] = [
     price: 320_000,
     alternatePrice: 580_000,
     unit: "Chai",
-    status: SERVICE_STATUS.ACTIVE,
+    status: CATALOG_SERVICE_STATUS.ACTIVE,
   },
 ]
 

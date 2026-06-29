@@ -6,13 +6,14 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 
-import type { ServiceGroup } from "../types/treatment-service"
+import { SERVICE_ITEM_TYPE, type ServiceGroup } from "../types/treatment-service"
 
 interface ServiceGroupSidebarProps {
   groups: ServiceGroup[]
   selectedGroupId: string | null
   showServices: boolean
   showProducts: boolean
+  loading?: boolean
   onSelectGroup: (groupId: string) => void
   onShowServicesChange: (checked: boolean) => void
   onShowProductsChange: (checked: boolean) => void
@@ -25,7 +26,7 @@ function isGroupVisible(
   showServices: boolean,
   showProducts: boolean
 ): boolean {
-  if (group.itemType === "service") return showServices
+  if (group.itemType === SERVICE_ITEM_TYPE.SERVICE) return showServices
   return showProducts
 }
 
@@ -34,6 +35,7 @@ export function ServiceGroupSidebar({
   selectedGroupId,
   showServices,
   showProducts,
+  loading = false,
   onSelectGroup,
   onShowServicesChange,
   onShowProductsChange,
@@ -90,6 +92,16 @@ export function ServiceGroupSidebar({
 
       <ScrollArea className="flex-1">
         <ul className="p-2">
+          {loading && visibleGroups.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-muted-foreground">
+              Đang tải...
+            </li>
+          ) : null}
+          {!loading && visibleGroups.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-muted-foreground">
+              Chưa có nhóm dịch vụ
+            </li>
+          ) : null}
           {visibleGroups.map((group) => {
             const isSelected = group.id === selectedGroupId
 
