@@ -13,7 +13,7 @@ import PatientCreatePage from "@/app/medical-records/components/PatientCreate/Pa
 import ReferrersPage from "@/app/medical-records/components/Referrers/ReferrersPage"
 import { AppointmentsPage } from "@/app/appointments/components/AppointmentsPage"
 import { TreatmentServices } from "@/app/treatment-services/components/TreatmentServices"
-
+import { MedicinesPage } from "@/app/medicines/components/MedicinesPage"
 export const router = createBrowserRouter([
   {
     path: urlPaths.login,
@@ -80,7 +80,7 @@ export const router = createBrowserRouter([
       },
       {
         path: urlPaths.herbsProducts,
-        element: <ComingSoonPage title="Dược Liệu & Sản Phẩm" />,
+        element: <MedicinesPage />,
       },
     ],
   },

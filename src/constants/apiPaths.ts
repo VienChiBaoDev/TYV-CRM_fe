@@ -29,6 +29,12 @@ const API_PATHS = {
       update: (id: string) => `/catalog-services/${id}`,
     },
   },
+  medicines: {
+    list: "/medicines",
+    create: "/medicines",
+    detail: (id: string) => `/medicines/${id}`,
+    update: (id: string) => `/medicines/${id}`,
+  },
 }
 
 export default API_PATHS
