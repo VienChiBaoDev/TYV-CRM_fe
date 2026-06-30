@@ -10,6 +10,7 @@ import {
 } from "../mappers/map-follow-up-response"
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/types/pagination"
 import type { PaginatedMeta } from "@/types/pagination"
+import { UPCOMING_DAYS_AHEAD } from "../components/FollowUpSchedule"
 
 export interface FollowUpListQueryParams {
   branch?: ClinicBranchCode
@@ -29,7 +30,7 @@ export const followUpKeys = {
       ...followUpKeys.all,
       "upcoming",
       params.branch,
-      params.daysAhead ?? 3,
+      params.daysAhead ?? UPCOMING_DAYS_AHEAD,
       params.page ?? DEFAULT_PAGE,
       params.limit ?? DEFAULT_LIMIT,
     ] as const,
@@ -60,7 +61,9 @@ export function upcomingFollowUpsQueryOptions(
   })
 }
 
-export function pendingAssessmentsQueryOptions(params: FollowUpListQueryParams) {
+export function pendingAssessmentsQueryOptions(
+  params: FollowUpListQueryParams
+) {
   return queryOptions({
     queryKey: followUpKeys.pendingAssessment(params),
     queryFn: async (): Promise<

@@ -14,7 +14,7 @@ import { urlPaths } from "@/constants/urlPaths"
 import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
 import { DEFAULT_LIMIT } from "@/types/pagination"
 
-const UPCOMING_DAYS_AHEAD = 3
+export const UPCOMING_DAYS_AHEAD = 7
 
 export function FollowUpSchedule() {
   const activeBranch = useClinicStore((s) => s.activeBranch)
