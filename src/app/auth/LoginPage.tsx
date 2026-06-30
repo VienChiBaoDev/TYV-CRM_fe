@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { urlPaths } from "@/constants/urlPaths"
 import { login } from "@/services/authService"
 import { useAuthStore } from "@/stores/auth-store"
+import { syncClinicBranchFromUser } from "@/lib/sync-clinic-branch-from-user"
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -26,6 +27,7 @@ export default function LoginPage() {
     try {
       const { accessToken, user } = await login({ email, password })
       setAuth(accessToken, user)
+      syncClinicBranchFromUser(user)
       navigate(urlPaths.medicalRecordList, { replace: true })
     } catch (err) {
       const message = isAxiosError(err)

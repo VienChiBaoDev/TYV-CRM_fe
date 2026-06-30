@@ -197,7 +197,10 @@ interface ScrollFadeState {
 
 function SidebarNavScroll({ isAdmin }: { isAdmin: boolean }) {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [fade, setFade] = useState<ScrollFadeState>({ top: false, bottom: false })
+  const [fade, setFade] = useState<ScrollFadeState>({
+    top: false,
+    bottom: false,
+  })
 
   const updateScrollFade = useCallback(() => {
     const scrollEl = scrollRef.current
@@ -278,6 +281,9 @@ export function Sidebar() {
   const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
   const isAdmin = user?.role === "ADMIN"
 
+  // Khóa chọn cơ sở khi không phải là ADMIN
+  // const canSwitchBranch = isAdmin || !user?.clinicBranch
+
   function handleLogout() {
     logout()
     navigate(urlPaths.login, { replace: true })
@@ -312,6 +318,7 @@ export function Sidebar() {
             <p className="px-1 text-[10px] font-bold tracking-wider text-emerald-400 uppercase">
               Cơ sở
             </p>
+            {/* {canSwitchBranch ? ( */}
             <Select
               value={activeBranch}
               onValueChange={(value) => setActiveBranch(value as ClinicBranch)}
@@ -344,13 +351,23 @@ export function Sidebar() {
                 ))}
               </SelectContent>
             </Select>
+            {/* ) : ( */}
+            {/* <div
+                id="branch-select"
+                className="flex w-full items-center gap-1.5 rounded-md border border-emerald-800/40 bg-emerald-950/60 px-3 py-2 text-sm text-emerald-100"
+              >
+                <span>{getBranchEmoji(activeBranch)}</span>
+                  {activeBranch}
+              </div> */}
+            {/* ) */}
+            {/* )} */}
           </div>
         </div>
       </div>
 
       <SidebarNavScroll isAdmin={isAdmin} />
 
-      <div className="border-t border-emerald-900/40 bg-emerald-950/40 p-4 text-[11px] text-emerald-250">
+      <div className="text-emerald-250 border-t border-emerald-900/40 bg-emerald-950/40 p-4 text-[11px]">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-semibold text-white">
