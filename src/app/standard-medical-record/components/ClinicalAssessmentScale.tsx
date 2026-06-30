@@ -185,7 +185,7 @@ export function ClinicalAssessmentScale() {
       <DialogCommon
         open={open}
         onOpenChange={setOpen}
-        title="Đánh giá lâm sàng gần nhất (Hỏi thăm)"
+        title="Đánh giá lâm sàng gần nhất (Hỏi thăm — trong hạn tái khám)"
         onSubmit={handleSave}
         loading={form.formState.isSubmitting}
         submitText="Lưu"
