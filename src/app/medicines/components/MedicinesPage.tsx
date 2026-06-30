@@ -142,7 +142,7 @@ export function MedicinesPage() {
             loading={isLoading}
             classNameTable="border-0 p-0 shadow-none"
             pageIndex={page - 1}
-            pageCount={meta?.totalPages ?? 1}
+            pageCount={Math.max(meta?.totalPages ?? 0, 1)}
             onPageChange={(nextPageIndex) => setPage(nextPageIndex + 1)}
           />
         </div>
