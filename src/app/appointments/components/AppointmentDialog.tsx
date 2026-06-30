@@ -23,6 +23,7 @@ import {
 } from "../constants/calendar"
 import {
   useCancelAppointmentMutation,
+  useCheckInAppointmentMutation,
   useCreateAppointmentMutation,
   useUpdateAppointmentMutation,
 } from "../hooks/use-appointment-mutations"
@@ -32,6 +33,9 @@ import {
 } from "../schemas/appointment-form"
 import { addMinutesToFormDatetime, parseFormDatetime } from "@/lib/date-vi"
 import { slotToDatetimeLocal, toDatetimeLocalValue } from "../utils/time-slots"
+import { urlPaths } from "@/constants/urlPaths"
+import { Link } from "react-router-dom"
+import { ArrowRightIcon } from "lucide-react"
 
 export interface AppointmentDialogContext {
   mode: "create" | "edit"
@@ -111,6 +115,7 @@ export function AppointmentDialog({
   const createMutation = useCreateAppointmentMutation()
   const updateMutation = useUpdateAppointmentMutation()
   const cancelMutation = useCancelAppointmentMutation()
+  const checkInMutation = useCheckInAppointmentMutation()
 
   const isEdit = context?.mode === "edit"
   const appointment = context?.appointment
@@ -130,11 +135,21 @@ export function AppointmentDialog({
   const isPending =
     createMutation.isPending ||
     updateMutation.isPending ||
-    cancelMutation.isPending
-
+    cancelMutation.isPending ||
+    checkInMutation.isPending
+  const canCheckIn =
+    isEdit &&
+    appointment &&
+    !appointment.visitId &&
+    (appointment.status === "BOOKED" || appointment.status === "CONFIRMED")
+  const handleCheckIn = async () => {
+    if (!appointment) return
+    await checkInMutation.mutateAsync(appointment.id)
+    onOpenChange(false)
+  }
   const submitCreate = async (
     patientId: string,
-    values: AppointmentFormValues,
+    values: AppointmentFormValues
   ) => {
     if (!patientId) {
       toast.error("Thiếu mã bệnh nhân")
@@ -219,18 +234,30 @@ export function AppointmentDialog({
       footerClassName="w-full sm:justify-between"
       footer={
         <>
-          {isEdit && appointment?.status !== "CANCELLED" ? (
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={isPending}
-              onClick={handleCancelAppointment}
-            >
-              Hủy lịch
-            </Button>
-          ) : (
-            <span />
-          )}
+          <div className="flex justify-end gap-2">
+            {isEdit && appointment?.status !== "CANCELLED" ? (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isPending}
+                onClick={handleCancelAppointment}
+              >
+                Hủy lịch
+              </Button>
+            ) : (
+              <span />
+            )}
+            {canCheckIn ? (
+              <Button
+                type="button"
+                disabled={isPending}
+                onClick={() => void handleCheckIn()}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                {checkInMutation.isPending ? "Đang tiếp nhận..." : "Tiếp nhận"}
+              </Button>
+            ) : null}
+          </div>
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -261,6 +288,13 @@ export function AppointmentDialog({
               <AlertDescription>
                 Mã BN: {appointment.patient?.patientCode ?? "—"} ·{" "}
                 {appointment.patient?.phone ?? "—"}
+                {appointment.visitId && appointment.patient?.id ? (
+                  <Link to={urlPaths.medicalRecords(appointment.patient.id)}>
+                    <span className="mt-2 flex items-center gap-1 text-sm text-blue-500 underline-offset-2 hover:text-blue-600">
+                      <ArrowRightIcon className="h-4 w-4" /> Mở hồ sơ khám
+                    </span>
+                  </Link>
+                ) : null}
               </AlertDescription>
             </Alert>
           ) : fixedPatient || lockedPatientId ? (

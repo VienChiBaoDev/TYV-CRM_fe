@@ -15,6 +15,7 @@ const API_PATHS = {
     list: "/appointments",
     create: "/appointments",
     update: (id: string) => `/appointments/${id}`,
+    checkIn: (id: string) => `/appointments/${id}/check-in`,
   },
   serviceCatalog: {
     groups: {

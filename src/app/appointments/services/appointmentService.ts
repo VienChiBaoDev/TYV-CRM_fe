@@ -101,3 +101,10 @@ export async function cancelAppointment(id: string): Promise<Appointment> {
   )
   return data
 }
+
+export async function checkInAppointment(id: string): Promise<Appointment> {
+  const { data } = await httpService.post<Appointment>(
+    API_PATHS.appointments.checkIn(id)
+  )
+  return data
+}
