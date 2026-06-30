@@ -1,3 +1,5 @@
+import type { AppointmentStatus } from "@/app/appointments/services/appointmentService"
+
 export const SLOT_MINUTES = 15 as const
 export const DAY_START_HOUR = 7
 export const DAY_END_HOUR = 18
@@ -26,6 +28,68 @@ export const APPOINTMENT_STATUS_OPTIONS = [
   { value: "NO_SHOW", label: APPOINTMENT_STATUS_LABELS.NO_SHOW },
   { value: "CANCELLED", label: APPOINTMENT_STATUS_LABELS.CANCELLED },
 ] as const
+
+/**
+ * Mirror of BE `appointment-status.rules.ts` — keep in sync when rules change.
+ */
+const CHECK_IN_ALLOWED_STATUSES = new Set<AppointmentStatus>([
+  "BOOKED",
+  "CONFIRMED",
+])
+
+const CANCEL_ALLOWED_STATUSES = new Set<AppointmentStatus>([
+  "BOOKED",
+  "CONFIRMED",
+])
+
+const PRE_CHECK_IN_EDITABLE_STATUSES = new Set<AppointmentStatus>([
+  "BOOKED",
+  "CONFIRMED",
+  "NO_SHOW",
+])
+
+const POST_CHECK_IN_EDITABLE_STATUSES = new Set<AppointmentStatus>([
+  "CHECKED_IN",
+  "DONE",
+])
+
+const TERMINAL_STATUSES = new Set<AppointmentStatus>([
+  "DONE",
+  "NO_SHOW",
+  "CANCELLED",
+])
+
+export function canCheckInAppointment(
+  status: AppointmentStatus,
+  visitId: string | null,
+): boolean {
+  return !visitId && CHECK_IN_ALLOWED_STATUSES.has(status)
+}
+
+export function canCancelAppointment(status: AppointmentStatus): boolean {
+  return CANCEL_ALLOWED_STATUSES.has(status)
+}
+
+/** Dropdown options — excludes CHECKED_IN (check-in) and CANCELLED (cancel button). */
+export function getEditableStatusOptions(
+  currentStatus: AppointmentStatus,
+  visitId: string | null,
+) {
+  if (TERMINAL_STATUSES.has(currentStatus)) {
+    return []
+  }
+
+  const allowed =
+    visitId || currentStatus === "CHECKED_IN"
+      ? POST_CHECK_IN_EDITABLE_STATUSES
+      : PRE_CHECK_IN_EDITABLE_STATUSES
+
+  return APPOINTMENT_STATUS_OPTIONS.filter((o) => allowed.has(o.value))
+}
+
+export function isStatusFieldReadOnly(status: AppointmentStatus): boolean {
+  return TERMINAL_STATUSES.has(status)
+}
 
 export const APPOINTMENT_STATUS_STYLES: Record<
   keyof typeof APPOINTMENT_STATUS_LABELS,

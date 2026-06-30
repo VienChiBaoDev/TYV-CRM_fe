@@ -18,8 +18,10 @@ import { Separator } from "@/components/ui/separator"
 import type { Appointment } from "@/app/appointments/services/appointmentService"
 import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
 import {
-  APPOINTMENT_STATUS_OPTIONS,
   DEFAULT_APPOINTMENT_DURATION_MINUTES,
+  canCancelAppointment,
+  canCheckInAppointment,
+  getEditableStatusOptions,
 } from "../constants/calendar"
 import {
   useCancelAppointmentMutation,
@@ -139,9 +141,21 @@ export function AppointmentDialog({
     checkInMutation.isPending
   const canCheckIn =
     isEdit &&
-    appointment &&
-    !appointment.visitId &&
-    (appointment.status === "BOOKED" || appointment.status === "CONFIRMED")
+    appointment != null &&
+    canCheckInAppointment(appointment.status, appointment.visitId)
+
+  const canCancel =
+    isEdit &&
+    appointment != null &&
+    canCancelAppointment(appointment.status)
+
+  const statusOptions =
+    appointment != null
+      ? getEditableStatusOptions(appointment.status, appointment.visitId)
+      : []
+
+  const showStatusSelect = isEdit && appointment != null && statusOptions.length > 0
+
   const handleCheckIn = async () => {
     if (!appointment) return
     await checkInMutation.mutateAsync(appointment.id)
@@ -235,7 +249,7 @@ export function AppointmentDialog({
       footer={
         <>
           <div className="flex justify-end gap-2">
-            {isEdit && appointment?.status !== "CANCELLED" ? (
+            {canCancel ? (
               <Button
                 type="button"
                 variant="destructive"
@@ -327,13 +341,18 @@ export function AppointmentDialog({
           <FormInput control={form.control} name="doctorName" label="Bác sĩ" />
           <FormTextarea control={form.control} name="note" label="Ghi chú" />
 
-          {isEdit ? (
+          {showStatusSelect ? (
             <FormSelect
               control={form.control}
               name="status"
               label="Trạng thái"
-              options={APPOINTMENT_STATUS_OPTIONS}
+              options={statusOptions}
             />
+          ) : isEdit && appointment ? (
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium">Trạng thái</p>
+              <AppointmentStatusBadge status={appointment.status} />
+            </div>
           ) : null}
         </div>
       </Form>

@@ -44,8 +44,8 @@ export function useUpdateAppointmentMutation() {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
       toast.success("Đã cập nhật lịch hẹn")
     },
-    onError: () => {
-      toast.error("Không thể cập nhật lịch hẹn")
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Không thể cập nhật lịch hẹn"))
     },
   })
 }
@@ -59,8 +59,8 @@ export function useCancelAppointmentMutation() {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
       toast.success("Đã hủy lịch hẹn")
     },
-    onError: () => {
-      toast.error("Không thể hủy lịch hẹn")
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Không thể hủy lịch hẹn"))
     },
   })
 }
