@@ -75,8 +75,8 @@ export function AppointmentsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-hidden bg-background p-4 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden bg-background p-4 md:p-6">
+      <div className="flex shrink-0 flex-wrap items-start justify-between gap-3">
         <WeekNavigator anchorDate={anchorDate} onAnchorChange={setAnchorDate} />
 
         <Button type="button" onClick={() => openCreateDialog()}>
@@ -85,7 +85,7 @@ export function AppointmentsPage() {
         </Button>
       </div>
 
-      <Card size="sm" className="py-3">
+      <Card size="sm" className="shrink-0 py-3">
         <CardContent className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="size-4" />
 

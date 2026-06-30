@@ -31,6 +31,8 @@ interface WeeklyCalendarGridProps {
   onSlotClick: (day: Date, hour: number, minute: number) => void
 
   onAppointmentClick: (appointment: Appointment) => void
+
+  className?: string
 }
 
 const TIME_SLOTS = buildTimeSlots()
@@ -45,6 +47,8 @@ export function WeeklyCalendarGrid({
   onSlotClick,
 
   onAppointmentClick,
+
+  className,
 }: WeeklyCalendarGridProps) {
   const weekDays = getWeekDays(anchorDate)
 
@@ -53,9 +57,14 @@ export function WeeklyCalendarGrid({
   const now = new Date()
 
   return (
-    <Card className="overflow-hidden py-0">
-      <CardContent className="p-0">
-        <ScrollArea className="w-full">
+    <Card
+      className={cn(
+        "flex min-h-0 flex-1 flex-col overflow-hidden py-0",
+        className
+      )}
+    >
+      <CardContent className="min-h-0 flex-1 p-0">
+        <ScrollArea className="h-full w-full">
           {loading ? (
             <WeeklyCalendarSkeleton />
           ) : (
