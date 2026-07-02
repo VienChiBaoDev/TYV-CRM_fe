@@ -12,5 +12,6 @@ export function medicineListQueryOptions(filters: FetchMedicinesParams) {
   return queryOptions({
     queryKey: medicineKeys.list(filters),
     queryFn: () => fetchMedicines(filters),
+    staleTime: 300_000, // 5 minutes
   })
 }

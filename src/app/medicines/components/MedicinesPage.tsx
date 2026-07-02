@@ -68,16 +68,19 @@ export function MedicinesPage() {
   const createMutation = useCreateMedicineMutation()
   const updateMutation = useUpdateMedicineMutation()
 
+  const rowOffset = (page - 1) * DEFAULT_LIMIT
+
   const columns = useMemo(
     () =>
       createMedicineTableColumns({
+        rowOffset,
         onEditMedicine: (medicine) => {
           setDialogMode(MODAL_MODE.EDIT)
           setEditingMedicine(medicine)
           setDialogOpen(true)
         },
       }),
-    []
+    [rowOffset]
   )
 
   const openAddDialog = () => {

@@ -7,10 +7,12 @@ import { formatPrice } from "@/app/treatment-services/utils/format-price"
 import type { Medicine } from "../types/medicine"
 
 interface MedicineTableColumnsOptions {
+  rowOffset: number
   onEditMedicine: (medicine: Medicine) => void
 }
 
 export function createMedicineTableColumns({
+  rowOffset,
   onEditMedicine,
 }: MedicineTableColumnsOptions): ColumnDef<Medicine>[] {
   return [
@@ -18,7 +20,7 @@ export function createMedicineTableColumns({
       id: "index",
       header: "#",
       cell: ({ row }) => (
-        <span className="text-slate-500">{row.index + 1}</span>
+        <span className="text-slate-500">{rowOffset + row.index + 1}</span>
       ),
     },
     {
