@@ -7,6 +7,7 @@ import Timeline from "@/app/medical-records/components/Timeline"
 import VisitDetails from "@/app/medical-records/components/VisitDetails"
 import { VisitFormModal } from "@/app/medical-records/components/VisitFormModal"
 import ExportBAModal from "@/app/medical-records/components/ExportBAModal"
+import PatientServices from "./Services/PatientServices"
 import Treatment from "./Treatment/Treatment"
 
 export function MedicalRecordPage() {
@@ -36,6 +37,9 @@ export function MedicalRecordPage() {
             <TabsTrigger value={MEDICAL_RECORD_TABS.VISITS}>
               Lần khám
             </TabsTrigger>
+            <TabsTrigger value={MEDICAL_RECORD_TABS.SERVICES}>
+              Dịch vụ
+            </TabsTrigger>
             <TabsTrigger value={MEDICAL_RECORD_TABS.TREATMENT}>
               Điều trị
             </TabsTrigger>
@@ -46,6 +50,10 @@ export function MedicalRecordPage() {
               <Timeline />
               <VisitDetails />
             </div>
+          </TabsContent>
+
+          <TabsContent value={MEDICAL_RECORD_TABS.SERVICES}>
+            <PatientServices />
           </TabsContent>
 
           <TabsContent value={MEDICAL_RECORD_TABS.TREATMENT}>

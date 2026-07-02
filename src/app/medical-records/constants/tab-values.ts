@@ -1,5 +1,6 @@
 export const MEDICAL_RECORD_TABS = {
   VISITS: "visits",
+  SERVICES: "services",
   TREATMENT: "treatment",
 } as const
 
