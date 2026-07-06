@@ -12,7 +12,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
 
-function PersonCell({ name, initials }: { name: string; initials: string }) {
+interface PatientServiceTableColumnOptions {
+  onDelete: (service: PatientService) => void
+}
+
+export function PersonCell({
+  name,
+  initials,
+}: {
+  name: string
+  initials: string
+}) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-600">
@@ -48,8 +58,7 @@ function ServiceProgressBar({
 }
 
 function AmountCell({ amount }: { amount: PatientService["amount"] }) {
-  const hasBreakdown =
-    amount.listPrice != null || amount.otherDiscount != null
+  const hasBreakdown = amount.listPrice != null || amount.otherDiscount != null
 
   if (!hasBreakdown) {
     return (
@@ -91,7 +100,9 @@ function AmountCell({ amount }: { amount: PatientService["amount"] }) {
   )
 }
 
-export function createPatientServiceTableColumns(): ColumnDef<PatientService>[] {
+export function PatientServiceTableColumns({
+  onDelete,
+}: PatientServiceTableColumnOptions): ColumnDef<PatientService>[] {
   return [
     {
       id: "index",
@@ -165,7 +176,7 @@ export function createPatientServiceTableColumns(): ColumnDef<PatientService>[] 
     {
       id: "actions",
       header: "Xử Lý",
-      cell: () => (
+      cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -181,7 +192,10 @@ export function createPatientServiceTableColumns(): ColumnDef<PatientService>[] 
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
             <DropdownMenuItem>Sửa dịch vụ</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => onDelete(row.original)}
+            >
               Xóa dịch vụ
             </DropdownMenuItem>
           </DropdownMenuContent>

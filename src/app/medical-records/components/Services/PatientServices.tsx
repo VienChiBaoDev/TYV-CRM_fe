@@ -3,14 +3,19 @@ import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 
 import { DataTable } from "@/components/data-table/data-table"
+import { ConfirmDialog } from "@/components/UiCustom/DialogConfirm"
 import { Button } from "@/components/ui/button"
-import { useCreatePatientServiceMutation } from "@/app/medical-records/hooks/use-patient-service-mutations"
+import {
+  useCreatePatientServiceMutation,
+  useDeletePatientServiceMutation,
+} from "@/app/medical-records/hooks/use-patient-service-mutations"
+import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
 import { patientServicesQueryOptions } from "@/app/medical-records/queries/patient-service-query"
 import type { PatientServiceFormValues } from "@/app/medical-records/schemas/patient-service-form"
 import type { TreatmentService } from "@/app/treatment-services/types/treatment-service"
 
 import { AddPatientServiceDialog } from "./AddPatientServiceDialog"
-import { createPatientServiceTableColumns } from "./patient-service-table-columns"
+import { PatientServiceTableColumns } from "./patient-service-table-columns"
 
 const PRIMARY_BTN =
   "bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold"
@@ -18,13 +23,24 @@ const PRIMARY_BTN =
 export default function PatientServices() {
   const { patientId = "" } = useParams()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [serviceToDelete, setServiceToDelete] = useState<PatientService | null>(
+    null
+  )
 
   const { data: services = [], isLoading } = useQuery(
     patientServicesQueryOptions(patientId)
   )
 
   const createMutation = useCreatePatientServiceMutation(patientId)
-  const columns = useMemo(() => createPatientServiceTableColumns(), [])
+  const deleteMutation = useDeletePatientServiceMutation(patientId)
+
+  const columns = useMemo(
+    () =>
+      PatientServiceTableColumns({
+        onDelete: (service) => setServiceToDelete(service),
+      }),
+    []
+  )
 
   const handleSaveService = (
     values: PatientServiceFormValues,
@@ -33,6 +49,14 @@ export default function PatientServices() {
   ) => {
     createMutation.mutate(values, {
       onSuccess: () => setDialogOpen(false),
+    })
+  }
+
+  const handleConfirmDelete = () => {
+    if (!serviceToDelete) return
+
+    deleteMutation.mutate(serviceToDelete.id, {
+      onSuccess: () => setServiceToDelete(null),
     })
   }
 
@@ -66,6 +90,21 @@ export default function PatientServices() {
         onOpenChange={setDialogOpen}
         onSave={handleSaveService}
         isSubmitting={createMutation.isPending}
+      />
+
+      <ConfirmDialog
+        open={serviceToDelete != null}
+        onOpenChange={(open) => {
+          if (!open) setServiceToDelete(null)
+        }}
+        title="Xóa dịch vụ"
+        message={
+          serviceToDelete
+            ? `Bạn có chắc muốn xóa dịch vụ "${serviceToDelete.serviceName}"?`
+            : ""
+        }
+        onConfirm={handleConfirmDelete}
+        loading={deleteMutation.isPending}
       />
     </div>
   )
