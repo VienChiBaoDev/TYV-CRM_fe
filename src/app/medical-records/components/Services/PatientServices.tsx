@@ -1,16 +1,13 @@
 import { useMemo, useState } from "react"
+import { useParams } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
 
 import { DataTable } from "@/components/data-table/data-table"
 import { Button } from "@/components/ui/button"
-import { MOCK_PATIENT_SERVICES } from "@/app/medical-records/data/patient-services-mock"
-import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
-import { mapPatientServiceFormToRow } from "@/app/medical-records/mappers/map-patient-service-form"
+import { useCreatePatientServiceMutation } from "@/app/medical-records/hooks/use-patient-service-mutations"
+import { patientServicesQueryOptions } from "@/app/medical-records/queries/patient-service-query"
 import type { PatientServiceFormValues } from "@/app/medical-records/schemas/patient-service-form"
 import type { TreatmentService } from "@/app/treatment-services/types/treatment-service"
-import type { AuthUser, Staff } from "@/interfaces/auth"
-import { useAuthStore } from "@/stores/auth-store"
-import { fetchStaffList } from "@/services/staffService"
-import { useQuery } from "@tanstack/react-query"
 
 import { AddPatientServiceDialog } from "./AddPatientServiceDialog"
 import { createPatientServiceTableColumns } from "./patient-service-table-columns"
@@ -18,54 +15,25 @@ import { createPatientServiceTableColumns } from "./patient-service-table-column
 const PRIMARY_BTN =
   "bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold"
 
-function resolveFinalizedBy(
-  staffList: Staff[],
-  currentUser: AuthUser | null,
-  consultant: Staff
-): { fullName: string } {
-  const matchedStaff = staffList.find((staff) => staff.id === currentUser?.id)
-  if (matchedStaff) return matchedStaff
-  if (currentUser) return { fullName: currentUser.fullName }
-  return consultant
-}
-
 export default function PatientServices() {
-  const [services, setServices] =
-    useState<PatientService[]>(MOCK_PATIENT_SERVICES)
+  const { patientId = "" } = useParams()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const currentUser = useAuthStore((state) => state.user)
 
-  const { data: staffList = [] } = useQuery({
-    queryKey: ["staff"],
-    queryFn: fetchStaffList,
-    enabled: dialogOpen,
-  })
+  const { data: services = [], isLoading } = useQuery(
+    patientServicesQueryOptions(patientId)
+  )
 
+  const createMutation = useCreatePatientServiceMutation(patientId)
   const columns = useMemo(() => createPatientServiceTableColumns(), [])
 
   const handleSaveService = (
     values: PatientServiceFormValues,
-    catalogService: TreatmentService
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _catalogService: TreatmentService
   ) => {
-    const consultant = staffList.find(
-      (staff) => staff.id === values.consultantId
-    )
-    if (!consultant) return
-
-    const finalizedBy = resolveFinalizedBy(
-      staffList,
-      currentUser,
-      consultant
-    )
-
-    const row = mapPatientServiceFormToRow({
-      values,
-      service: catalogService,
-      consultant,
-      finalizedBy,
+    createMutation.mutate(values, {
+      onSuccess: () => setDialogOpen(false),
     })
-
-    setServices((current) => [row, ...current])
   }
 
   return (
@@ -89,7 +57,7 @@ export default function PatientServices() {
       <DataTable
         columns={columns}
         data={services}
-        loading={false}
+        loading={isLoading}
         classNameTable="!p-4 !pt-0"
       />
 
@@ -97,6 +65,7 @@ export default function PatientServices() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSave={handleSaveService}
+        isSubmitting={createMutation.isPending}
       />
     </div>
   )

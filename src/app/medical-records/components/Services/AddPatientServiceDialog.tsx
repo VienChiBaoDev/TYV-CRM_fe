@@ -60,12 +60,14 @@ interface AddPatientServiceDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (values: PatientServiceFormValues, service: TreatmentService) => void
+  isSubmitting?: boolean
 }
 
 export function AddPatientServiceDialog({
   open,
   onOpenChange,
   onSave,
+  isSubmitting = false,
 }: AddPatientServiceDialogProps) {
   const form = useForm<
     PatientServiceFormInput,
@@ -229,7 +231,6 @@ export function AddPatientServiceDialog({
     if (!service) return
 
     onSave(values, service)
-    onOpenChange(false)
   })
 
   const isServiceMode = serviceMode === PATIENT_SERVICE_MODE.SERVICE
@@ -240,7 +241,7 @@ export function AddPatientServiceDialog({
       onOpenChange={onOpenChange}
       title="Thêm mới dịch vụ"
       onSubmit={handleSave}
-      loading={form.formState.isSubmitting}
+      loading={isSubmitting}
       submitText="Thêm mới"
       contentClassName="max-h-[90vh] overflow-y-auto sm:max-w-[960px]"
     >
