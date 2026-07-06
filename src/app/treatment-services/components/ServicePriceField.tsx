@@ -18,6 +18,7 @@ interface ServicePriceFieldProps<T extends FieldValues> {
   className?: string
   showInfo?: boolean
   required?: boolean
+  disabled?: boolean
 }
 
 export function ServicePriceField<T extends FieldValues>({
@@ -27,6 +28,7 @@ export function ServicePriceField<T extends FieldValues>({
   className,
   showInfo = false,
   required,
+  disabled,
 }: ServicePriceFieldProps<T>) {
   return (
     <FormField
@@ -49,6 +51,7 @@ export function ServicePriceField<T extends FieldValues>({
               <Input
                 type="number"
                 min={0}
+                disabled={disabled}
                 className={cn("pr-12")}
                 {...field}
                 onChange={(event) =>

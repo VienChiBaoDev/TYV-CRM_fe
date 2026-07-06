@@ -28,10 +28,7 @@ export const patientServiceFormSchema = z.object({
   discount: z.coerce.number().min(0, "Chiết khấu không được âm"),
   treatmentCount: z.coerce.number().int().min(0),
   expiryDate: z.string(),
-  loyaltyPoints: z.coerce.number().min(0),
   note: z.string(),
-  warehouse: z.string(),
-  stockQuantity: z.string(),
 })
 
 export type PatientServiceFormInput = z.input<typeof patientServiceFormSchema>
@@ -51,8 +48,5 @@ export const patientServiceFormDefaultValues: PatientServiceFormInput = {
   discount: 0,
   treatmentCount: 0,
   expiryDate: "",
-  loyaltyPoints: 0,
   note: "",
-  warehouse: "KHO 1",
-  stockQuantity: "",
 }

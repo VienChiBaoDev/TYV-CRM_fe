@@ -2,10 +2,11 @@ import { useEffect, useMemo, useRef } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQuery } from "@tanstack/react-query"
-import { X } from "lucide-react"
 
+import { FormDate } from "@/components/FieldCustom/FormDate"
 import { FormInput } from "@/components/FieldCustom/FormInput"
 import { FormSelect } from "@/components/FieldCustom/FormSelect"
+import { FormTextarea } from "@/components/FieldCustom/FormTextarea"
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,8 +18,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { ServicePriceField } from "@/app/treatment-services/components/ServicePriceField"
 import { fetchStaffList } from "@/services/staffService"
 import { formatPrice } from "@/app/treatment-services/utils/format-price"
 import {
@@ -145,9 +146,9 @@ export function AddPatientServiceDialog({
   const totalAmount = useMemo(
     () =>
       calculatePatientServiceTotal({
-        unitPriceAfterVat,
-        quantity,
-        discount,
+        unitPriceAfterVat: Number(unitPriceAfterVat),
+        quantity: Number(quantity),
+        discount: Number(discount),
       }),
     [unitPriceAfterVat, quantity, discount]
   )
@@ -161,8 +162,10 @@ export function AddPatientServiceDialog({
   }, [open, form])
 
   useEffect(() => {
-    const { vatAmount: nextVatAmount, unitPriceAfterVat: nextUnitPriceAfterVat } =
-      recalculateFromVatPercent(Number(unitPrice), Number(vatPercent))
+    const {
+      vatAmount: nextVatAmount,
+      unitPriceAfterVat: nextUnitPriceAfterVat,
+    } = recalculateFromVatPercent(Number(unitPrice), Number(vatPercent))
 
     form.setValue("vatAmount", nextVatAmount, { shouldDirty: true })
     form.setValue("unitPriceAfterVat", nextUnitPriceAfterVat, {
@@ -319,9 +322,7 @@ export function AddPatientServiceDialog({
                   <ServiceCatalogCombobox
                     services={services}
                     value={field.value}
-                    disabled={
-                      !isServiceMode || !groupId || isServicesLoading
-                    }
+                    disabled={!isServiceMode || !groupId || isServicesLoading}
                     onChange={(value) => {
                       field.onChange(value)
                       if (!value) {
@@ -343,17 +344,15 @@ export function AddPatientServiceDialog({
           />
 
           {!isServiceMode ? (
-            <p className="sm:col-span-3 text-sm text-amber-700">
+            <p className="text-sm text-amber-700 sm:col-span-3">
               Combo dịch vụ đang được phát triển. Vui lòng chọn chế độ Dịch vụ.
             </p>
           ) : null}
 
-          <FormInput
+          <ServicePriceField
             control={form.control}
             name="unitPrice"
             label="Đơn giá"
-            type="number"
-            inputClassName="pr-12"
             disabled={!serviceId}
           />
 
@@ -378,7 +377,7 @@ export function AddPatientServiceDialog({
                   </FormControl>
                   <Input
                     readOnly
-                    value={formatPrice(vatAmount)}
+                    value={formatPrice(Number(vatAmount))}
                     className="w-28 bg-muted text-muted-foreground"
                   />
                 </div>
@@ -387,12 +386,11 @@ export function AddPatientServiceDialog({
             )}
           />
 
-          <FormInput
+          <ServicePriceField
             control={form.control}
             name="unitPriceAfterVat"
             label="Đơn giá - VAT"
-            type="number"
-            placeholder="eg. đơn giá - vat"
+            showInfo
             disabled={!serviceId}
           />
 
@@ -404,32 +402,11 @@ export function AddPatientServiceDialog({
             disabled={!serviceId}
           />
 
-          <FormField
+          <ServicePriceField
             control={form.control}
             name="discount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>C.Khấu</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      min={0}
-                      disabled={!serviceId}
-                      className="pr-12"
-                      {...field}
-                      onChange={(event) =>
-                        field.onChange(Number(event.target.value) || 0)
-                      }
-                    />
-                    <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-xs text-muted-foreground">
-                      VND
-                    </span>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="C.Khấu"
+            disabled={!serviceId}
           />
 
           <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3">
@@ -438,8 +415,8 @@ export function AddPatientServiceDialog({
               {formatPrice(totalAmount)} đ
             </p>
             <p className="mt-1 text-[11px] text-emerald-700">
-              ({formatPrice(unitPriceAfterVat)} × {quantity}) −{" "}
-              {formatPrice(discount)}
+              ({formatPrice(Number(unitPriceAfterVat))} × {Number(quantity)}) −{" "}
+              {formatPrice(Number(discount))}
             </p>
           </div>
 
@@ -451,110 +428,22 @@ export function AddPatientServiceDialog({
             disabled={!serviceId}
           />
 
-          <FormField
+          <FormDate
             control={form.control}
             name="expiryDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-1">
-                  Hạn sử dụng
-                  {field.value ? (
-                    <button
-                      type="button"
-                      className="text-red-500"
-                      onClick={() => field.onChange("")}
-                      aria-label="Xóa hạn sử dụng"
-                    >
-                      <X className="size-3.5" />
-                    </button>
-                  ) : null}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="date"
-                    placeholder="eg. hạn sử dụng"
-                    disabled={!serviceId}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Hạn sử dụng"
+            placeholder="eg. hạn sử dụng"
+            disabled={!serviceId}
           />
 
-          <FormField
-            control={form.control}
-            name="loyaltyPoints"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  Điểm tích lũy
-                  <span className="text-red-500">0</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={0}
-                    disabled={!serviceId}
-                    {...field}
-                    onChange={(event) =>
-                      field.onChange(Number(event.target.value) || 0)
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormSelect
-            control={form.control}
-            name="warehouse"
-            label="Kho"
-            options={[{ value: "KHO 1", label: "KHO 1" }]}
-            disabled
-            triggerClassName="bg-muted"
-          />
-
-          <FormInput
-            control={form.control}
-            name="stockQuantity"
-            label="Số lượng tồn"
-            placeholder="eg. số lượng tồn"
-            disabled
-            inputClassName="bg-muted"
-            className="sm:col-span-2"
-          />
-
-          <FormField
+          <FormTextarea
             control={form.control}
             name="note"
-            render={({ field }) => (
-              <FormItem className="sm:col-span-3">
-                <FormLabel className="flex items-center gap-1">
-                  Ghi chú
-                  {field.value ? (
-                    <button
-                      type="button"
-                      className="text-red-500"
-                      onClick={() => field.onChange("")}
-                      aria-label="Xóa ghi chú"
-                    >
-                      <X className="size-3.5" />
-                    </button>
-                  ) : null}
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="eg. ghi chú"
-                    rows={3}
-                    disabled={!serviceId}
-                    className="resize-none border border-slate-200"
-                    {...field}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
+            label="Ghi chú"
+            placeholder="eg. ghi chú"
+            rows={3}
+            disabled={!serviceId}
+            className="sm:col-span-3"
           />
         </div>
       </Form>
