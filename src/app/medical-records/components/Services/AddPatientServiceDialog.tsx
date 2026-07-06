@@ -30,11 +30,17 @@ import {
   catalogServicesQueryOptions,
   serviceGroupQueryOptions,
 } from "@/app/treatment-services/queries/treatment-service-query"
+import type {
+  CatalogServiceApi,
+  ServiceGroupApi,
+} from "@/app/treatment-services/interfaces/treatment-services.interfaces"
 import {
   CATALOG_SERVICE_STATUS,
   SERVICE_ITEM_TYPE,
+  type ServiceGroup,
   type TreatmentService,
 } from "@/app/treatment-services/types/treatment-service"
+import type { Staff } from "@/interfaces/auth"
 import {
   PATIENT_SERVICE_MODE,
   patientServiceFormDefaultValues,
@@ -83,12 +89,15 @@ export function AddPatientServiceDialog({
   const vatAmount = useWatch({ control: form.control, name: "vatAmount" }) ?? 0
   const previousGroupIdRef = useRef<string | null>(null)
 
-  const { data: groupsApi = [] } = useQuery({
+  const { data: groupsApi = [] as ServiceGroupApi[] } = useQuery({
     ...serviceGroupQueryOptions(),
     enabled: open,
   })
 
-  const { data: servicesApi = [], isLoading: isServicesLoading } = useQuery({
+  const {
+    data: servicesApi = [] as CatalogServiceApi[],
+    isLoading: isServicesLoading,
+  } = useQuery({
     ...catalogServicesQueryOptions({
       groupId: groupId || undefined,
       status: CATALOG_SERVICE_STATUS.ACTIVE,
@@ -100,17 +109,17 @@ export function AddPatientServiceDialog({
     enabled: open && !!groupId && serviceMode === PATIENT_SERVICE_MODE.SERVICE,
   })
 
-  const { data: staffList = [] } = useQuery({
+  const { data: staffList = [] as Staff[] } = useQuery({
     queryKey: ["staff"],
     queryFn: fetchStaffList,
     enabled: open,
   })
 
-  const serviceGroups = useMemo(
+  const serviceGroups = useMemo<ServiceGroup[]>(
     () =>
       groupsApi
         .map(mapServiceGroupFromApi)
-        .filter((group) =>
+        .filter((group: ServiceGroup) =>
           serviceMode === PATIENT_SERVICE_MODE.SERVICE
             ? group.itemType === SERVICE_ITEM_TYPE.SERVICE
             : true
@@ -118,7 +127,7 @@ export function AddPatientServiceDialog({
     [groupsApi, serviceMode]
   )
 
-  const services = useMemo(
+  const services = useMemo<TreatmentService[]>(
     () => servicesApi.map(mapCatalogServiceFromApi),
     [servicesApi]
   )
@@ -126,8 +135,8 @@ export function AddPatientServiceDialog({
   const staffOptions = useMemo(
     () =>
       staffList
-        .filter((staff) => staff.isActive)
-        .map((staff) => ({
+        .filter((staff: Staff) => staff.isActive)
+        .map((staff: Staff) => ({
           value: staff.id,
           label: staff.fullName,
         })),
@@ -369,7 +378,10 @@ export function AddPatientServiceDialog({
                       min={0}
                       placeholder="eg. phần trăm"
                       disabled={!serviceId}
-                      {...field}
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      value={Number(field.value) || 0}
                       onChange={(event) =>
                         field.onChange(Number(event.target.value) || 0)
                       }
