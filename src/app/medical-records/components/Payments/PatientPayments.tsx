@@ -1,10 +1,7 @@
 import { Minus, Plus } from "lucide-react"
 import { useMemo } from "react"
 
-import {
-  MOCK_PATIENT_PAYMENTS,
-  MOCK_PAYMENT_SUMMARY,
-} from "@/app/medical-records/data/patient-payments-mock"
+import { MOCK_PATIENT_PAYMENTS } from "@/app/medical-records/data/patient-payments-mock"
 import { formatPrice } from "@/app/treatment-services/utils/format-price"
 import { DataTable } from "@/components/data-table/data-table"
 import { Button } from "@/components/ui/button"
@@ -13,7 +10,7 @@ import { cn } from "@/lib/utils"
 import { createPaymentTableColumns } from "./payment-table-columns"
 
 const PRIMARY_BTN =
-  "bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold"
+  "bg-emerald-600 text-white hover:bg-emerald-700 text-md font-semibold"
 
 interface SummaryCardProps {
   label: string
@@ -42,7 +39,7 @@ function SplitActionButton({ label }: SplitActionButtonProps) {
     <div className="flex overflow-hidden rounded-md">
       <Button
         type="button"
-        size="sm"
+        size="lg"
         className={cn(PRIMARY_BTN, "rounded-none px-2")}
         aria-label={`Thêm ${label}`}
       >
@@ -50,7 +47,7 @@ function SplitActionButton({ label }: SplitActionButtonProps) {
       </Button>
       <Button
         type="button"
-        size="sm"
+        size="lg"
         className={cn(PRIMARY_BTN, "rounded-none px-2")}
         aria-label={`Giảm ${label}`}
       >
@@ -58,7 +55,7 @@ function SplitActionButton({ label }: SplitActionButtonProps) {
       </Button>
       <Button
         type="button"
-        size="sm"
+        size="lg"
         className={cn(PRIMARY_BTN, "rounded-none")}
       >
         {label}
@@ -92,23 +89,38 @@ export default function PatientPayments() {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-4 py-3">
         <div className="flex flex-wrap gap-3">
           <SummaryCard
-            label="Dịch Vụ"
-            value={MOCK_PAYMENT_SUMMARY.servicesTotal}
+            label="Tổng tiền"
+            value={3000000}
             accentClassName="bg-emerald-500"
           />
           <SummaryCard
-            label="Sản Phẩm"
-            value={MOCK_PAYMENT_SUMMARY.productsTotal}
+            label="Thanh toán"
+            value={3000000}
+            accentClassName="bg-yellow-400"
+          />
+          <SummaryCard
+            label="Còn lại"
+            value={0}
             accentClassName="bg-yellow-400"
           />
           <SummaryCard
             label="Tiền Cọc"
-            value={MOCK_PAYMENT_SUMMARY.depositTotal}
+            value={1500000}
+            accentClassName="bg-yellow-400"
+          />
+          <SummaryCard
+            label="Sản Phẩm"
+            value={1500000}
+            accentClassName="bg-yellow-400"
+          />
+          <SummaryCard
+            label="Dịch Vụ"
+            value={1500000}
             accentClassName="bg-yellow-400"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col items-start gap-2">
           <SplitActionButton label="Tiền cọc" />
           <SplitActionButton label="Thanh toán" />
           {/* <DropdownActionButton label="In" /> */}
