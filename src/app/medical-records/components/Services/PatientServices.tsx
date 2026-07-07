@@ -105,13 +105,14 @@ export default function PatientServices() {
           </Button>
         </div>
       </div>
-
-      <DataTable
-        columns={columns}
-        data={services}
-        loading={isLoading}
-        classNameTable="!p-4 !pt-0"
-      />
+      <div className="rounded-md border border-gray-200 bg-white">
+        <DataTable
+          columns={columns}
+          data={services}
+          loading={isLoading}
+          classNameTable="!p-4 !pt-0"
+        />
+      </div>
 
       <AddPatientServiceDialog
         open={dialogOpen}
