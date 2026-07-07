@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ChevronDown, Printer, RotateCcw, Wallet } from "lucide-react"
-
-import { MOCK_UNPAID_PAYMENT_ITEMS } from "@/app/medical-records/data/patient-unpaid-items-mock"
 import type { UnpaidPaymentItem } from "@/app/medical-records/interfaces/patient-unpaid-item"
 import {
   PAYMENT_METHOD,
@@ -52,6 +50,8 @@ const BRANCH_OPTIONS = CLINIC_BRANCHES.map((branch) => ({
 interface AddPatientPaymentDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  unpaidItems: UnpaidPaymentItem[]
+  isLoadingUnpaidItems?: boolean
   onSave?: (
     values: PatientPaymentFormValues,
     selectedItems: SelectedItem[]
@@ -164,6 +164,8 @@ function UnpaidItemRow({
 export function AddPatientPaymentDialog({
   open,
   onOpenChange,
+  unpaidItems,
+  isLoadingUnpaidItems = false,
   onSave,
   isSubmitting = false,
 }: AddPatientPaymentDialogProps) {
@@ -180,11 +182,6 @@ export function AddPatientPaymentDialog({
   })
 
   const paymentMethod = form.watch("paymentMethod")
-
-  const unpaidItems = useMemo(
-    () => MOCK_UNPAID_PAYMENT_ITEMS.filter((item) => item.unpaidAmount > 0),
-    []
-  )
 
   const selectedItems = useMemo<SelectedItem[]>(() => {
     return unpaidItems
@@ -362,7 +359,11 @@ export function AddPatientPaymentDialog({
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="space-y-3 p-5">
-              {unpaidItems.length === 0 ? (
+              {isLoadingUnpaidItems ? (
+                <p className="py-12 text-center text-sm text-slate-500">
+                  Đang tải danh sách...
+                </p>
+              ) : unpaidItems.length === 0 ? (
                 <p className="py-12 text-center text-sm text-slate-500">
                   Không có khoản nào chờ thanh toán
                 </p>
@@ -396,7 +397,7 @@ export function AddPatientPaymentDialog({
                 {selectedCount}
               </Badge>
             </div>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-8 w-4 text-slate-400" />
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
