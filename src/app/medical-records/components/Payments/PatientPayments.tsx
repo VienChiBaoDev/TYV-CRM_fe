@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { MOCK_PATIENT_PAYMENTS } from "@/app/medical-records/data/patient-payments-mock"
 
 import type { PatientPaymentFormValues } from "@/app/medical-records/schemas/patient-payment-form"
+import type { PatientRefundFormValues } from "@/app/medical-records/schemas/patient-refund-form"
 
 import { formatPrice } from "@/app/treatment-services/utils/format-price"
 
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 import { AddPatientPaymentDialog } from "./AddPatientPaymentDialog"
+import { RefundPatientPaymentDialog } from "./RefundPatientPaymentDialog"
 
 import { createPaymentTableColumns } from "./payment-table-columns"
 
@@ -49,9 +51,11 @@ interface SplitActionButtonProps {
   label: string
 
   onAdd?: () => void
+
+  onSubtract?: () => void
 }
 
-function SplitActionButton({ label, onAdd }: SplitActionButtonProps) {
+function SplitActionButton({ label, onAdd, onSubtract }: SplitActionButtonProps) {
   return (
     <div className="flex overflow-hidden rounded-md">
       <Button
@@ -69,6 +73,7 @@ function SplitActionButton({ label, onAdd }: SplitActionButtonProps) {
         size="lg"
         className={cn(PRIMARY_BTN, "rounded-none px-2")}
         aria-label={`Giảm ${label}`}
+        onClick={onSubtract}
       >
         <Minus className="h-3.5 w-3.5" />
       </Button>
@@ -86,6 +91,7 @@ function SplitActionButton({ label, onAdd }: SplitActionButtonProps) {
 
 export default function PatientPayments() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false)
 
   const columns = useMemo(() => createPaymentTableColumns(), [])
 
@@ -103,6 +109,20 @@ export default function PatientPayments() {
     toast.success(`Đã lưu phiếu thanh toán ${formatPrice(total)} đ`)
 
     setPaymentDialogOpen(false)
+  }
+
+  const handleSaveRefund = (
+    _values: PatientRefundFormValues,
+    selectedItems: { refundAmount: number }[]
+  ) => {
+    const total = selectedItems.reduce(
+      (sum, entry) => sum + entry.refundAmount,
+      0
+    )
+
+    toast.success(`Đã lưu phiếu hoàn tiền ${formatPrice(total)} đ`)
+
+    setRefundDialogOpen(false)
   }
 
   return (
@@ -152,6 +172,7 @@ export default function PatientPayments() {
           <SplitActionButton
             label="Thanh toán"
             onAdd={() => setPaymentDialogOpen(true)}
+            onSubtract={() => setRefundDialogOpen(true)}
           />
         </div>
       </div>
@@ -167,6 +188,12 @@ export default function PatientPayments() {
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
         onSave={handleSavePayment}
+      />
+
+      <RefundPatientPaymentDialog
+        open={refundDialogOpen}
+        onOpenChange={setRefundDialogOpen}
+        onSave={handleSaveRefund}
       />
     </div>
   )
