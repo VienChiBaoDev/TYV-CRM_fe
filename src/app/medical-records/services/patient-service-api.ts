@@ -1,6 +1,9 @@
 import httpService from "@/services/httpService"
 import type { PatientServiceApi } from "@/app/medical-records/interfaces/patient-service-api"
-import type { CreatePatientServicePayload } from "@/app/medical-records/mappers/map-patient-service-request"
+import type {
+  CreatePatientServicePayload,
+  UpdatePatientServicePayload,
+} from "@/app/medical-records/mappers/map-patient-service-request"
 import API_PATHS from "@/constants/apiPaths"
 
 export async function fetchPatientServices(
@@ -30,4 +33,16 @@ export async function deletePatientService(
   await httpService.delete(
     API_PATHS.patientServices.delete(patientId, serviceId)
   )
+}
+
+export async function updatePatientService(
+  patientId: string,
+  serviceId: string,
+  payload: UpdatePatientServicePayload
+): Promise<PatientServiceApi> {
+  const { data } = await httpService.patch<PatientServiceApi>(
+    API_PATHS.patientServices.update(patientId, serviceId),
+    payload
+  )
+  return data
 }

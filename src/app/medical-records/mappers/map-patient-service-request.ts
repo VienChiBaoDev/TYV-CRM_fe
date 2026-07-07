@@ -1,4 +1,9 @@
-import type { PatientServiceFormValues } from "@/app/medical-records/schemas/patient-service-form"
+import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
+import {
+  PATIENT_SERVICE_MODE,
+  type PatientServiceFormInput,
+  type PatientServiceFormValues,
+} from "@/app/medical-records/schemas/patient-service-form"
 
 export interface CreatePatientServicePayload {
   catalogServiceId: string
@@ -15,7 +20,21 @@ export interface CreatePatientServicePayload {
   note?: string
 }
 
+export type UpdatePatientServicePayload = CreatePatientServicePayload
+
 export function mapPatientServiceFormToCreatePayload(
+  values: PatientServiceFormValues
+): CreatePatientServicePayload {
+  return mapPatientServiceFormToPayload(values)
+}
+
+export function mapPatientServiceFormToUpdatePayload(
+  values: PatientServiceFormValues
+): UpdatePatientServicePayload {
+  return mapPatientServiceFormToPayload(values)
+}
+
+function mapPatientServiceFormToPayload(
   values: PatientServiceFormValues
 ): CreatePatientServicePayload {
   return {
@@ -31,5 +50,26 @@ export function mapPatientServiceFormToCreatePayload(
     treatmentCount: values.treatmentCount,
     expiryDate: values.expiryDate || undefined,
     note: values.note.trim() || undefined,
+  }
+}
+
+export function mapPatientServiceToFormInput(
+  service: PatientService
+): PatientServiceFormInput {
+  return {
+    consultantId: service.form.consultantId,
+    telesaleId: service.form.telesaleId ?? "",
+    serviceMode: PATIENT_SERVICE_MODE.SERVICE,
+    groupId: service.form.groupId,
+    serviceId: service.form.catalogServiceId,
+    unitPrice: service.form.unitPrice,
+    vatPercent: service.form.vatPercent,
+    vatAmount: service.form.vatAmount,
+    unitPriceAfterVat: service.form.unitPriceAfterVat,
+    quantity: service.form.quantity,
+    discount: service.form.discount,
+    treatmentCount: service.form.treatmentCount,
+    expiryDate: service.form.expiryDate ?? "",
+    note: service.note,
   }
 }

@@ -14,6 +14,7 @@ import type { PatientService } from "@/app/medical-records/interfaces/patient-se
 
 interface PatientServiceTableColumnOptions {
   onDelete: (service: PatientService) => void
+  onEdit: (service: PatientService) => void
 }
 
 export function PersonCell({
@@ -102,6 +103,7 @@ function AmountCell({ amount }: { amount: PatientService["amount"] }) {
 
 export function PatientServiceTableColumns({
   onDelete,
+  onEdit,
 }: PatientServiceTableColumnOptions): ColumnDef<PatientService>[] {
   return [
     {
@@ -191,7 +193,9 @@ export function PatientServiceTableColumns({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
-            <DropdownMenuItem>Sửa dịch vụ</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(row.original)}>
+              Sửa dịch vụ
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive"
               onClick={() => onDelete(row.original)}

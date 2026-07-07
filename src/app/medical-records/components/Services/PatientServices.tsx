@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button"
 import {
   useCreatePatientServiceMutation,
   useDeletePatientServiceMutation,
+  useUpdatePatientServiceMutation,
 } from "@/app/medical-records/hooks/use-patient-service-mutations"
 import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
 import { patientServicesQueryOptions } from "@/app/medical-records/queries/patient-service-query"
 import type { PatientServiceFormValues } from "@/app/medical-records/schemas/patient-service-form"
-import type { TreatmentService } from "@/app/treatment-services/types/treatment-service"
 
 import { AddPatientServiceDialog } from "./AddPatientServiceDialog"
 import { PatientServiceTableColumns } from "./patient-service-table-columns"
@@ -23,6 +23,9 @@ const PRIMARY_BTN =
 export default function PatientServices() {
   const { patientId = "" } = useParams()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingService, setEditingService] = useState<PatientService | null>(
+    null
+  )
   const [serviceToDelete, setServiceToDelete] = useState<PatientService | null>(
     null
   )
@@ -32,23 +35,46 @@ export default function PatientServices() {
   )
 
   const createMutation = useCreatePatientServiceMutation(patientId)
+  const updateMutation = useUpdatePatientServiceMutation(patientId)
   const deleteMutation = useDeletePatientServiceMutation(patientId)
 
   const columns = useMemo(
     () =>
       PatientServiceTableColumns({
+        onEdit: (service) => {
+          setEditingService(service)
+          setDialogOpen(true)
+        },
         onDelete: (service) => setServiceToDelete(service),
       }),
     []
   )
 
-  const handleSaveService = (
-    values: PatientServiceFormValues,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _catalogService: TreatmentService
-  ) => {
+  const handleOpenCreate = () => {
+    setEditingService(null)
+    setDialogOpen(true)
+  }
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open)
+    if (!open) {
+      setEditingService(null)
+    }
+  }
+
+  const handleSaveService = (values: PatientServiceFormValues) => {
+    if (editingService) {
+      updateMutation.mutate(
+        { serviceId: editingService.id, values },
+        {
+          onSuccess: () => handleDialogOpenChange(false),
+        }
+      )
+      return
+    }
+
     createMutation.mutate(values, {
-      onSuccess: () => setDialogOpen(false),
+      onSuccess: () => handleDialogOpenChange(false),
     })
   }
 
@@ -60,6 +86,8 @@ export default function PatientServices() {
     })
   }
 
+  const isSubmitting = createMutation.isPending || updateMutation.isPending
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-end gap-3 rounded-md border border-gray-200 bg-white px-4 py-3">
@@ -68,7 +96,7 @@ export default function PatientServices() {
             type="button"
             size="sm"
             className={PRIMARY_BTN}
-            onClick={() => setDialogOpen(true)}
+            onClick={handleOpenCreate}
           >
             Thêm mới
           </Button>
@@ -87,9 +115,10 @@ export default function PatientServices() {
 
       <AddPatientServiceDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={handleDialogOpenChange}
         onSave={handleSaveService}
-        isSubmitting={createMutation.isPending}
+        isSubmitting={isSubmitting}
+        editingService={editingService}
       />
 
       <ConfirmDialog

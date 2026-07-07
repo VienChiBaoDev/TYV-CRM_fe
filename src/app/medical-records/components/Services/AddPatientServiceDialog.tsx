@@ -41,6 +41,8 @@ import {
   type TreatmentService,
 } from "@/app/treatment-services/types/treatment-service"
 import type { Staff } from "@/interfaces/auth"
+import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
+import { mapPatientServiceToFormInput } from "@/app/medical-records/mappers/map-patient-service-request"
 import {
   PATIENT_SERVICE_MODE,
   patientServiceFormDefaultValues,
@@ -59,8 +61,12 @@ import { ServiceCatalogCombobox } from "./ServiceCatalogCombobox"
 interface AddPatientServiceDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (values: PatientServiceFormValues, service: TreatmentService) => void
+  onSave: (
+    values: PatientServiceFormValues,
+    service: TreatmentService | null
+  ) => void
   isSubmitting?: boolean
+  editingService?: PatientService | null
 }
 
 export function AddPatientServiceDialog({
@@ -68,7 +74,9 @@ export function AddPatientServiceDialog({
   onOpenChange,
   onSave,
   isSubmitting = false,
+  editingService = null,
 }: AddPatientServiceDialogProps) {
+  const isEditMode = editingService != null
   const form = useForm<
     PatientServiceFormInput,
     unknown,
@@ -90,6 +98,7 @@ export function AddPatientServiceDialog({
     useWatch({ control: form.control, name: "unitPriceAfterVat" }) ?? 0
   const vatAmount = useWatch({ control: form.control, name: "vatAmount" }) ?? 0
   const previousGroupIdRef = useRef<string | null>(null)
+  const skipNextGroupChangeRef = useRef(false)
 
   const { data: groupsApi = [] as ServiceGroupApi[] } = useQuery({
     ...serviceGroupQueryOptions(),
@@ -167,10 +176,22 @@ export function AddPatientServiceDialog({
   useEffect(() => {
     if (!open) {
       previousGroupIdRef.current = null
+      skipNextGroupChangeRef.current = false
       return
     }
+
+    skipNextGroupChangeRef.current = true
+
+    if (editingService) {
+      const formValues = mapPatientServiceToFormInput(editingService)
+      form.reset(formValues)
+      previousGroupIdRef.current = formValues.groupId
+      return
+    }
+
     form.reset(patientServiceFormDefaultValues)
-  }, [open, form])
+    previousGroupIdRef.current = null
+  }, [open, form, editingService])
 
   useEffect(() => {
     const {
@@ -187,10 +208,13 @@ export function AddPatientServiceDialog({
   useEffect(() => {
     if (!open) return
 
-    if (
-      previousGroupIdRef.current !== null &&
-      previousGroupIdRef.current !== groupId
-    ) {
+    if (skipNextGroupChangeRef.current) {
+      skipNextGroupChangeRef.current = false
+      previousGroupIdRef.current = groupId || null
+      return
+    }
+
+    if (previousGroupIdRef.current && previousGroupIdRef.current !== groupId) {
       form.setValue("serviceId", "")
       form.setValue("unitPrice", 0)
       form.setValue("vatPercent", 0)
@@ -201,7 +225,7 @@ export function AddPatientServiceDialog({
       form.setValue("note", "")
     }
 
-    previousGroupIdRef.current = groupId ?? ""
+    previousGroupIdRef.current = groupId || null
   }, [groupId, open, form])
 
   const handleServiceSelect = (service: TreatmentService) => {
@@ -228,9 +252,9 @@ export function AddPatientServiceDialog({
     if (values.serviceMode === PATIENT_SERVICE_MODE.COMBO) return
 
     const service = services.find((item) => item.id === values.serviceId)
-    if (!service) return
+    if (!service && !isEditMode) return
 
-    onSave(values, service)
+    onSave(values, service ?? null)
   })
 
   const isServiceMode = serviceMode === PATIENT_SERVICE_MODE.SERVICE
@@ -239,10 +263,10 @@ export function AddPatientServiceDialog({
     <DialogCommon
       open={open}
       onOpenChange={onOpenChange}
-      title="Thêm mới dịch vụ"
+      title={isEditMode ? "Sửa dịch vụ" : "Thêm mới dịch vụ"}
       onSubmit={handleSave}
       loading={isSubmitting}
-      submitText="Thêm mới"
+      submitText={isEditMode ? "Lưu" : "Thêm mới"}
       contentClassName="max-h-[90vh] overflow-y-auto sm:max-w-[960px]"
     >
       <Form {...form}>
@@ -275,6 +299,7 @@ export function AddPatientServiceDialog({
                     type="button"
                     size="sm"
                     variant="ghost"
+                    disabled={isEditMode}
                     className={cn(
                       "flex-1",
                       field.value === PATIENT_SERVICE_MODE.SERVICE &&
@@ -292,6 +317,7 @@ export function AddPatientServiceDialog({
                     type="button"
                     size="sm"
                     variant="ghost"
+                    disabled={isEditMode}
                     className={cn(
                       "flex-1",
                       field.value === PATIENT_SERVICE_MODE.COMBO &&

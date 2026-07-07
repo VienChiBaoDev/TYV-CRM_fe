@@ -12,5 +12,6 @@ export function mapPatientServiceFromApi(api: PatientServiceApi): PatientService
     note: api.note,
     finalizedBy: api.finalizedBy,
     finalizedAt: api.finalizedAt,
+    form: api.form,
   }
 }

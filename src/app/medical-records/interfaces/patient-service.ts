@@ -1,3 +1,5 @@
+import type { PatientServiceFormDataApi } from "@/app/medical-records/interfaces/patient-service-api"
+
 export interface PatientServicePerson {
   name: string
   initials: string
@@ -27,4 +29,5 @@ export interface PatientService {
   note: string
   finalizedBy: PatientServicePerson
   finalizedAt: string
+  form: PatientServiceFormDataApi
 }

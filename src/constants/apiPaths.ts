@@ -38,6 +38,8 @@ const API_PATHS = {
   patientServices: {
     list: (patientId: string) => `/patients/${patientId}/services`,
     create: (patientId: string) => `/patients/${patientId}/services`,
+    update: (patientId: string, serviceId: string) =>
+      `/patients/${patientId}/services/${serviceId}`,
     delete: (patientId: string, serviceId: string) =>
       `/patients/${patientId}/services/${serviceId}`,
   },

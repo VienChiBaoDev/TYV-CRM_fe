@@ -1,3 +1,18 @@
+export interface PatientServiceFormDataApi {
+  readonly consultantId: string
+  readonly telesaleId: string | null
+  readonly groupId: string
+  readonly catalogServiceId: string
+  readonly unitPrice: number
+  readonly vatPercent: number
+  readonly vatAmount: number
+  readonly unitPriceAfterVat: number
+  readonly quantity: number
+  readonly discount: number
+  readonly treatmentCount: number
+  readonly expiryDate: string | null
+}
+
 export interface PatientServicePersonApi {
   readonly name: string
   readonly initials: string
@@ -25,4 +40,5 @@ export interface PatientServiceApi {
   readonly note: string
   readonly finalizedBy: PatientServicePersonApi
   readonly finalizedAt: string
+  readonly form: PatientServiceFormDataApi
 }
