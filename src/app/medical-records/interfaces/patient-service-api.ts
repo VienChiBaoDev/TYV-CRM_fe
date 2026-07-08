@@ -25,6 +25,8 @@ export interface PatientServiceAmountApi {
     readonly percent: number
   }
   readonly finalAmount: number
+  readonly paidAmount: number
+  readonly unpaidAmount: number
 }
 
 export interface PatientServiceApi {

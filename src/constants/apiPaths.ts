@@ -43,6 +43,10 @@ const API_PATHS = {
     delete: (patientId: string, serviceId: string) =>
       `/patients/${patientId}/services/${serviceId}`,
   },
+  patientPayments: {
+    list: (patientId: string) => `/patients/${patientId}/payments`,
+    create: (patientId: string) => `/patients/${patientId}/payments`,
+  },
 }
 
 export default API_PATHS

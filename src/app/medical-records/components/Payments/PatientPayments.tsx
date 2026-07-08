@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 
-import { MOCK_PATIENT_PAYMENTS } from "@/app/medical-records/data/patient-payments-mock"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { mapPatientServicesToUnpaidItems } from "@/app/medical-records/mappers/map-patient-service-to-unpaid-item"
 import { patientServicesQueryOptions } from "@/app/medical-records/queries/patient-service-query"
@@ -18,7 +17,9 @@ import { cn } from "@/lib/utils"
 import { AddPatientPaymentDialog } from "./AddPatientPaymentDialog"
 import { RefundPatientPaymentDialog } from "./RefundPatientPaymentDialog"
 import { createPaymentTableColumns } from "./payment-table-columns"
-import type { PatientService } from "../../interfaces/patient-service"
+import { patientPaymentsQueryOptions } from "../../queries/patient-payment-query"
+import { useCreatePatientPaymentMutation } from "../../hooks/use-patient-payment-mutations"
+import type { UnpaidPaymentItem } from "../../interfaces/patient-unpaid-item"
 
 const PRIMARY_BTN =
   "bg-emerald-600 text-white hover:bg-emerald-700 text-md font-semibold"
@@ -86,54 +87,40 @@ function SplitActionButton({
 export default function PatientPayments() {
   const { patientId = "" } = useParams()
   const { activePatient } = useMedicalRecordContext()
-
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
   const [refundDialogOpen, setRefundDialogOpen] = useState(false)
-
+  const { data: paymentsData, isLoading: isPaymentsLoading } = useQuery(
+    patientPaymentsQueryOptions(patientId)
+  )
   const { data: services = [], isLoading: isServicesLoading } = useQuery({
     ...patientServicesQueryOptions(patientId),
     enabled: Boolean(patientId) && paymentDialogOpen,
   })
-
+  const createPaymentMutation = useCreatePatientPaymentMutation(patientId)
   const patientName = activePatient.name || ""
-
+  const summary = paymentsData?.summary ?? {
+    total: 0,
+    paid: 0,
+    remaining: 0,
+    deposit: 0,
+    products: 0,
+    services: 0,
+  }
+  const payments = paymentsData?.payments ?? []
   const unpaidItems = useMemo(
     () => mapPatientServicesToUnpaidItems(services, patientName),
     [services, patientName]
   )
-
-  const summary = useMemo(() => {
-    const servicesTotal = services.reduce(
-      (sum: number, service: PatientService) =>
-        sum + service.amount.finalAmount,
-      0
-    )
-    const paidTotal = 0 // ponytail: chờ BE có payment
-
-    return {
-      total: servicesTotal,
-      paid: paidTotal,
-      remaining: servicesTotal - paidTotal,
-      deposit: 0,
-      products: 0,
-      services: servicesTotal,
-    }
-  }, [services])
-
   const columns = useMemo(() => createPaymentTableColumns(), [])
-
   const handleSavePayment = (
-    _values: PatientPaymentFormValues,
-    selectedItems: { collectAmount: number }[]
+    values: PatientPaymentFormValues,
+    selectedItems: { item: UnpaidPaymentItem; collectAmount: number }[]
   ) => {
-    const total = selectedItems.reduce(
-      (sum, entry) => sum + entry.collectAmount,
-      0
+    createPaymentMutation.mutate(
+      { values, selectedItems },
+      { onSuccess: () => setPaymentDialogOpen(false) }
     )
-    toast.success(`Đã lưu phiếu thanh toán ${formatPrice(total)} đ`)
-    setPaymentDialogOpen(false)
   }
-
   const handleSaveRefund = (
     _values: PatientRefundFormValues,
     selectedItems: { refundAmount: number }[]
@@ -192,21 +179,22 @@ export default function PatientPayments() {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={MOCK_PATIENT_PAYMENTS}
-        loading={false}
-        classNameTable="!p-4 !pt-0"
-      />
-
+      <div className="rounded-md bg-white">
+        <DataTable
+          columns={columns}
+          data={payments}
+          loading={isPaymentsLoading}
+          classNameTable="!p-4 !pt-0"
+        />
+      </div>
       <AddPatientPaymentDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
         unpaidItems={unpaidItems}
         isLoadingUnpaidItems={isServicesLoading}
         onSave={handleSavePayment}
+        isSubmitting={createPaymentMutation.isPending}
       />
-
       <RefundPatientPaymentDialog
         open={refundDialogOpen}
         onOpenChange={setRefundDialogOpen}

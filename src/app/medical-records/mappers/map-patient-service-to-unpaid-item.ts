@@ -8,7 +8,8 @@ export function mapPatientServiceToUnpaidItem(
   patientName: string
 ): UnpaidPaymentItem {
   const totalAmount = service.amount.finalAmount
-  const paidAmount = 0
+  const paidAmount = service.amount.paidAmount ?? 0
+
   return {
     id: service.id,
     name: service.serviceName,
@@ -16,7 +17,7 @@ export function mapPatientServiceToUnpaidItem(
     date: formatDateVi(service.finalizedAt),
     totalAmount,
     paidAmount,
-    unpaidAmount: totalAmount - paidAmount,
+    unpaidAmount: Math.max(0, totalAmount - paidAmount),
   }
 }
 

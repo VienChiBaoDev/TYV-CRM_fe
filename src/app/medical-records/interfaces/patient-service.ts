@@ -7,11 +7,10 @@ export interface PatientServicePerson {
 
 export interface PatientServiceAmount {
   listPrice?: number
-  otherDiscount?: {
-    amount: number
-    percent: number
-  }
+  otherDiscount?: { amount: number; percent: number }
   finalAmount: number
+  paidAmount?: number
+  unpaidAmount?: number
 }
 
 export interface PatientServiceProgress {
