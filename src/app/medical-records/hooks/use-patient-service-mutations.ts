@@ -13,6 +13,7 @@ import {
 import { patientServiceKeys } from "@/app/medical-records/queries/patient-service-query"
 import type { PatientServiceFormValues } from "@/app/medical-records/schemas/patient-service-form"
 import { getApiErrorMessage } from "@/app/medical-records/mappers/map-visit-request"
+import { patientPaymentKeys } from "../queries/patient-payment-query"
 
 export function useCreatePatientServiceMutation(patientId: string) {
   const queryClient = useQueryClient()
@@ -26,6 +27,11 @@ export function useCreatePatientServiceMutation(patientId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: patientServiceKeys.list(patientId),
+        refetchType: "all",
+      })
+      queryClient.invalidateQueries({
+        queryKey: patientPaymentKeys.list(patientId),
+        refetchType: "all",
       })
       toast.success("Thêm dịch vụ thành công")
     },
@@ -44,6 +50,11 @@ export function useDeletePatientServiceMutation(patientId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: patientServiceKeys.list(patientId),
+        refetchType: "all",
+      })
+      queryClient.invalidateQueries({
+        queryKey: patientPaymentKeys.list(patientId),
+        refetchType: "all",
       })
       toast.success("Đã xóa dịch vụ")
     },
@@ -72,6 +83,11 @@ export function useUpdatePatientServiceMutation(patientId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: patientServiceKeys.list(patientId),
+        refetchType: "all",
+      })
+      queryClient.invalidateQueries({
+        queryKey: patientPaymentKeys.list(patientId),
+        refetchType: "all",
       })
       toast.success("Cập nhật dịch vụ thành công")
     },

@@ -20,6 +20,7 @@ import { createPaymentTableColumns } from "./payment-table-columns"
 import { patientPaymentsQueryOptions } from "../../queries/patient-payment-query"
 import { useCreatePatientPaymentMutation } from "../../hooks/use-patient-payment-mutations"
 import type { UnpaidPaymentItem } from "../../interfaces/patient-unpaid-item"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const PRIMARY_BTN =
   "bg-emerald-600 text-white hover:bg-emerald-700 text-md font-semibold"
@@ -135,49 +136,55 @@ export default function PatientPayments() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-4 py-3">
-        <div className="flex flex-wrap gap-3">
-          <SummaryCard
-            label="Tổng tiền"
-            value={summary.total}
-            accentClassName="bg-emerald-500"
-          />
-          <SummaryCard
-            label="Thanh toán"
-            value={summary.paid}
-            accentClassName="bg-blue-400"
-          />
-          <SummaryCard
-            label="Còn lại"
-            value={summary.remaining}
-            accentClassName="bg-red-400"
-          />
-          <SummaryCard
-            label="Tiền Cọc"
-            value={summary.deposit}
-            accentClassName="bg-purple-400"
-          />
-          <SummaryCard
-            label="Sản Phẩm"
-            value={summary.products}
-            accentClassName="bg-orange-400"
-          />
-          <SummaryCard
-            label="Dịch Vụ"
-            value={summary.services}
-            accentClassName="bg-yellow-400"
-          />
+      {isPaymentsLoading ? (
+        <div className="bg-white">
+          <Skeleton className="h-10 w-full rounded-md" />
         </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-4 py-3">
+          <div className="flex flex-wrap gap-3">
+            <SummaryCard
+              label="Tổng tiền"
+              value={summary.total}
+              accentClassName="bg-emerald-500"
+            />
+            <SummaryCard
+              label="Thanh toán"
+              value={summary.paid}
+              accentClassName="bg-blue-400"
+            />
+            <SummaryCard
+              label="Còn lại"
+              value={summary.remaining}
+              accentClassName="bg-red-400"
+            />
+            <SummaryCard
+              label="Tiền Cọc"
+              value={summary.deposit}
+              accentClassName="bg-purple-400"
+            />
+            <SummaryCard
+              label="Sản Phẩm"
+              value={summary.products}
+              accentClassName="bg-orange-400"
+            />
+            <SummaryCard
+              label="Dịch Vụ"
+              value={summary.services}
+              accentClassName="bg-yellow-400"
+            />
+          </div>
 
-        <div className="flex flex-col items-start gap-2">
-          <SplitActionButton label="Tiền cọc" />
-          <SplitActionButton
-            label="Thanh toán"
-            onAdd={() => setPaymentDialogOpen(true)}
-            onSubtract={() => setRefundDialogOpen(true)}
-          />
+          <div className="flex flex-col items-start gap-2">
+            <SplitActionButton label="Tiền cọc" />
+            <SplitActionButton
+              label="Thanh toán"
+              onAdd={() => setPaymentDialogOpen(true)}
+              onSubtract={() => setRefundDialogOpen(true)}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="rounded-md bg-white">
         <DataTable

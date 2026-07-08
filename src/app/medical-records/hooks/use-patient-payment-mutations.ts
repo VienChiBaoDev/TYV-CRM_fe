@@ -31,9 +31,11 @@ export function useCreatePatientPaymentMutation(patientId: string) {
       )
       queryClient.invalidateQueries({
         queryKey: patientPaymentKeys.list(patientId),
+        refetchType: "all",
       })
       queryClient.invalidateQueries({
         queryKey: patientServiceKeys.list(patientId),
+        refetchType: "all",
       })
       toast.success(`Đã lưu phiếu thanh toán ${formatPrice(total)} đ`)
     },
