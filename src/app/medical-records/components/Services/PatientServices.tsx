@@ -6,6 +6,7 @@ import { DataTable } from "@/components/data-table/data-table"
 import { ConfirmDialog } from "@/components/UiCustom/DialogConfirm"
 import { Button } from "@/components/ui/button"
 import {
+  useCancelPatientServiceMutation,
   useCreatePatientServiceMutation,
   useDeletePatientServiceMutation,
   useUpdatePatientServiceMutation,
@@ -29,6 +30,9 @@ export default function PatientServices() {
   const [serviceToDelete, setServiceToDelete] = useState<PatientService | null>(
     null
   )
+  const [serviceToCancel, setServiceToCancel] = useState<PatientService | null>(
+    null
+  )
 
   const { data: services = [], isLoading } = useQuery(
     patientServicesQueryOptions(patientId)
@@ -37,6 +41,7 @@ export default function PatientServices() {
   const createMutation = useCreatePatientServiceMutation(patientId)
   const updateMutation = useUpdatePatientServiceMutation(patientId)
   const deleteMutation = useDeletePatientServiceMutation(patientId)
+  const cancelMutation = useCancelPatientServiceMutation(patientId)
 
   const columns = useMemo(
     () =>
@@ -46,6 +51,7 @@ export default function PatientServices() {
           setDialogOpen(true)
         },
         onDelete: (service) => setServiceToDelete(service),
+        onCancel: (service) => setServiceToCancel(service),
       }),
     []
   )
@@ -83,6 +89,14 @@ export default function PatientServices() {
 
     deleteMutation.mutate(serviceToDelete.id, {
       onSuccess: () => setServiceToDelete(null),
+    })
+  }
+
+  const handleConfirmCancel = () => {
+    if (!serviceToCancel) return
+
+    cancelMutation.mutate(serviceToCancel.id, {
+      onSuccess: () => setServiceToCancel(null),
     })
   }
 
@@ -135,6 +149,21 @@ export default function PatientServices() {
         }
         onConfirm={handleConfirmDelete}
         loading={deleteMutation.isPending}
+      />
+
+      <ConfirmDialog
+        open={serviceToCancel != null}
+        onOpenChange={(open) => {
+          if (!open) setServiceToCancel(null)
+        }}
+        title="Hủy dịch vụ"
+        message={
+          serviceToCancel
+            ? `Hủy dịch vụ "${serviceToCancel.serviceName}"? Dịch vụ sẽ được vô hiệu hóa nhưng lịch sử phiếu thanh toán vẫn được giữ.`
+            : ""
+        }
+        onConfirm={handleConfirmCancel}
+        loading={cancelMutation.isPending}
       />
     </div>
   )

@@ -1,4 +1,5 @@
 import { formatDateVi } from "@/lib/date-vi"
+import { isPatientServiceActive } from "../constants/patient-service-status"
 import type { PatientService } from "../interfaces/patient-service"
 import type { UnpaidPaymentItem } from "../interfaces/patient-unpaid-item"
 
@@ -27,6 +28,7 @@ export function mapPatientServicesToUnpaidItems(
   patientName: string
 ): UnpaidPaymentItem[] {
   return services
+    .filter((service) => isPatientServiceActive(service.status))
     .map((service) => mapPatientServiceToUnpaidItem(service, patientName))
     .filter((item) => item.unpaidAmount > 0)
 }

@@ -1,4 +1,5 @@
 import type { PatientServiceFormDataApi } from "@/app/medical-records/interfaces/patient-service-api"
+import type { PatientServiceStatus } from "@/app/medical-records/constants/patient-service-status"
 
 export interface PatientServicePerson {
   name: string
@@ -20,6 +21,9 @@ export interface PatientServiceProgress {
 
 export interface PatientService {
   id: string
+  status: PatientServiceStatus
+  cancelledAt: string | null
+  hasPaymentHistory: boolean
   serviceCode: string
   serviceName: string
   progress: PatientServiceProgress

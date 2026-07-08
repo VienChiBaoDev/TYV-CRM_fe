@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import {
+  cancelPatientService,
   createPatientService,
   deletePatientService,
   updatePatientService,
@@ -57,6 +58,29 @@ export function useDeletePatientServiceMutation(patientId: string) {
         refetchType: "all",
       })
       toast.success("Đã xóa dịch vụ")
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error))
+    },
+  })
+}
+
+export function useCancelPatientServiceMutation(patientId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (serviceId: string) =>
+      cancelPatientService(patientId, serviceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: patientServiceKeys.list(patientId),
+        refetchType: "all",
+      })
+      queryClient.invalidateQueries({
+        queryKey: patientPaymentKeys.list(patientId),
+        refetchType: "all",
+      })
+      toast.success("Đã hủy dịch vụ")
     },
     onError: (error) => {
       toast.error(getApiErrorMessage(error))

@@ -11,10 +11,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
+import {
+  isPatientServiceActive,
+  PATIENT_SERVICE_STATUS,
+} from "@/app/medical-records/constants/patient-service-status"
+import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 
 interface PatientServiceTableColumnOptions {
   onDelete: (service: PatientService) => void
   onEdit: (service: PatientService) => void
+  onCancel: (service: PatientService) => void
 }
 
 export function PersonCell({
@@ -104,6 +111,7 @@ function AmountCell({ amount }: { amount: PatientService["amount"] }) {
 export function PatientServiceTableColumns({
   onDelete,
   onEdit,
+  onCancel,
 }: PatientServiceTableColumnOptions): ColumnDef<PatientService>[] {
   return [
     {
@@ -121,20 +129,37 @@ export function PatientServiceTableColumns({
     {
       id: "service",
       header: "Dịch Vụ",
-      cell: ({ row }) => (
-        <div className="min-w-[180px]">
-          <p className="text-xs font-semibold text-emerald-600">
-            {row.original.serviceCode}
-          </p>
-          <p className="mt-0.5 text-sm font-medium text-slate-800">
-            {row.original.serviceName}
-          </p>
-          <ServiceProgressBar
-            current={row.original.progress.current}
-            total={row.original.progress.total}
-          />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isCancelled =
+          row.original.status === PATIENT_SERVICE_STATUS.CANCELLED
+
+        return (
+          <div className={cn("min-w-[180px]", isCancelled && "opacity-60")}>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-semibold text-emerald-600">
+                {row.original.serviceCode}
+              </p>
+              {isCancelled ? (
+                <Badge variant="secondary" className="text-[10px]">
+                  Đã hủy
+                </Badge>
+              ) : null}
+            </div>
+            <p className="mt-0.5 text-sm font-medium text-slate-800">
+              {row.original.serviceName}
+            </p>
+            {isCancelled && row.original.cancelledAt ? (
+              <p className="mt-0.5 text-[11px] text-slate-500">
+                Hủy lúc {row.original.cancelledAt}
+              </p>
+            ) : null}
+            <ServiceProgressBar
+              current={row.original.progress.current}
+              total={row.original.progress.total}
+            />
+          </div>
+        )
+      },
     },
     {
       id: "amount",
@@ -178,33 +203,52 @@ export function PatientServiceTableColumns({
     {
       id: "actions",
       header: "Xử Lý",
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="text-slate-500 hover:text-slate-800"
-              aria-label="Tùy chọn dịch vụ"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(row.original)}>
-              Sửa dịch vụ
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={() => onDelete(row.original)}
-            >
-              Xóa dịch vụ
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      cell: ({ row }) => {
+        const service = row.original
+        const isActive = isPatientServiceActive(service.status)
+        const canHardDelete = isActive && !service.hasPaymentHistory
+        const canCancel = isActive && service.hasPaymentHistory
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="text-slate-500 hover:text-slate-800"
+                aria-label="Tùy chọn dịch vụ"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
+              {isActive ? (
+                <DropdownMenuItem onClick={() => onEdit(service)}>
+                  Sửa dịch vụ
+                </DropdownMenuItem>
+              ) : null}
+              {canCancel ? (
+                <DropdownMenuItem
+                  className="text-amber-700"
+                  onClick={() => onCancel(service)}
+                >
+                  Hủy dịch vụ
+                </DropdownMenuItem>
+              ) : null}
+              {canHardDelete ? (
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => onDelete(service)}
+                >
+                  Xóa dịch vụ
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
     },
   ]
 }

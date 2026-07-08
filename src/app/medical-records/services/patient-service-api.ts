@@ -46,3 +46,13 @@ export async function updatePatientService(
   )
   return data
 }
+
+export async function cancelPatientService(
+  patientId: string,
+  serviceId: string
+): Promise<PatientServiceApi> {
+  const { data } = await httpService.patch<PatientServiceApi>(
+    API_PATHS.patientServices.cancel(patientId, serviceId)
+  )
+  return data
+}

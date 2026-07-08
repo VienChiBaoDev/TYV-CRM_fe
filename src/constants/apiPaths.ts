@@ -40,6 +40,8 @@ const API_PATHS = {
     create: (patientId: string) => `/patients/${patientId}/services`,
     update: (patientId: string, serviceId: string) =>
       `/patients/${patientId}/services/${serviceId}`,
+    cancel: (patientId: string, serviceId: string) =>
+      `/patients/${patientId}/services/${serviceId}/cancel`,
     delete: (patientId: string, serviceId: string) =>
       `/patients/${patientId}/services/${serviceId}`,
   },

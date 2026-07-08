@@ -1,5 +1,6 @@
 // src/app/medical-records/mappers/map-patient-service-to-refundable-item.ts
 import { formatDateVi } from "@/lib/date-vi"
+import { isPatientServiceActive } from "../constants/patient-service-status"
 import type { PatientService } from "../interfaces/patient-service"
 import type { RefundablePaymentItem } from "../interfaces/refundable-payment-item"
 
@@ -31,6 +32,7 @@ export function mapPatientServicesToRefundableItems(
   patientName: string
 ): RefundablePaymentItem[] {
   return services
+    .filter((service) => isPatientServiceActive(service.status))
     .map((s) => mapPatientServiceToRefundableItem(s, patientName))
     .filter((item) => item.paidAmount - item.treatedAmount > 0)
 }

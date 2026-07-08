@@ -1,8 +1,16 @@
 import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
+import { PATIENT_SERVICE_STATUS } from "@/app/medical-records/constants/patient-service-status"
+
+const ACTIVE_SERVICE_DEFAULTS = {
+  status: PATIENT_SERVICE_STATUS.ACTIVE,
+  cancelledAt: null,
+  hasPaymentHistory: false,
+} as const
 
 export const MOCK_PATIENT_SERVICES: PatientService[] = [
   {
     id: "1",
+    ...ACTIVE_SERVICE_DEFAULTS,
     serviceCode: "SP20260622.3563",
     serviceName: "KÊ ĐƠN",
     progress: { current: 1, total: 1 },
@@ -14,6 +22,7 @@ export const MOCK_PATIENT_SERVICES: PatientService[] = [
   },
   {
     id: "2",
+    ...ACTIVE_SERVICE_DEFAULTS,
     serviceCode: "SP20260622.3564",
     serviceName: "Tái khám BS Thu Hương",
     progress: { current: 1, total: 1 },
@@ -25,6 +34,7 @@ export const MOCK_PATIENT_SERVICES: PatientService[] = [
   },
   {
     id: "3",
+    ...ACTIVE_SERVICE_DEFAULTS,
     serviceCode: "SP20260622.3565",
     serviceName: "COMBO KHỚP LỚN",
     progress: { current: 4, total: 10 },
@@ -40,6 +50,7 @@ export const MOCK_PATIENT_SERVICES: PatientService[] = [
   },
   {
     id: "4",
+    ...ACTIVE_SERVICE_DEFAULTS,
     serviceCode: "SP20260622.3566",
     serviceName: "Điện châm",
     progress: { current: 2, total: 5 },
@@ -51,6 +62,7 @@ export const MOCK_PATIENT_SERVICES: PatientService[] = [
   },
   {
     id: "5",
+    ...ACTIVE_SERVICE_DEFAULTS,
     serviceCode: "SP20260622.3567",
     serviceName: "Xoa bóp cổ vai gáy",
     progress: { current: 3, total: 3 },

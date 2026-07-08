@@ -31,6 +31,9 @@ export interface PatientServiceAmountApi {
 
 export interface PatientServiceApi {
   readonly id: string
+  readonly status: string
+  readonly cancelledAt: string | null
+  readonly hasPaymentHistory: boolean
   readonly serviceCode: string
   readonly serviceName: string
   readonly progress: {
