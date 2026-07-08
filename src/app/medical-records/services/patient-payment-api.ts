@@ -3,6 +3,7 @@ import API_PATHS from "@/constants/apiPaths"
 import type { PatientPaymentsListApi } from "@/app/medical-records/interfaces/patient-payment-api"
 import type { CreatePatientPaymentPayload } from "@/app/medical-records/mappers/map-patient-payment-request"
 import type { PatientPaymentApi } from "@/app/medical-records/interfaces/patient-payment-api"
+import type { CreatePatientRefundPayload } from "../mappers/map-patient-refund-request"
 
 export async function fetchPatientPayments(
   patientId: string
@@ -19,6 +20,17 @@ export async function createPatientPayment(
 ): Promise<PatientPaymentApi> {
   const { data } = await httpService.post<PatientPaymentApi>(
     API_PATHS.patientPayments.create(patientId),
+    payload
+  )
+  return data
+}
+
+export async function createPatientRefund(
+  patientId: string,
+  payload: CreatePatientRefundPayload
+): Promise<PatientPaymentApi> {
+  const { data } = await httpService.post(
+    API_PATHS.patientPayments.createRefund(patientId),
     payload
   )
   return data

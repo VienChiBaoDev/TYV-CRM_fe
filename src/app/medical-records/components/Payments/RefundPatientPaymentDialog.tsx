@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ChevronDown, Printer, RotateCcw, Undo2 } from "lucide-react"
 
-import { MOCK_REFUNDABLE_PAYMENT_ITEMS } from "@/app/medical-records/data/patient-refundable-items-mock"
 import {
   getRefundableAmount,
   type RefundablePaymentItem,
@@ -66,9 +65,15 @@ const BRANCH_OPTIONS = CLINIC_BRANCHES.map((branch) => ({
 interface RefundPatientPaymentDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  refundableItems: RefundablePaymentItem[]
+  isLoadingRefundableItems?: boolean
   onSave?: (
     values: PatientRefundFormValues,
-    selectedItems: SelectedRefundItem[]
+    selectedItems: {
+      item: RefundablePaymentItem
+      refundAmount: number
+      lockService: boolean
+    }[]
   ) => void
   isSubmitting?: boolean
 }
@@ -213,6 +218,8 @@ export function RefundPatientPaymentDialog({
   onOpenChange,
   onSave,
   isSubmitting = false,
+  refundableItems,
+  isLoadingRefundableItems = false,
 }: RefundPatientPaymentDialogProps) {
   const activeBranch = useClinicStore((state) => state.activeBranch)
   const [selections, setSelections] = useState<
@@ -229,14 +236,6 @@ export function RefundPatientPaymentDialog({
   })
 
   const paymentMethod = form.watch("paymentMethod")
-
-  const refundableItems = useMemo(
-    () =>
-      MOCK_REFUNDABLE_PAYMENT_ITEMS.filter(
-        (item) => getRefundableAmount(item) > 0
-      ),
-    []
-  )
 
   const selectedItems = useMemo<SelectedRefundItem[]>(() => {
     return refundableItems
@@ -341,7 +340,9 @@ export function RefundPatientPaymentDialog({
         <>
           <p className="text-sm text-slate-500">
             Đã chọn{" "}
-            <span className="font-semibold text-emerald-600">{selectedCount}</span>{" "}
+            <span className="font-semibold text-emerald-600">
+              {selectedCount}
+            </span>{" "}
             mục
             {totalAmount > 0 ? (
               <>
@@ -434,7 +435,11 @@ export function RefundPatientPaymentDialog({
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="space-y-3 p-5">
-              {refundableItems.length === 0 ? (
+              {isLoadingRefundableItems ? (
+                <p className="py-12 text-center text-sm text-slate-500">
+                  Đang tải danh sách...
+                </p>
+              ) : refundableItems.length === 0 ? (
                 <p className="py-12 text-center text-sm text-slate-500">
                   Không có khoản nào có thể hoàn tiền
                 </p>

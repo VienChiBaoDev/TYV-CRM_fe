@@ -46,6 +46,8 @@ const API_PATHS = {
   patientPayments: {
     list: (patientId: string) => `/patients/${patientId}/payments`,
     create: (patientId: string) => `/patients/${patientId}/payments`,
+    createRefund: (patientId: string) =>
+      `/patients/${patientId}/payments/refunds`,
   },
 }
 

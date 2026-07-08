@@ -2,7 +2,6 @@ import { Minus, Plus } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import { toast } from "sonner"
 
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { mapPatientServicesToUnpaidItems } from "@/app/medical-records/mappers/map-patient-service-to-unpaid-item"
@@ -18,9 +17,14 @@ import { AddPatientPaymentDialog } from "./AddPatientPaymentDialog"
 import { RefundPatientPaymentDialog } from "./RefundPatientPaymentDialog"
 import { createPaymentTableColumns } from "./payment-table-columns"
 import { patientPaymentsQueryOptions } from "../../queries/patient-payment-query"
-import { useCreatePatientPaymentMutation } from "../../hooks/use-patient-payment-mutations"
+import {
+  useCreatePatientPaymentMutation,
+  useCreatePatientRefundMutation,
+} from "../../hooks/use-patient-payment-mutations"
 import type { UnpaidPaymentItem } from "../../interfaces/patient-unpaid-item"
 import { Skeleton } from "@/components/ui/skeleton"
+import { mapPatientServicesToRefundableItems } from "../../mappers/map-patient-service-to-refundable-item"
+import type { RefundablePaymentItem } from "../../interfaces/refundable-payment-item"
 
 const PRIMARY_BTN =
   "bg-emerald-600 text-white hover:bg-emerald-700 text-md font-semibold"
@@ -97,7 +101,14 @@ export default function PatientPayments() {
     ...patientServicesQueryOptions(patientId),
     enabled: Boolean(patientId) && paymentDialogOpen,
   })
+
+  const { data: refundServices = [], isLoading: isRefundServicesLoading } =
+    useQuery({
+      ...patientServicesQueryOptions(patientId),
+      enabled: Boolean(patientId) && refundDialogOpen,
+    })
   const createPaymentMutation = useCreatePatientPaymentMutation(patientId)
+  const createRefundMutation = useCreatePatientRefundMutation(patientId)
   const patientName = activePatient.name || ""
   const summary = paymentsData?.summary ?? {
     total: 0,
@@ -112,6 +123,11 @@ export default function PatientPayments() {
     () => mapPatientServicesToUnpaidItems(services, patientName),
     [services, patientName]
   )
+
+  const refundableItems = useMemo(
+    () => mapPatientServicesToRefundableItems(refundServices, patientName),
+    [refundServices, patientName]
+  )
   const columns = useMemo(() => createPaymentTableColumns(), [])
   const handleSavePayment = (
     values: PatientPaymentFormValues,
@@ -123,15 +139,17 @@ export default function PatientPayments() {
     )
   }
   const handleSaveRefund = (
-    _values: PatientRefundFormValues,
-    selectedItems: { refundAmount: number }[]
+    values: PatientRefundFormValues,
+    selectedItems: {
+      item: RefundablePaymentItem
+      refundAmount: number
+      lockService: boolean
+    }[]
   ) => {
-    const total = selectedItems.reduce(
-      (sum, entry) => sum + entry.refundAmount,
-      0
+    createRefundMutation.mutate(
+      { values, selectedItems },
+      { onSuccess: () => setRefundDialogOpen(false) }
     )
-    toast.success(`Đã lưu phiếu hoàn tiền ${formatPrice(total)} đ`)
-    setRefundDialogOpen(false)
   }
 
   return (
@@ -205,7 +223,10 @@ export default function PatientPayments() {
       <RefundPatientPaymentDialog
         open={refundDialogOpen}
         onOpenChange={setRefundDialogOpen}
+        refundableItems={refundableItems}
+        isLoadingRefundableItems={isRefundServicesLoading}
         onSave={handleSaveRefund}
+        isSubmitting={createRefundMutation.isPending}
       />
     </div>
   )
