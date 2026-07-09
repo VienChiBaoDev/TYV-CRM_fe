@@ -3,6 +3,7 @@ export const MEDICAL_RECORD_TABS = {
   SERVICES: "services",
   PAYMENTS: "payments",
   TREATMENT: "treatment",
+  MEDICAL_CASE: "medical-case",
 } as const
 
 export type MedicalRecordTab =

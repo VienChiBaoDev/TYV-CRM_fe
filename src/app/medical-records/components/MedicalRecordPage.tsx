@@ -10,6 +10,7 @@ import ExportBAModal from "@/app/medical-records/components/ExportBAModal"
 import PatientPayments from "./Payments/PatientPayments"
 import PatientServices from "./Services/PatientServices"
 import Treatment from "./Treatment/Treatment"
+import MedicalCaseForm from "./MedicalCase/MedicalCaseForm"
 
 export function MedicalRecordPage() {
   const {
@@ -47,6 +48,9 @@ export function MedicalRecordPage() {
             <TabsTrigger value={MEDICAL_RECORD_TABS.TREATMENT}>
               Điều trị
             </TabsTrigger>
+            <TabsTrigger value={MEDICAL_RECORD_TABS.MEDICAL_CASE}>
+              Bệnh án
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value={MEDICAL_RECORD_TABS.VISITS}>
@@ -66,6 +70,10 @@ export function MedicalRecordPage() {
 
           <TabsContent value={MEDICAL_RECORD_TABS.TREATMENT}>
             <Treatment />
+          </TabsContent>
+
+          <TabsContent value={MEDICAL_RECORD_TABS.MEDICAL_CASE}>
+            <MedicalCaseForm />
           </TabsContent>
         </Tabs>
       </div>

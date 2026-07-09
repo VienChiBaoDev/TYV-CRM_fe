@@ -1,0 +1,435 @@
+/* ===== Medical Case Form – DOCX-style matching VTTech layout ===== */
+
+.mc-paper {
+  max-width: 860px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 40px 48px;
+  font-family: "Times New Roman", "Noto Serif", serif;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #1e293b;
+  position: relative;
+}
+
+/* -- Header block -- */
+.mc-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-bottom: 4px;
+}
+
+.mc-header-left {
+  font-size: 13px;
+}
+
+.mc-header-right {
+  text-align: right;
+  font-size: 13px;
+}
+
+.mc-title {
+  text-align: center;
+  margin: 8px 0 4px;
+}
+
+.mc-title h2 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.mc-title h3 {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 2px 0 0;
+}
+
+/* -- Section headings -- */
+.mc-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 16px 0 8px;
+  letter-spacing: 0.5px;
+}
+
+.mc-subsection-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 12px 0 6px;
+}
+
+.mc-sub-heading {
+  font-weight: 700;
+  margin: 8px 0 3px;
+}
+
+/* -- Inline editable fields -- */
+.mc-field {
+  border: none;
+  border-bottom: 1px dashed #94a3b8;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: #1e40af;
+  padding: 1px 4px;
+  min-width: 50px;
+  transition: all 0.15s ease;
+}
+
+.mc-field:hover {
+  background: #f0f9ff;
+  border-bottom-color: #3b82f6;
+}
+
+.mc-field:focus {
+  background: #eff6ff;
+  border-bottom: 2px solid #2563eb;
+  color: #1e3a5f;
+}
+
+.mc-field-sm {
+  width: 45px;
+}
+
+.mc-field-md {
+  width: 110px;
+}
+
+.mc-field-lg {
+  width: 200px;
+}
+
+.mc-field-xl {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* -- Textarea fields for multiline -- */
+.mc-textarea {
+  border: none;
+  border-bottom: 1px dashed #94a3b8;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: #1e40af;
+  padding: 2px 4px;
+  width: 100%;
+  min-height: 24px;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  line-height: 1.7;
+  overflow: hidden;
+}
+
+.mc-textarea:hover {
+  background: #f0f9ff;
+  border-bottom-color: #3b82f6;
+}
+
+.mc-textarea:focus {
+  background: #eff6ff;
+  border-bottom: 2px solid #2563eb;
+  color: #1e3a5f;
+}
+
+/* -- Row helpers -- */
+.mc-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 3px;
+  flex-wrap: wrap;
+}
+
+.mc-row label {
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+/* -- Checkbox group -- */
+.mc-checkbox-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: 6px;
+}
+
+.mc-checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+}
+
+.mc-checkbox-item input[type="checkbox"],
+.mc-checkbox-item input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #166534;
+  cursor: pointer;
+}
+
+/* -- Grid layout helpers -- */
+.mc-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 20px;
+}
+
+.mc-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 3px 12px;
+}
+
+/* -- Vitals box -- */
+.mc-vitals-box {
+  border: 1px solid #cbd5e1;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-style: italic;
+  line-height: 1.8;
+  width: fit-content;
+  min-width: 210px;
+}
+
+.mc-vitals-box .mc-row {
+  margin-bottom: 0;
+}
+
+/* -- Diagnosis 2-column table (II. CHẨN ĐOÁN) -- */
+.mc-diag-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.mc-diag-table td,
+.mc-diag-table th {
+  border: 1px solid #94a3b8;
+  padding: 4px 8px;
+  vertical-align: top;
+}
+
+.mc-diag-table th {
+  font-weight: 700;
+  text-align: left;
+}
+
+.mc-diag-table td .mc-field,
+.mc-diag-table td .mc-textarea {
+  border-bottom: 1px dashed #94a3b8;
+}
+
+/* -- Treatment results checkboxes -- */
+.mc-result-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 6px 0;
+  flex-wrap: wrap;
+}
+
+.mc-result-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* -- Signature block -- */
+.mc-signatures {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 12.5px;
+}
+
+.mc-signature-box {
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mc-signature-box .title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.mc-signature-box .subtitle {
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* -- Bordered section (Phần III tổng kết) -- */
+.mc-bordered-section {
+  border: 1px solid #94a3b8;
+  padding: 12px 16px;
+  margin: 12px 0;
+}
+
+/* -- Document table + signature side -- */
+.mc-doc-signature-layout {
+  display: grid;
+  grid-template-columns: 55% 45%;
+  margin: 12px 0;
+  border: 1px solid #94a3b8;
+}
+
+.mc-doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.mc-doc-table th,
+.mc-doc-table td {
+  border: 1px solid #94a3b8;
+  padding: 3px 6px;
+  text-align: left;
+}
+
+.mc-doc-table th {
+  font-weight: 700;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.mc-doc-table td .mc-field {
+  border-bottom: none;
+  width: 100%;
+}
+
+.mc-doc-signature-right {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #94a3b8;
+}
+
+.mc-doc-signature-right .mc-sig-block {
+  padding: 6px 10px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.mc-doc-signature-right .mc-sig-block + .mc-sig-block {
+  border-top: 1px solid #94a3b8;
+}
+
+.mc-doc-signature-right .mc-sig-block .sig-title {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.mc-doc-signature-right .mc-sig-block .sig-name-label {
+  font-size: 11.5px;
+  margin-top: 4px;
+}
+
+.mc-doc-signature-right .mc-sig-block .sig-name-input {
+  width: 100%;
+}
+
+/* -- Phiếu điều trị table -- */
+.mc-treatment-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.mc-treatment-table th,
+.mc-treatment-table td {
+  border: 1px solid #94a3b8;
+  padding: 5px 6px;
+  text-align: center;
+  min-height: 28px;
+}
+
+.mc-treatment-table th {
+  font-weight: 700;
+  background: #f1f5f9;
+  font-size: 11.5px;
+}
+
+.mc-treatment-table td {
+  height: 28px;
+}
+
+.mc-treatment-table td input.mc-field {
+  border-bottom: none;
+  width: 100%;
+  text-align: left;
+}
+
+/* -- Sticky action bar -- */
+.mc-action-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, #f8fafc 60%, transparent);
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  z-index: 10;
+}
+
+/* -- Separator -- */
+.mc-separator {
+  border: none;
+  border-top: 1.5px solid #334155;
+  margin: 20px 0;
+}
+
+/* -- Indented items -- */
+.mc-indent {
+  padding-left: 16px;
+}
+
+.mc-indent-2 {
+  padding-left: 32px;
+}
+
+/* -- Print styles -- */
+@media print {
+  .mc-action-bar {
+    display: none !important;
+  }
+
+  .mc-paper {
+    box-shadow: none;
+    border: none;
+    padding: 16px;
+  }
+
+  .mc-field,
+  .mc-textarea {
+    border-bottom: 1px dotted #94a3b8;
+    color: #000;
+  }
+}
