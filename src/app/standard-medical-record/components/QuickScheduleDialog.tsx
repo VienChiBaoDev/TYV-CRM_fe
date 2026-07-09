@@ -8,6 +8,7 @@ import { FormAppointmentTimeRange } from "@/components/FieldCustom/FormAppointme
 import { DEFAULT_APPOINTMENT_DURATION_MINUTES } from "@/app/appointments/constants/calendar"
 import {
   addMinutesToFormDatetime,
+  formatIsoDateToVi,
   parseFormDatetime,
   parseIsoDate,
   slotToFormDatetime,
@@ -72,7 +73,7 @@ export function QuickScheduleDialog({
   row,
 }: QuickScheduleDialogProps) {
   const mutation = useScheduleFollowUpMutation()
-  const defaults = getDefaultTimes(row.followUpAppointmentDate)
+  const defaults = getDefaultTimes(row.effectiveFollowUpDate)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -100,7 +101,7 @@ export function QuickScheduleDialog({
 
   useEffect(() => {
     if (!open) return
-    const defaults = getDefaultTimes(row.followUpAppointmentDate)
+    const defaults = getDefaultTimes(row.effectiveFollowUpDate)
     form.reset({
       scheduledAt: defaults.scheduledAt,
       endedAt: defaults.endedAt,
@@ -120,6 +121,12 @@ export function QuickScheduleDialog({
         <div className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
             Bệnh nhân: <strong>{row.name}</strong>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Hạn gốc: {formatIsoDateToVi(row.followUpAppointmentDate)}
+            {row.rescheduledFollowUpDate
+              ? ` · Lịch đổi: ${formatIsoDateToVi(row.rescheduledFollowUpDate)}`
+              : null}
           </p>
           <FormAppointmentTimeRange
             control={form.control}
