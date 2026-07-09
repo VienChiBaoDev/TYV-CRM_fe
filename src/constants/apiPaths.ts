@@ -10,6 +10,8 @@ const API_PATHS = {
       `/follow-ups/${followUpId}/schedule`,
     submitAssessment: (followUpId: string) =>
       `/follow-ups/${followUpId}/assessment`,
+    rescheduleFollowUp: (followUpId: string) =>
+      `/follow-ups/${followUpId}/reschedule`,
   },
   appointments: {
     list: "/appointments",

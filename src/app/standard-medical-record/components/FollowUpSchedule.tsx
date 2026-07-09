@@ -13,6 +13,7 @@ import { Link } from "react-router-dom"
 import { urlPaths } from "@/constants/urlPaths"
 import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
 import { DEFAULT_LIMIT } from "@/types/pagination"
+import { RescheduleFollowUpDialog } from "./RescheduleFollowUpDialog"
 
 export const UPCOMING_DAYS_AHEAD = 7
 
@@ -20,6 +21,10 @@ export function FollowUpSchedule() {
   const activeBranch = useClinicStore((s) => s.activeBranch)
   const branch = toClinicBranchCode(activeBranch)
   const [page, setPage] = useState(1)
+  const [selectedRow, setSelectedRow] = useState<FollowUpSchedule | null>(null)
+  const [rescheduleRow, setRescheduleRow] = useState<FollowUpSchedule | null>(
+    null
+  )
 
   useEffect(() => {
     setPage(1)
@@ -36,8 +41,6 @@ export function FollowUpSchedule() {
 
   const rows = data?.data ?? []
   const pageCount = Math.max(data?.meta.totalPages ?? 0, 1)
-
-  const [selectedRow, setSelectedRow] = useState<FollowUpSchedule | null>(null)
 
   const columns: ColumnDef<FollowUpSchedule>[] = [
     {
@@ -57,6 +60,19 @@ export function FollowUpSchedule() {
       cell: ({ row }) =>
         formatIsoDateToVi(row.original.followUpAppointmentDate),
     },
+    {
+      accessorKey: "rescheduledFollowUpDate",
+      header: "Lịch đổi",
+      cell: ({ row }) =>
+        row.original.rescheduledFollowUpDate
+          ? formatIsoDateToVi(row.original.rescheduledFollowUpDate)
+          : "—",
+    },
+    {
+      accessorKey: "rescheduleNote",
+      header: "Ghi chú đổi lịch",
+      cell: ({ row }) => row.original.rescheduleNote ?? "—",
+    },
     { accessorKey: "physicianInCharge", header: "Bác sĩ phụ trách" },
     { accessorKey: "facility", header: "Cơ sở" },
     {
@@ -75,16 +91,35 @@ export function FollowUpSchedule() {
     {
       id: "actions",
       header: "Thao tác",
-      cell: ({ row }) => (
-        <Button
-          size="sm"
-          disabled={row.original.status === 1}
-          onClick={() => setSelectedRow(row.original)}
-          className="bg-emerald-700 text-white hover:bg-emerald-800"
-        >
-          Đặt nhanh
-        </Button>
-      ),
+      cell: ({ row }) => {
+        const isScheduled = row.original.status === 1
+
+        return (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isScheduled}
+              title={
+                isScheduled
+                  ? "Đã đặt lịch — hủy lịch hẹn trên lịch trước"
+                  : undefined
+              }
+              onClick={() => setRescheduleRow(row.original)}
+            >
+              Đổi lịch
+            </Button>
+            <Button
+              size="sm"
+              disabled={isScheduled}
+              onClick={() => setSelectedRow(row.original)}
+              className="bg-emerald-700 text-white hover:bg-emerald-800"
+            >
+              Đặt nhanh
+            </Button>
+          </div>
+        )
+      },
     },
   ]
 
@@ -105,6 +140,14 @@ export function FollowUpSchedule() {
           open={Boolean(selectedRow)}
           onOpenChange={(open) => !open && setSelectedRow(null)}
           row={selectedRow}
+        />
+      )}
+
+      {rescheduleRow && (
+        <RescheduleFollowUpDialog
+          open={Boolean(rescheduleRow)}
+          onOpenChange={(open) => !open && setRescheduleRow(null)}
+          row={rescheduleRow}
         />
       )}
     </>

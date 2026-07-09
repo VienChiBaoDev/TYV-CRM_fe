@@ -4,7 +4,10 @@ export interface FollowUpSchedule {
   id: string
   patientId: string
   name: string
-  followUpAppointmentDate: string
+  followUpAppointmentDate: string // hạn gốc
+  rescheduledFollowUpDate: string | null
+  rescheduleNote: string | null
+  effectiveFollowUpDate: string // ngày dùng đặt nhanh
   physicianInCharge: string
   facility: string
   status: number // 1 = đã đặt, 2 = chưa đặt
@@ -34,6 +37,9 @@ export interface FollowUpScheduleApiResponse {
   readonly scheduleStatus: "SCHEDULED" | "NOT_SCHEDULED"
   readonly scheduleStatusFe: number
   readonly originatingVisitId: string
+  readonly rescheduledFollowUpDate: string | null
+  readonly rescheduleNote: string | null
+  readonly effectiveFollowUpDate: string
 }
 export interface PendingAssessmentApiResponse {
   readonly id: string
@@ -55,4 +61,9 @@ export interface ScheduleFollowUpPayload {
 export interface SubmitAssessmentPayload {
   assessmentResult: string
   assessmentNote?: string
+}
+
+export interface RescheduleFollowUpPayload {
+  rescheduledFollowUpDate: string
+  note?: string
 }

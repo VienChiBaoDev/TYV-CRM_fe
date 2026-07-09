@@ -1,9 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
+  type RescheduleFollowUpPayload,
   type ScheduleFollowUpPayload,
   type SubmitAssessmentPayload,
 } from "../interfaces/StandardMedicalRecord"
-import { scheduleFollowUp } from "../services/follow-up-service"
+import {
+  rescheduleFollowUp,
+  scheduleFollowUp,
+} from "../services/follow-up-service"
 import { submitAssessment } from "../services/follow-up-service"
 import { followUpKeys } from "../queries/follow-up-query"
 import { appointmentKeys } from "@/app/appointments/queries/appointment-query"
@@ -44,6 +48,29 @@ export function useSubmitAssessmentMutation() {
     }) => submitAssessment(followUpId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: followUpKeys.all })
+    },
+  })
+}
+
+export function useRescheduleFollowUpMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      followUpId,
+      payload,
+    }: {
+      followUpId: string
+      payload: RescheduleFollowUpPayload
+    }) => rescheduleFollowUp(followUpId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: followUpKeys.all })
+      toast.success("Đã cập nhật lịch tái khám")
+    },
+    onError: (error: unknown) => {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Không thể đổi lịch. Vui lòng thử lại."
+      toast.error(message)
     },
   })
 }

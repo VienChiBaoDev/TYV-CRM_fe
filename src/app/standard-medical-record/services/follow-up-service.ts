@@ -3,6 +3,7 @@ import httpService from "@/services/httpService"
 import type {
   FollowUpScheduleApiResponse,
   PendingAssessmentApiResponse,
+  RescheduleFollowUpPayload,
   ScheduleFollowUpPayload,
   SubmitAssessmentPayload,
 } from "../interfaces/StandardMedicalRecord"
@@ -64,6 +65,17 @@ export async function submitAssessment(
 ): Promise<PendingAssessmentApiResponse> {
   const { data } = await httpService.patch<PendingAssessmentApiResponse>(
     API_PATHS.followUps.submitAssessment(followUpId),
+    payload
+  )
+  return data
+}
+
+export async function rescheduleFollowUp(
+  followUpId: string,
+  payload: RescheduleFollowUpPayload
+): Promise<FollowUpScheduleApiResponse> {
+  const { data } = await httpService.patch<FollowUpScheduleApiResponse>(
+    API_PATHS.followUps.rescheduleFollowUp(followUpId),
     payload
   )
   return data
