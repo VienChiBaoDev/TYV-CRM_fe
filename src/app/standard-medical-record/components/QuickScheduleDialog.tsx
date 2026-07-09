@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { useQuery } from "@tanstack/react-query"
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
 import { Form } from "@/components/ui/form"
 import { FormInput } from "@/components/FieldCustom/FormInput"
@@ -17,8 +16,12 @@ import {
 } from "@/lib/date-vi"
 import { useScheduleFollowUpMutation } from "../hooks/use-follow-up-mutations"
 import type { FollowUpSchedule } from "../interfaces/StandardMedicalRecord"
-import { useEffect, useMemo } from "react"
-import { fetchStaffOptions, type StaffOption } from "@/services/staffService"
+import { useEffect } from "react"
+import {
+  findStaffIdByName,
+  staffNameById,
+  useStaffPickerOptions,
+} from "@/hooks/use-staff-picker-options"
 
 const schema = z
   .object({
@@ -70,18 +73,6 @@ function getDefaultTimes(followUpDateIso: string): {
   }
 }
 
-function findStaffIdByName(staffList: StaffOption[], name: string): string {
-  return staffList.find((staff) => staff.fullName === name)?.id ?? ""
-}
-
-function staffNameById(
-  staffList: StaffOption[],
-  id: string | undefined
-): string | undefined {
-  if (!id) return undefined
-  return staffList.find((staff) => staff.id === id)?.fullName
-}
-
 export function QuickScheduleDialog({
   open,
   onOpenChange,
@@ -89,35 +80,8 @@ export function QuickScheduleDialog({
 }: QuickScheduleDialogProps) {
   const mutation = useScheduleFollowUpMutation()
   const defaults = getDefaultTimes(row.effectiveFollowUpDate)
-
-  const { data: staffOptions = [] } = useQuery({
-    queryKey: ["staff", "options"],
-    queryFn: fetchStaffOptions,
-    enabled: open,
-    staleTime: 1000 * 60 * 2,
-  })
-
-  const doctorOptions = useMemo(
-    () =>
-      staffOptions
-        .filter((staff: StaffOption) => staff.role === "DOCTOR")
-        .map((staff: StaffOption) => ({
-          value: staff.id,
-          label: staff.fullName,
-        })),
-    [staffOptions]
-  )
-
-  const assistantOptions = useMemo(
-    () =>
-      staffOptions
-        .filter((staff: StaffOption) => staff.role === "ASSISTANT")
-        .map((staff: StaffOption) => ({
-          value: staff.id,
-          label: staff.fullName,
-        })),
-    [staffOptions]
-  )
+  const { staffOptions, doctorOptions, assistantOptions } =
+    useStaffPickerOptions(open)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),

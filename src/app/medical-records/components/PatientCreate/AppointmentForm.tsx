@@ -3,8 +3,16 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
 import type {
   AppointmentFormState,
   SetAppointmentField,
@@ -26,6 +34,7 @@ function toIso(year: number, month: number, day: number): string {
 }
 
 export function AppointmentForm({ form, setField }: AppointmentFormProps) {
+  const { doctorOptions, assistantOptions } = useStaffPickerOptions(true)
   // Tháng đang hiển thị trên lịch, khởi tạo từ ngày đã chọn
   const initial = form.date ? new Date(form.date) : new Date()
   const [viewYear, setViewYear] = useState(initial.getFullYear())
@@ -156,22 +165,42 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-gray-700 font-medium text-xs">Bác sĩ</Label>
-              <Input
-                placeholder="eg. bác sĩ"
-                value={form.doctorName}
-                onChange={(e) => setField("doctorName", e.target.value)}
-              />
+              <Label className="text-gray-700 font-medium text-xs">
+                Bác sĩ <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={form.doctorId || undefined}
+                onValueChange={(value) => setField("doctorId", value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Chọn bác sĩ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {doctorOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-gray-700 font-medium text-xs">
-                Bác sĩ 2
-              </Label>
-              <Input
-                placeholder="eg. bác sĩ 2"
-                value={form.doctor2}
-                onChange={(e) => setField("doctor2", e.target.value)}
-              />
+              <Label className="text-gray-700 font-medium text-xs">Trợ lý</Label>
+              <Select
+                value={form.assistantId || undefined}
+                onValueChange={(value) => setField("assistantId", value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Chọn trợ lý (tuỳ chọn)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assistantOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

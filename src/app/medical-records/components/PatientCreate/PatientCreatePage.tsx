@@ -24,6 +24,10 @@ import {
 } from "./appointmentState"
 import { createPatient } from "../../data/patientService"
 import { createAppointment } from "../../../appointments/services/appointmentService"
+import {
+  staffNameById,
+  useStaffPickerOptions,
+} from "@/hooks/use-staff-picker-options"
 
 /** Chuyển dd-mm-yyyy người dùng nhập sang ISO yyyy-mm-dd, trả undefined nếu không hợp lệ. */
 function toIsoDate(input: string): string | undefined {
@@ -42,6 +46,7 @@ export default function PatientCreatePage() {
   const [apptForm, setApptForm] = useState<AppointmentFormState>(
     defaultAppointmentForm
   )
+  const { staffOptions } = useStaffPickerOptions(createAppt)
 
   const setField: SetPatientField = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -56,6 +61,10 @@ export default function PatientCreatePage() {
     }
     if (!form.phone.trim()) {
       toast.error("Vui lòng nhập số điện thoại")
+      return
+    }
+    if (createAppt && !apptForm.doctorId) {
+      toast.error("Vui lòng chọn bác sĩ cho lịch hẹn")
       return
     }
 
@@ -82,7 +91,8 @@ export default function PatientCreatePage() {
             patientId: created.id,
             scheduledAt: scheduledAt.toISOString(),
             endedAt: endedAt.toISOString(),
-            doctorName: apptForm.doctorName.trim() || undefined,
+            doctorName: staffNameById(staffOptions, apptForm.doctorId),
+            assistantName: staffNameById(staffOptions, apptForm.assistantId),
             note: apptForm.note.trim() || undefined,
             clinicBranch: branch,
           })

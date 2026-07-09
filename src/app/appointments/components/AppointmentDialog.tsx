@@ -7,7 +7,6 @@ import { toast } from "sonner"
 import { FormDialog } from "@/components/UiCustom/FormDialog"
 import { AppointmentStatusBadge } from "@/components/UiCustom/AppointmentStatusBadge"
 import { FormAppointmentTimeRange } from "@/components/FieldCustom/FormAppointmentTimeRange"
-import { FormInput } from "@/components/FieldCustom/FormInput"
 import { FormPatientSearch } from "@/components/FieldCustom/FormPatientSearch"
 import { FormSelect } from "@/components/FieldCustom/FormSelect"
 import { FormTextarea } from "@/components/FieldCustom/FormTextarea"
@@ -38,6 +37,11 @@ import { slotToDatetimeLocal, toDatetimeLocalValue } from "../utils/time-slots"
 import { urlPaths } from "@/constants/urlPaths"
 import { Link } from "react-router-dom"
 import { ArrowRightIcon } from "lucide-react"
+import {
+  findStaffIdByName,
+  staffNameById,
+  useStaffPickerOptions,
+} from "@/hooks/use-staff-picker-options"
 
 export interface AppointmentDialogContext {
   mode: "create" | "edit"
@@ -72,7 +76,8 @@ function buildDefaultValues(
       patientId: context.appointment.patientId,
       scheduledAt,
       endedAt: toDatetimeLocalValue(context.appointment.endedAt),
-      doctorName: context.appointment.doctorName ?? "",
+      doctorId: "",
+      assistantId: "",
       note: context.appointment.note ?? "",
       status: context.appointment.status,
     }
@@ -91,7 +96,8 @@ function buildDefaultValues(
         scheduledAt,
         DEFAULT_APPOINTMENT_DURATION_MINUTES
       ),
-      doctorName: "",
+      doctorId: "",
+      assistantId: "",
       note: "",
       status: "BOOKED",
     }
@@ -101,7 +107,8 @@ function buildDefaultValues(
     patientId: "",
     scheduledAt: "",
     endedAt: "",
-    doctorName: "",
+    doctorId: "",
+    assistantId: "",
     note: "",
     status: "BOOKED",
   }
@@ -118,6 +125,8 @@ export function AppointmentDialog({
   const updateMutation = useUpdateAppointmentMutation()
   const cancelMutation = useCancelAppointmentMutation()
   const checkInMutation = useCheckInAppointmentMutation()
+  const { staffOptions, doctorOptions, assistantOptions } =
+    useStaffPickerOptions(open)
 
   const isEdit = context?.mode === "edit"
   const appointment = context?.appointment
@@ -133,6 +142,18 @@ export function AppointmentDialog({
     if (!open) return
     form.reset(buildDefaultValues(context))
   }, [open, context, form])
+
+  useEffect(() => {
+    if (!open || !isEdit || !appointment || staffOptions.length === 0) return
+    form.setValue(
+      "doctorId",
+      findStaffIdByName(staffOptions, appointment.doctorName ?? "")
+    )
+    form.setValue(
+      "assistantId",
+      findStaffIdByName(staffOptions, appointment.assistantName ?? "")
+    )
+  }, [open, isEdit, appointment, staffOptions, form])
 
   const isPending =
     createMutation.isPending ||
@@ -161,6 +182,12 @@ export function AppointmentDialog({
     await checkInMutation.mutateAsync(appointment.id)
     onOpenChange(false)
   }
+
+  const resolveStaffPayload = (values: AppointmentFormValues) => ({
+    doctorName: staffNameById(staffOptions, values.doctorId),
+    assistantName: staffNameById(staffOptions, values.assistantId),
+  })
+
   const submitCreate = async (
     patientId: string,
     values: AppointmentFormValues
@@ -177,11 +204,18 @@ export function AppointmentDialog({
       return
     }
 
+    const staff = resolveStaffPayload(values)
+    if (!staff.doctorName) {
+      toast.error("Vui lòng chọn bác sĩ")
+      return
+    }
+
     await createMutation.mutateAsync({
       patientId,
       scheduledAt: start.toISOString(),
       endedAt: end.toISOString(),
-      doctorName: values.doctorName?.trim() || undefined,
+      doctorName: staff.doctorName,
+      assistantName: staff.assistantName,
       note: values.note?.trim() || undefined,
       clinicBranch: branch,
     })
@@ -198,6 +232,7 @@ export function AppointmentDialog({
 
     const scheduledAt = start.toISOString()
     const endedAt = end.toISOString()
+    const staff = resolveStaffPayload(values)
 
     if (isEdit && appointment) {
       await updateMutation.mutateAsync({
@@ -205,7 +240,8 @@ export function AppointmentDialog({
         payload: {
           scheduledAt,
           endedAt,
-          doctorName: values.doctorName?.trim() || undefined,
+          doctorName: staff.doctorName,
+          assistantName: staff.assistantName,
           note: values.note?.trim() || undefined,
           status: values.status,
         },
@@ -219,8 +255,12 @@ export function AppointmentDialog({
 
   const handleSubmitClick = async () => {
     if (lockedPatientId && !isEdit) {
-      const isTimeValid = await form.trigger(["scheduledAt", "endedAt"])
-      if (!isTimeValid) return
+      const isValid = await form.trigger([
+        "scheduledAt",
+        "endedAt",
+        "doctorId",
+      ])
+      if (!isValid) return
       await submitCreate(lockedPatientId, form.getValues())
       return
     }
@@ -338,7 +378,21 @@ export function AppointmentDialog({
             required
             defaultDurationMinutes={DEFAULT_APPOINTMENT_DURATION_MINUTES}
           />
-          <FormInput control={form.control} name="doctorName" label="Bác sĩ" />
+          <FormSelect
+            control={form.control}
+            name="doctorId"
+            label="Bác sĩ"
+            placeholder="Chọn bác sĩ"
+            options={doctorOptions}
+            required
+          />
+          <FormSelect
+            control={form.control}
+            name="assistantId"
+            label="Trợ lý"
+            placeholder="Chọn trợ lý (tuỳ chọn)"
+            options={assistantOptions}
+          />
           <FormTextarea control={form.control} name="note" label="Ghi chú" />
 
           {showStatusSelect ? (
