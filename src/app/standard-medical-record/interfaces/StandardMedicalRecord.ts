@@ -56,6 +56,7 @@ export interface ScheduleFollowUpPayload {
   scheduledAt: string
   endedAt?: string
   doctorName?: string
+  assistantName?: string
   note?: string
 }
 export interface SubmitAssessmentPayload {
