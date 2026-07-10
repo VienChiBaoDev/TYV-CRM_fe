@@ -4,27 +4,23 @@ import { FormTextarea } from "@/components/FieldCustom/FormTextarea"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import {
+  isPatientServiceTreatmentInProgress,
+  mapPatientServicesToTreatmentItems,
+  type TreatmentServiceItem,
+} from "@/app/medical-records/mappers/map-patient-service-to-treatment-item"
+import { patientServicesQueryOptions } from "@/app/medical-records/queries/patient-service-query"
+import {
   treatmentFormDefaultValues,
   treatmentFormSchema,
   type TreatmentFormValues,
 } from "@/app/medical-records/schemas/treatment-form"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useQuery } from "@tanstack/react-query"
 import { Activity, ChevronDown, ClipboardList, Search, X } from "lucide-react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
-
-interface TreatmentItem {
-  id: string
-  time: string
-  progress: string
-  name: string
-  consultant: string
-  date: string
-  totalSessions: number
-  completedSession: number
-  activeSession: number
-}
+import { useParams } from "react-router-dom"
 
 interface TreatmentActionProps {
   onClose: () => void
@@ -49,20 +45,6 @@ const SCOPE_FILTER = {
   MINE: "mine",
   ALL: "all",
 } as const
-
-const MOCK_TREATMENTS: readonly TreatmentItem[] = [
-  {
-    id: "1",
-    time: "18:20 24-04-2026",
-    progress: "8 | 14",
-    name: "COMBO VÙNG BỤNG",
-    consultant: "Đỗ Phi Hưng",
-    date: "24-04-2026",
-    totalSessions: 14,
-    completedSession: 8,
-    activeSession: 9,
-  },
-]
 
 const SESSION_VISIBLE_RANGE = 2
 
@@ -109,6 +91,16 @@ const filterInputClassName =
   "border-slate-250 w-full rounded-lg border bg-white px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
 
 export default function TreatmentAction({ onClose }: TreatmentActionProps) {
+  const { patientId = "" } = useParams()
+  const { data: services = [], isLoading } = useQuery(
+    patientServicesQueryOptions(patientId)
+  )
+
+  const paidTreatmentItems = useMemo(
+    () => mapPatientServicesToTreatmentItems(services),
+    [services]
+  )
+
   const [mainTab, setMainTab] = useState<string>(MAIN_TABS.TREATMENT)
   const [infoTab, setInfoTab] = useState<string>(INFO_TABS.INFO)
   const [statusFilter, setStatusFilter] = useState<string>(
@@ -132,11 +124,31 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
     name: "currentSession",
   })
 
-  const detailTreatment = MOCK_TREATMENTS.find(
+  const filteredTreatmentItems = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase()
+
+    return paidTreatmentItems.filter((item) => {
+      const service = services.find((entry) => entry.id === item.id)
+      if (!service) return false
+      // mục đích là lọc ra các dịch vụ đang điều trị 
+      const matchesStatus =
+        statusFilter === STATUS_FILTER.IN_PROGRESS
+          ? isPatientServiceTreatmentInProgress(service)
+          : !isPatientServiceTreatmentInProgress(service)
+
+      const matchesSearch =
+        normalizedQuery.length === 0 ||
+        item.name.toLowerCase().includes(normalizedQuery)
+
+      return matchesStatus && matchesSearch
+    })
+  }, [paidTreatmentItems, searchQuery, services, statusFilter])
+
+  const detailTreatment = paidTreatmentItems.find(
     (item) => item.id === detailTreatmentId
   )
 
-  const handleSelectTreatment = (item: TreatmentItem) => {
+  const handleSelectTreatment = (item: TreatmentServiceItem) => {
     setSelectedId(item.id)
     setDetailTreatmentId(item.id)
     form.setValue("currentSession", item.activeSession)
@@ -309,29 +321,41 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
 
           {/* Treatment list */}
           <div className="space-y-2">
-            {MOCK_TREATMENTS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleSelectTreatment(item)}
-                className={cn(
-                  "w-full rounded-lg border p-3 text-left transition-colors",
-                  selectedId === item.id
-                    ? "border-emerald-200 bg-emerald-50/50"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                )}
-              >
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-500">
-                    {item.time}
-                  </span>
-                  <span className="text-[11px] text-slate-400">
-                    {item.progress}
-                  </span>
-                </div>
-                <p className="text-sm font-bold text-slate-800">{item.name}</p>
-              </button>
-            ))}
+            {isLoading ? (
+              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs text-slate-500">
+                Đang tải dịch vụ...
+              </p>
+            ) : filteredTreatmentItems.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs text-slate-500">
+                {paidTreatmentItems.length === 0
+                  ? "Chưa có dịch vụ đã thanh toán để điều trị."
+                  : "Không tìm thấy dịch vụ phù hợp."}
+              </p>
+            ) : (
+              filteredTreatmentItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleSelectTreatment(item)}
+                  className={cn(
+                    "w-full rounded-lg border p-3 text-left transition-colors",
+                    selectedId === item.id
+                      ? "border-emerald-200 bg-emerald-50/50"
+                      : "border-slate-200 bg-white hover:border-slate-300"
+                  )}
+                >
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-[11px] text-slate-500">
+                      {item.time}
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      {item.progress}
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold text-slate-800">{item.name}</p>
+                </button>
+              ))
+            )}
           </div>
         </div>
 
