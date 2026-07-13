@@ -152,4 +152,24 @@ export function formatAppointmentTimeRangeVi(
   return `${formatTimeVi(start)} – ${formatTimeVi(end)}`
 }
 
+/** BE display: `09:30 26-06-2026` → form ISO date `2026-06-26` */
+export function parseDisplayDatetimeToIsoDate(value: string): string {
+  if (!value) return ""
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
+
+  const match = value.match(/^(\d{2}):(\d{2}) (\d{2})-(\d{2})-(\d{4})$/)
+  if (match) {
+    const [, , , day, month, year] = match
+    return `${year}-${month}-${day}`
+  }
+
+  const parsed = new Date(value)
+  return isValid(parsed) ? toIsoDate(parsed) : ""
+}
+
+/** Form ISO date → ISO8601 datetime for API */
+export function isoDateToApiDatetime(isoDate: string): string {
+  return `${isoDate}T00:00:00.000Z`
+}
+
 export { vi as viLocale }

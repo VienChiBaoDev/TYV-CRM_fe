@@ -1,4 +1,4 @@
-import { FormInput } from "@/components/FieldCustom/FormInput"
+import { FormDate } from "@/components/FieldCustom/FormDate"
 import {
   FormSelect,
   type FormSelectOption,
@@ -86,12 +86,13 @@ export default function TreatmentActionFormPanel({
                 labelClassName={labelClassName}
                 triggerClassName={fieldClassName}
               />
-              <FormInput
+              <FormDate
                 control={form.control}
                 name="nextTreatmentDate"
                 label="Ngày điều trị kế tiếp"
-                inputClassName={cn(fieldClassName, "font-mono")}
+                placeholder="Chọn ngày"
                 labelClassName={labelClassName}
+                className={fieldClassName}
               />
             </div>
 
@@ -104,15 +105,6 @@ export default function TreatmentActionFormPanel({
               labelClassName={labelClassName}
               textareaClassName={fieldClassName}
             />
-
-            <div>
-              <button
-                type="button"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-100"
-              >
-                Ghi chú
-              </button>
-            </div>
 
             <FormTextarea
               control={form.control}

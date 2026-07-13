@@ -13,6 +13,7 @@ import {
 } from "@/app/medical-records/schemas/treatment-form"
 import { useUpsertTreatmentSessionMutation } from "@/app/medical-records/hooks/use-patient-treatment-mutations"
 import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
+import { parseDisplayDatetimeToIsoDate } from "@/lib/date-vi"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQuery } from "@tanstack/react-query"
@@ -133,7 +134,10 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
       form.setValue("treatmentContent", existing.treatmentContent)
       form.setValue("note", existing.note ?? "")
       form.setValue("nextContent", existing.nextContent ?? "")
-      form.setValue("nextTreatmentDate", existing.nextTreatmentDate ?? "")
+      form.setValue(
+        "nextTreatmentDate",
+        parseDisplayDatetimeToIsoDate(existing.nextTreatmentDate ?? "")
+      )
     } else {
       form.setValue("treatmentContent", "")
       form.setValue("note", "")
