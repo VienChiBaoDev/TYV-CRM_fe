@@ -43,18 +43,35 @@ export function buildClinicTimeSlotOptions(
   return slots
 }
 
+/** BE display: `09:30 26-06-2026` */
+export function parseDisplayDatetime(value: string): Date | undefined {
+  if (!value) return undefined
+
+  const displayMatch = value.match(/^(\d{2}):(\d{2}) (\d{2})-(\d{2})-(\d{4})$/)
+  if (displayMatch) {
+    const [, hours, minutes, day, month, year] = displayMatch
+    const parsed = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hours),
+      Number(minutes)
+    )
+    return isValid(parsed) ? parsed : undefined
+  }
+
+  return parseFormDatetime(value)
+}
+
 export function formatDateVi(input: Date | string): string {
-  const date = typeof input === "string" ? new Date(input) : input
-  if (!isValid(date)) return ""
+  const date = typeof input === "string" ? parseDisplayDatetime(input) : input
+  if (!date || !isValid(date)) return ""
   return format(date, VI_DATE_FORMAT, { locale: vi })
 }
 
 export function formatDatetimeVi(input: Date | string): string {
-  const date =
-    typeof input === "string"
-      ? (parseFormDatetime(input) ?? new Date(input))
-      : input
-  if (!isValid(date)) return ""
+  const date = typeof input === "string" ? parseDisplayDatetime(input) : input
+  if (!date || !isValid(date)) return ""
   return format(date, VI_DATETIME_FORMAT, { locale: vi })
 }
 
@@ -157,14 +174,8 @@ export function parseDisplayDatetimeToIsoDate(value: string): string {
   if (!value) return ""
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
 
-  const match = value.match(/^(\d{2}):(\d{2}) (\d{2})-(\d{2})-(\d{4})$/)
-  if (match) {
-    const [, , , day, month, year] = match
-    return `${year}-${month}-${day}`
-  }
-
-  const parsed = new Date(value)
-  return isValid(parsed) ? toIsoDate(parsed) : ""
+  const parsed = parseDisplayDatetime(value)
+  return parsed ? toIsoDate(parsed) : ""
 }
 
 /** Form ISO date → ISO8601 datetime for API */
