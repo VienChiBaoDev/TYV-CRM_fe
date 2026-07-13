@@ -4,6 +4,14 @@ export function getHighestCatalogPrice(service: TreatmentService): number {
   return Math.max(service.price, service.alternatePrice)
 }
 
+/** Mirrors BE getSessionTotal — single source for buổi điều trị on the form */
+export function getPatientServiceSessionCount(params: {
+  treatmentCount: number
+  quantity: number
+}): number {
+  return params.treatmentCount > 0 ? params.treatmentCount : params.quantity
+}
+
 export function applyCatalogPricing(service: TreatmentService) {
   const unitPrice = getHighestCatalogPrice(service)
   const unitPriceAfterVat =
@@ -19,7 +27,7 @@ export function applyCatalogPricing(service: TreatmentService) {
     vatPercent,
     vatAmount,
     unitPriceAfterVat,
-    treatmentCount: service.treatmentCount ?? 0,
+    treatmentCount: Math.max(1, service.treatmentCount ?? 1),
     expiryDays: service.expiryDays,
     note: service.note ?? "",
   }

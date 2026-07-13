@@ -4,6 +4,7 @@ import {
   type PatientServiceFormInput,
   type PatientServiceFormValues,
 } from "@/app/medical-records/schemas/patient-service-form"
+import { getPatientServiceSessionCount } from "@/app/medical-records/utils/patient-service-pricing"
 
 export interface CreatePatientServicePayload {
   catalogServiceId: string
@@ -47,7 +48,7 @@ function mapPatientServiceFormToPayload(
     unitPriceAfterVat: values.unitPriceAfterVat,
     quantity: values.quantity,
     discount: values.discount,
-    treatmentCount: values.treatmentCount,
+    treatmentCount: values.quantity,
     expiryDate: values.expiryDate || undefined,
     note: values.note.trim() || undefined,
   }
@@ -56,6 +57,11 @@ function mapPatientServiceFormToPayload(
 export function mapPatientServiceToFormInput(
   service: PatientService
 ): PatientServiceFormInput {
+  const sessionCount = getPatientServiceSessionCount({
+    treatmentCount: service.form.treatmentCount,
+    quantity: service.form.quantity,
+  })
+
   return {
     consultantId: service.form.consultantId,
     telesaleId: service.form.telesaleId ?? "",
@@ -66,9 +72,9 @@ export function mapPatientServiceToFormInput(
     vatPercent: service.form.vatPercent,
     vatAmount: service.form.vatAmount,
     unitPriceAfterVat: service.form.unitPriceAfterVat,
-    quantity: service.form.quantity,
+    quantity: sessionCount,
     discount: service.form.discount,
-    treatmentCount: service.form.treatmentCount,
+    treatmentCount: sessionCount,
     expiryDate: service.form.expiryDate ?? "",
     note: service.note,
   }

@@ -220,6 +220,7 @@ export function AddPatientServiceDialog({
       form.setValue("vatPercent", 0)
       form.setValue("vatAmount", 0)
       form.setValue("unitPriceAfterVat", 0)
+      form.setValue("quantity", 1)
       form.setValue("treatmentCount", 0)
       form.setValue("expiryDate", "")
       form.setValue("note", "")
@@ -237,6 +238,7 @@ export function AddPatientServiceDialog({
     form.setValue("unitPriceAfterVat", pricing.unitPriceAfterVat, {
       shouldDirty: true,
     })
+    form.setValue("quantity", pricing.treatmentCount, { shouldDirty: true })
     form.setValue("treatmentCount", pricing.treatmentCount, {
       shouldDirty: true,
     })
@@ -366,6 +368,7 @@ export function AddPatientServiceDialog({
                         form.setValue("vatPercent", 0)
                         form.setValue("vatAmount", 0)
                         form.setValue("unitPriceAfterVat", 0)
+                        form.setValue("quantity", 1)
                         form.setValue("treatmentCount", 0)
                         form.setValue("expiryDate", "")
                         form.setValue("note", "")
@@ -436,7 +439,7 @@ export function AddPatientServiceDialog({
           <FormInput
             control={form.control}
             name="quantity"
-            label="SL"
+            label="Số buổi điều trị"
             type="number"
             disabled={!serviceId}
           />
@@ -454,18 +457,10 @@ export function AddPatientServiceDialog({
               {formatPrice(totalAmount)} đ
             </p>
             <p className="mt-1 text-[11px] text-emerald-700">
-              ({formatPrice(Number(unitPriceAfterVat))} × {Number(quantity)}) −{" "}
+              ({formatPrice(Number(unitPriceAfterVat))} × {Number(quantity)} buổi) −{" "}
               {formatPrice(Number(discount))}
             </p>
           </div>
-
-          <FormInput
-            control={form.control}
-            name="treatmentCount"
-            label="Lần điều trị"
-            type="number"
-            disabled={!serviceId}
-          />
 
           <FormDate
             control={form.control}
