@@ -53,6 +53,14 @@ const API_PATHS = {
     createRefund: (patientId: string) =>
       `/patients/${patientId}/payments/refunds`,
   },
+  patientTreatment: {
+    listByPatient: (patientId: string) =>
+      `/patients/${patientId}/treatment-sessions`,
+    listByService: (patientId: string, serviceId: string) =>
+      `/patients/${patientId}/services/${serviceId}/treatment-sessions`,
+    upsert: (patientId: string, serviceId: string) =>
+      `/patients/${patientId}/services/${serviceId}/treatment-sessions`,
+  },
 }
 
 export default API_PATHS

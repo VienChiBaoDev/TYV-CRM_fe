@@ -1,25 +1,25 @@
 import { z } from "zod"
 
 export const treatmentFormSchema = z.object({
-  doctor: z.string(),
-  ptKtv: z.string(),
-  professionalSupport: z.string(),
-  nextTreatmentDate: z.string().min(1, "Vui lòng nhập ngày điều trị kế tiếp"),
-  nextContent: z.string(),
-  note: z.string(),
-  treatmentContent: z.string(),
+  doctorId: z.string().optional(),
+  ptKtvId: z.string().optional(),
+  professionalSupport: z.string().optional(),
+  nextTreatmentDate: z.string().optional(),
+  nextContent: z.string().optional(),
+  note: z.string().optional(),
+  treatmentContent: z.string().min(1, "Vui lòng nhập nội dung điều trị"),
   currentSession: z.number().min(1),
 })
 
 export type TreatmentFormValues = z.infer<typeof treatmentFormSchema>
 
 export const treatmentFormDefaultValues: TreatmentFormValues = {
-  doctor: "",
-  ptKtv: "",
+  doctorId: "",
+  ptKtvId: "",
   professionalSupport: "",
-  nextTreatmentDate: "22-06-2026 13:31:52",
+  nextTreatmentDate: "",
   nextContent: "",
   note: "",
   treatmentContent: "",
-  currentSession: 9,
+  currentSession: 1,
 }

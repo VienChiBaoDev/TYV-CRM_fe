@@ -21,6 +21,10 @@ import { Activity, ChevronDown, ClipboardList, Search, X } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { useParams } from "react-router-dom"
+import { serviceTreatmentSessionsQueryOptions } from "../../queries/patient-treatment-query"
+import { useUpsertTreatmentSessionMutation } from "../../hooks/use-patient-treatment-mutations"
+import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
+import { mapTreatmentFormToUpsertPayload } from "../../mappers/map-treatment-session-request"
 
 interface TreatmentActionProps {
   onClose: () => void
@@ -47,13 +51,6 @@ const SCOPE_FILTER = {
 } as const
 
 const SESSION_VISIBLE_RANGE = 2
-
-const EMPTY_SELECT_OPTIONS: { value: string; label: string }[] = [
-  { value: "a", label: "a" },
-  { value: "b", label: "b" },
-  { value: "c", label: "c" },
-  { value: "d", label: "d" },
-]
 
 const labelClassName = "text-xs font-bold text-slate-700"
 const fieldClassName = "text-xs"
@@ -114,6 +111,21 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [staffFilter, setStaffFilter] = useState("all")
 
+  const selectedServiceId = detailTreatmentId ?? ""
+  const { data: sessionData } = useQuery(
+    serviceTreatmentSessionsQueryOptions(patientId, selectedServiceId)
+  )
+  const upsertMutation = useUpsertTreatmentSessionMutation(
+    patientId,
+    selectedServiceId
+  )
+  const { doctorOptions, staffOptions } = useStaffPickerOptions()
+  // Tính tổng số buổi điều trị tối đa
+  const maxAllowedSession =
+    sessionData?.service.maxAllowedSession ??
+    services.find((s) => s.id === selectedServiceId)?.progress.maxAllowed ??
+    0
+
   const form = useForm<TreatmentFormValues>({
     resolver: zodResolver(treatmentFormSchema),
     defaultValues: treatmentFormDefaultValues,
@@ -130,7 +142,7 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
     return paidTreatmentItems.filter((item) => {
       const service = services.find((entry) => entry.id === item.id)
       if (!service) return false
-      // mục đích là lọc ra các dịch vụ đang điều trị 
+      // mục đích là lọc ra các dịch vụ đang điều trị
       const matchesStatus =
         statusFilter === STATUS_FILTER.IN_PROGRESS
           ? isPatientServiceTreatmentInProgress(service)
@@ -147,19 +159,47 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
   const detailTreatment = paidTreatmentItems.find(
     (item) => item.id === detailTreatmentId
   )
-
+  // Khi chọn dịch vụ:
   const handleSelectTreatment = (item: TreatmentServiceItem) => {
     setSelectedId(item.id)
     setDetailTreatmentId(item.id)
-    form.setValue("currentSession", item.activeSession)
-    form.setValue("treatmentContent", "")
+    const service = services.find((s) => s.id === item.id)
+    const nextSession = Math.min(
+      item.activeSession,
+      service?.progress.maxAllowed ?? item.activeSession
+    )
+    form.reset({
+      ...treatmentFormDefaultValues,
+      currentSession: nextSession,
+    })
   }
 
+  // Khi click số buổi trên thanh progress:
+  const handlePickSession = (step: number) => {
+    if (step > maxAllowedSession) return
+    form.setValue("currentSession", step)
+    const existing = sessionData?.sessions.find((s) => s.sessionNumber === step)
+    if (existing) {
+      form.setValue("doctorId", existing.doctorId ?? "")
+      form.setValue("ptKtvId", existing.ptKtvId ?? "")
+      form.setValue("professionalSupport", existing.professionalSupport ?? "")
+      form.setValue("treatmentContent", existing.treatmentContent)
+      form.setValue("note", existing.note ?? "")
+      form.setValue("nextContent", existing.nextContent ?? "")
+      form.setValue("nextTreatmentDate", existing.nextTreatmentDate ?? "")
+    } else {
+      form.setValue("treatmentContent", "")
+      form.setValue("note", "")
+      form.setValue("nextContent", "")
+      form.setValue("nextTreatmentDate", "")
+    }
+  }
+
+  // Submit:
   const onSubmit = async (values: TreatmentFormValues) => {
-    void values
-    // TODO: integrate with API mutation
+    if (!selectedServiceId) return
+    await upsertMutation.mutateAsync(mapTreatmentFormToUpsertPayload(values))
   }
-
   const handleSave = form.handleSubmit(onSubmit)
   const handleSaveAndContinue = form.handleSubmit(async (values) => {
     await onSubmit(values)
@@ -352,7 +392,9 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
                       {item.progress}
                     </span>
                   </div>
-                  <p className="text-sm font-bold text-slate-800">{item.name}</p>
+                  <p className="text-sm font-bold text-slate-800">
+                    {item.name}
+                  </p>
                 </button>
               ))
             )}
@@ -368,20 +410,23 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   <FormSelect
                     control={form.control}
-                    name="doctor"
+                    name="doctorId"
                     label="Bác sĩ"
                     placeholder="eg .bác sĩ"
-                    options={EMPTY_SELECT_OPTIONS}
+                    options={doctorOptions}
                     labelClassName={labelClassName}
                     triggerClassName={fieldClassName}
                   />
 
                   <FormSelect
                     control={form.control}
-                    name="ptKtv"
+                    name="ptKtvId"
                     label="PT/KTV"
                     placeholder="eg .pt/ktv"
-                    options={EMPTY_SELECT_OPTIONS}
+                    options={staffOptions.map((staff) => ({
+                      value: staff.id,
+                      label: staff.fullName,
+                    }))}
                     labelClassName={labelClassName}
                     triggerClassName={fieldClassName}
                   />
@@ -391,7 +436,10 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
                     name="professionalSupport"
                     label="Hỗ trợ chuyên môn"
                     placeholder="eg .hỗ trợ chuyên môn"
-                    options={EMPTY_SELECT_OPTIONS}
+                    options={staffOptions.map((staff) => ({
+                      value: staff.id,
+                      label: staff.fullName,
+                    }))}
                     labelClassName={labelClassName}
                     triggerClassName={fieldClassName}
                   />
@@ -466,10 +514,11 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
                           <button
                             key={step}
                             type="button"
-                            onClick={() =>
-                              form.setValue("currentSession", step)
-                            }
+                            onClick={() => handlePickSession(step)}
+                            disabled={step > maxAllowedSession}
                             className={cn(
+                              step > maxAllowedSession &&
+                                "cursor-not-allowed opacity-40",
                               "flex h-7 min-w-7 items-center justify-center rounded-full px-1.5 text-xs font-bold transition-colors",
                               step === currentSession
                                 ? "border border-slate-700 bg-white text-slate-800"
@@ -524,7 +573,7 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
               </Button>
               <Button
                 type="button"
-                disabled={form.formState.isSubmitting}
+                disabled={!detailTreatmentId || upsertMutation.isPending}
                 onClick={handleSaveAndContinue}
                 className="bg-emerald-800 text-white hover:bg-emerald-700"
               >
@@ -532,7 +581,7 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={form.formState.isSubmitting}
+                disabled={!detailTreatmentId || upsertMutation.isPending}
                 className="bg-emerald-800 text-white hover:bg-emerald-700"
               >
                 Lưu

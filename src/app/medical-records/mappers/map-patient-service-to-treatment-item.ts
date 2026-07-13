@@ -29,12 +29,14 @@ export function mapPatientServiceToTreatmentItem(
   service: PatientService
 ): TreatmentServiceItem {
   const { current, total } = service.progress
-  // số lần hoàn thành
   const completedSession = Math.min(current, total)
-  // số lần đang diễn ra
   const activeSession =
-    total > 0 ? Math.min(completedSession + 1, total) : 1
-
+    total > 0
+      ? Math.min(
+          Math.max(completedSession + 1, 1),
+          service.progress.maxAllowed || total
+        )
+      : 1
   return {
     id: service.id,
     time: formatDatetimeVi(service.finalizedAt),

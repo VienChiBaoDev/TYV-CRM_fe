@@ -39,6 +39,7 @@ export interface PatientServiceApi {
   readonly progress: {
     readonly current: number
     readonly total: number
+    readonly maxAllowed: number
   }
   readonly amount: PatientServiceAmountApi
   readonly consultant: PatientServicePersonApi

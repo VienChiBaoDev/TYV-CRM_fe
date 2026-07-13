@@ -17,6 +17,7 @@ export interface PatientServiceAmount {
 export interface PatientServiceProgress {
   current: number
   total: number
+  maxAllowed: number
 }
 
 export interface PatientService {
