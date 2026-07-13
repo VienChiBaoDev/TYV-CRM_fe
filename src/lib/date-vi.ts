@@ -13,6 +13,9 @@ export const ISO_DATE_FORMAT = "yyyy-MM-dd"
 /** Giá trị form datetime local: 2026-06-26T09:30 */
 export const FORM_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm"
 
+/** BE display: `09:30 26-06-2026` */
+export const BE_DISPLAY_DATETIME_FORMAT = "HH:mm dd-MM-yyyy"
+
 export const VI_WEEK_STARTS_ON = 1 as const
 
 export const DEFAULT_CLINIC_START_HOUR = 7
@@ -43,22 +46,11 @@ export function buildClinicTimeSlotOptions(
   return slots
 }
 
-/** BE display: `09:30 26-06-2026` */
 export function parseDisplayDatetime(value: string): Date | undefined {
   if (!value) return undefined
 
-  const displayMatch = value.match(/^(\d{2}):(\d{2}) (\d{2})-(\d{2})-(\d{4})$/)
-  if (displayMatch) {
-    const [, hours, minutes, day, month, year] = displayMatch
-    const parsed = new Date(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-      Number(hours),
-      Number(minutes)
-    )
-    return isValid(parsed) ? parsed : undefined
-  }
+  const fromDisplay = parse(value, BE_DISPLAY_DATETIME_FORMAT, new Date())
+  if (isValid(fromDisplay)) return fromDisplay
 
   return parseFormDatetime(value)
 }
@@ -154,11 +146,8 @@ export function addMinutesToFormDatetime(
 }
 
 export function formatTimeVi(input: Date | string): string {
-  const date =
-    typeof input === "string"
-      ? (parseFormDatetime(input) ?? new Date(input))
-      : input
-  if (!isValid(date)) return ""
+  const date = typeof input === "string" ? parseDisplayDatetime(input) : input
+  if (!date || !isValid(date)) return ""
   return format(date, "HH:mm")
 }
 
