@@ -49,7 +49,6 @@ export default function Treatment() {
           title="Danh sách điều trị"
           actions={
             <Button
-              className="bg-emerald-800 text-white hover:bg-emerald-700"
               onClick={() => {
                 setTreatment(true)
               }}

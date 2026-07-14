@@ -54,7 +54,7 @@ export default function VisitDetails() {
               ? "bg-amber-500"
               : activeVisit.status === "Online"
                 ? "bg-blue-600"
-                : "bg-emerald-700"
+                : "bg-primary"
           }`}
         ></div>
 

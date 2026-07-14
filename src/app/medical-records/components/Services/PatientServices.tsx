@@ -18,9 +18,6 @@ import type { PatientServiceFormValues } from "@/app/medical-records/schemas/pat
 import { AddPatientServiceDialog } from "./AddPatientServiceDialog"
 import { PatientServiceTableColumns } from "./patient-service-table-columns"
 
-const PRIMARY_BTN =
-  "bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold"
-
 export default function PatientServices() {
   const { patientId = "" } = useParams()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -106,17 +103,12 @@ export default function PatientServices() {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-end gap-3 rounded-md border border-gray-200 bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            className={PRIMARY_BTN}
-            onClick={handleOpenCreate}
-          >
+          <Button type="button" size="sm" onClick={handleOpenCreate}>
             Thêm mới
           </Button>
-          <Button type="button" size="sm" className={PRIMARY_BTN}>
+          {/* <Button type="button" size="sm" className={PRIMARY_BTN}>
             Combo
-          </Button>
+          </Button> */}
         </div>
       </div>
       <div className="rounded-md border border-gray-200 bg-white">

@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button"
 
 import { ServiceFiltersBar } from "./ServiceFiltersBar"
 import { createServiceTableColumns } from "./service-table-columns"
-import type { ServiceFilters, TreatmentService } from "../types/treatment-service"
+import type {
+  ServiceFilters,
+  TreatmentService,
+} from "../types/treatment-service"
 
 interface ServiceListPanelProps {
   services: TreatmentService[]
@@ -36,11 +39,7 @@ export function ServiceListPanel({
   )
 
   const headerActions = (
-    <Button
-      type="button"
-      onClick={onAddService}
-      className="bg-emerald-600 text-white hover:bg-emerald-700"
-    >
+    <Button type="button" onClick={onAddService}>
       <Plus className="h-4 w-4" />
       Thêm mới
     </Button>

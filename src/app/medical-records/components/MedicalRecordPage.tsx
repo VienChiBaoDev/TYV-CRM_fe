@@ -35,7 +35,7 @@ export function MedicalRecordPage() {
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as typeof activeTab)}
         >
-          <TabsList className="bg-green-200">
+          <TabsList>
             <TabsTrigger value={MEDICAL_RECORD_TABS.VISITS}>
               Lần khám
             </TabsTrigger>

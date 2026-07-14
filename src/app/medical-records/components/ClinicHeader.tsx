@@ -7,6 +7,7 @@ import {
 } from "@/app/appointments/components/AppointmentDialog"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { toClinicBranchCode } from "@/lib/clinic-branch"
+import { Button } from "@/components/ui/button"
 
 export default function ClinicHeader() {
   const { activePatient, activeBranch, patientId } = useMedicalRecordContext()
@@ -48,16 +49,16 @@ export default function ClinicHeader() {
         </div>
 
         <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
-          <button
+          <Button
             id="top-book-btn"
             type="button"
             disabled={!patientId}
             onClick={openAppointmentDialog}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-emerald-800 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Plus className="h-3.5 w-3.5" />
             Đặt lịch
-          </button>
+          </Button>
 
           <div
             className="text-slate-750 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-100 bg-linear-to-b from-sky-100 to-indigo-100 text-xs font-bold shadow-2xs"

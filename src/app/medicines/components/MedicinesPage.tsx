@@ -121,11 +121,7 @@ export function MedicinesPage() {
           title="Quản lý kho thuốc"
           description="Danh sách thuốc dùng khi kê đơn trong lượt khám"
           actions={
-            <Button
-              type="button"
-              onClick={openAddDialog}
-              className="bg-emerald-600 text-white hover:bg-emerald-700"
-            >
+            <Button type="button" onClick={openAddDialog}>
               <Plus className="h-4 w-4" />
               Thêm thuốc
             </Button>

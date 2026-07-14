@@ -158,7 +158,7 @@ export function ClinicalAssessmentScale() {
               <Button
                 size="icon"
                 onClick={() => handleOpenDialog(row.original)}
-                className="w-full bg-yellow-700 text-white hover:bg-emerald-800"
+                className="w-full bg-[#f8e3a3] text-sidebar-primary hover:bg-[#f8e3a3]/80"
               >
                 Hỏi thăm
               </Button>

@@ -113,7 +113,6 @@ export function FollowUpSchedule() {
               size="sm"
               disabled={isScheduled}
               onClick={() => setSelectedRow(row.original)}
-              className="bg-emerald-700 text-white hover:bg-emerald-800"
             >
               Đặt nhanh
             </Button>

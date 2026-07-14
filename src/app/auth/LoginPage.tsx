@@ -41,7 +41,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-emerald-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-primary px-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
         <div className="mb-6 flex flex-col items-center text-center">
           <span className="font-display text-4xl font-semibold text-emerald-700">
@@ -91,7 +91,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-700 hover:bg-emerald-800"
+            className="w-full bg-primary hover:bg-primary/80"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />

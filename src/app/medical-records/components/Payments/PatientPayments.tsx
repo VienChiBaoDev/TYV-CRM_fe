@@ -26,9 +26,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { mapPatientServicesToRefundableItems } from "../../mappers/map-patient-service-to-refundable-item"
 import type { RefundablePaymentItem } from "../../interfaces/refundable-payment-item"
 
-const PRIMARY_BTN =
-  "bg-emerald-600 text-white hover:bg-emerald-700 text-md font-semibold"
-
 interface SummaryCardProps {
   label: string
   value: number
@@ -63,7 +60,7 @@ function SplitActionButton({
       <Button
         type="button"
         size="lg"
-        className={cn(PRIMARY_BTN, "rounded-none px-2")}
+        className={cn("rounded-none px-2")}
         aria-label={`Thêm ${label}`}
         onClick={onAdd}
       >
@@ -72,17 +69,13 @@ function SplitActionButton({
       <Button
         type="button"
         size="lg"
-        className={cn(PRIMARY_BTN, "rounded-none px-2")}
+        className={cn("rounded-none px-2")}
         aria-label={`Giảm ${label}`}
         onClick={onSubtract}
       >
         <Minus className="h-3.5 w-3.5" />
       </Button>
-      <Button
-        type="button"
-        size="lg"
-        className={cn(PRIMARY_BTN, "rounded-none")}
-      >
+      <Button type="button" size="lg" className={cn("rounded-none")}>
         {label}
       </Button>
     </div>

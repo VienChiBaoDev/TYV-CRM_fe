@@ -6,7 +6,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 
-import { SERVICE_ITEM_TYPE, type ServiceGroup } from "../types/treatment-service"
+import {
+  SERVICE_ITEM_TYPE,
+  type ServiceGroup,
+} from "../types/treatment-service"
 
 interface ServiceGroupSidebarProps {
   groups: ServiceGroup[]
@@ -54,16 +57,9 @@ export function ServiceGroupSidebar({
   return (
     <aside className="flex w-full shrink-0 flex-col border-r border-slate-200 bg-white md:w-72 lg:w-80">
       <div className="border-b border-slate-100 p-4">
-        <PageHeader
-          title="Nhóm dịch vụ"
-          description="Tất cả nhóm dịch vụ"
-        />
+        <PageHeader title="Nhóm dịch vụ" description="Tất cả nhóm dịch vụ" />
 
-        <Button
-          type="button"
-          onClick={onAddGroup}
-          className="mt-3 w-full bg-emerald-600 text-white hover:bg-emerald-700"
-        >
+        <Button type="button" onClick={onAddGroup} className="mt-3 w-full">
           <Plus className="h-4 w-4" />
           Thêm mới
         </Button>
@@ -118,7 +114,9 @@ export function ServiceGroupSidebar({
                     onClick={() => onSelectGroup(group.id)}
                     className={cn(
                       "min-w-0 flex-1 px-3 py-2.5 text-left text-sm",
-                      isSelected ? "font-medium text-slate-900" : "text-slate-700"
+                      isSelected
+                        ? "font-medium text-slate-900"
+                        : "text-slate-700"
                     )}
                   >
                     <span className="text-slate-500">{group.code}</span>{" "}

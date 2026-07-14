@@ -26,7 +26,7 @@ export default function ExportBAModal({
         <div className="no-print absolute top-4 right-4 flex items-center gap-2">
           <button
             onClick={() => window.print()}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-emerald-800 p-1 px-3 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-emerald-800 p-1 px-3 text-xs font-bold text-white shadow-sm hover:bg-primary"
           >
             <Printer className="h-3.5 w-3.5" /> In bệnh án
           </button>

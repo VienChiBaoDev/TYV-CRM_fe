@@ -102,7 +102,7 @@ export default function TreatmentActionSidebar({
             className={cn(
               "px-2.5 py-1.5 text-[11px] font-bold transition-colors",
               scopeFilter === SCOPE_FILTER.MINE
-                ? "bg-emerald-700 text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-slate-600 hover:bg-slate-50"
             )}
           >
@@ -114,7 +114,7 @@ export default function TreatmentActionSidebar({
             className={cn(
               "px-2.5 py-1.5 text-[11px] font-bold transition-colors",
               scopeFilter === SCOPE_FILTER.ALL
-                ? "bg-emerald-700 text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-slate-600 hover:bg-slate-50"
             )}
           >

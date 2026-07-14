@@ -117,7 +117,7 @@ function CollapsibleNavItem({ item }: { item: NavItem }) {
           "group flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm transition-all",
           isActive
             ? "bg-emerald-900/40 text-emerald-100"
-            : "text-emerald-300 hover:bg-emerald-900/40"
+            : "bg-primary hover:bg-emerald-900/40"
         )}
       >
         <div className="flex items-center gap-3">
@@ -141,7 +141,7 @@ function CollapsibleNavItem({ item }: { item: NavItem }) {
                 className={cn(
                   "rounded-md px-3 py-1.5 text-xs transition-all",
                   isChildActive
-                    ? "bg-emerald-700/50 font-medium text-white"
+                    ? "bg-primary/50 font-medium text-white"
                     : "text-emerald-400 hover:bg-emerald-900/30 hover:text-emerald-200"
                 )}
               >
@@ -175,8 +175,8 @@ function NavGroup({ title, items }: { title: string; items: NavItem[] }) {
                 cn(
                   "group flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition-all",
                   isActive || (item.to && location.pathname.startsWith(item.to))
-                    ? "border-l-4 border-l-lime-400 bg-emerald-700 text-white"
-                    : "text-emerald-300 hover:bg-emerald-900/40"
+                    ? "border-l-4 border-l-lime-400 bg-primary text-white"
+                    : "bg-primary hover:bg-emerald-900/40"
                 )
               }
             >
@@ -291,7 +291,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="sticky top-0 grid h-screen w-full shrink-0 grid-rows-[auto_1fr_auto] overflow-hidden bg-emerald-950 text-white shadow-lg md:w-64"
+      className="sticky top-0 grid h-screen w-full shrink-0 grid-rows-[auto_1fr_auto] overflow-hidden bg-sidebar-primary text-sidebar-primary-foreground shadow-lg md:w-64"
       id="app-sidebar"
     >
       <div>
@@ -303,10 +303,10 @@ export function Sidebar() {
               className="h-20 w-20 rounded-xl object-cover"
             />
             <div>
-              <h1 className="font-display text-lg font-bold tracking-tight text-white">
+              <h1 className="font-display text-lg font-bold tracking-tight text-sidebar-primary-foreground">
                 Thượng Y Viên
               </h1>
-              <p className="mb-0 text-[10px] font-medium tracking-widest text-emerald-300 uppercase">
+              <p className="mb-0 bg-sidebar-primary text-[10px] font-medium tracking-widest uppercase">
                 Nhân • Tâm • Trí
               </p>
             </div>
@@ -325,7 +325,7 @@ export function Sidebar() {
             >
               <SelectTrigger
                 id="branch-select"
-                className="w-full border-emerald-800/40 bg-emerald-950/60 text-emerald-100 shadow-none hover:border-emerald-700/60 hover:bg-emerald-900/40 focus-visible:ring-emerald-600/30 data-[state=open]:border-emerald-600 data-[state=open]:ring-emerald-600/30 [&_svg]:text-white"
+                className="w-full border-[#f8e3a3] bg-sidebar-primary/60 text-sidebar-primary-foreground shadow-none hover:border-[#f8e3a3]/60 hover:bg-sidebar-primary/40 focus-visible:ring-[#f8e3a3]/30 data-[state=open]:border-[#f8e3a3] data-[state=open]:ring-[#f8e3a3]/30 [&_svg]:text-white"
               >
                 <SelectValue placeholder="Chọn cơ sở">
                   <span className="flex items-center gap-1.5">
@@ -337,13 +337,13 @@ export function Sidebar() {
               <SelectContent
                 position="popper"
                 sideOffset={4}
-                className="border-emerald-800/40 bg-emerald-950 text-emerald-100"
+                className="border-[#f8e3a3]/40 bg-sidebar-primary text-sidebar-primary-foreground"
               >
                 {CLINIC_BRANCHES.map((branch) => (
                   <SelectItem
                     key={branch.code}
                     value={branch.label}
-                    className="text-emerald-100 focus:bg-emerald-900/60 focus:text-white data-[state=checked]:bg-emerald-800/50 data-[state=checked]:text-white"
+                    className="text-sidebar-primary-foreground focus:bg-[#f8e3a3]/60 focus:text-sidebar-primary-foreground data-[state=checked]:bg-[#f8e3a3]/50 data-[state=checked]:text-sidebar-primary-foreground"
                   >
                     <span>{branch.emoji}</span>
                     {branch.label}
@@ -354,7 +354,7 @@ export function Sidebar() {
             {/* ) : ( */}
             {/* <div
                 id="branch-select"
-                className="flex w-full items-center gap-1.5 rounded-md border border-emerald-800/40 bg-emerald-950/60 px-3 py-2 text-sm text-emerald-100"
+                className="flex w-full items-center gap-1.5 rounded-md border border-emerald-800/40 bg-primary/60 px-3 py-2 text-sm text-emerald-100"
               >
                 <span>{getBranchEmoji(activeBranch)}</span>
                   {activeBranch}
@@ -367,13 +367,13 @@ export function Sidebar() {
 
       <SidebarNavScroll isAdmin={isAdmin} />
 
-      <div className="text-emerald-250 border-t border-emerald-900/40 bg-emerald-950/40 p-4 text-[11px]">
+      <div className="border-t border-[#f8e3a3]/40 bg-sidebar-primary/40 p-4 text-[11px] text-sidebar-primary-foreground">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-semibold text-white">
               {user?.fullName ?? "Khách"}
             </p>
-            <p className="text-emerald-400">
+            <p className="text-white">
               Vai trò: {user ? ROLE_LABEL[user.role] : "—"}
             </p>
           </div>
@@ -381,7 +381,7 @@ export function Sidebar() {
             type="button"
             onClick={handleLogout}
             title="Đăng xuất"
-            className="flex shrink-0 items-center gap-1 rounded border border-emerald-800/50 bg-emerald-900 px-2 py-1 text-[10px] font-medium text-lime-400 transition-colors hover:bg-emerald-800"
+            className="flex shrink-0 items-center gap-1 rounded border border-[#f8e3a3]/50 bg-[#f8e3a3] px-2 py-1 text-[10px] font-medium text-sidebar-primary transition-colors hover:bg-[#f8e3a3]/80"
           >
             <LogOut className="h-3.5 w-3.5" />
             Đăng xuất

@@ -61,12 +61,8 @@ export function MedicineFiltersBar({
         </SelectContent>
       </Select>
 
-      <Button
-        type="button"
-        onClick={onApply}
-        className="h-8 bg-slate-800 text-white hover:bg-slate-900"
-      >
-        Ok
+      <Button type="button" onClick={onApply}>
+        OK
       </Button>
     </div>
   )

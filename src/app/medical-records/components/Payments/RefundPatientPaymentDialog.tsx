@@ -32,8 +32,7 @@ import { toFormDatetimeValue } from "@/lib/date-vi"
 import { cn } from "@/lib/utils"
 import { useClinicStore } from "@/stores/clinic-store"
 
-const PRIMARY_BTN =
-  "bg-emerald-600 text-white hover:bg-emerald-700 font-semibold"
+const PRIMARY_BTN = "bg-emerald-600 text-white hover:bg-primary font-semibold"
 
 const PAYMENT_METHOD_OPTIONS = [
   { value: PAYMENT_METHOD.CASH, label: "Tiền mặt" },

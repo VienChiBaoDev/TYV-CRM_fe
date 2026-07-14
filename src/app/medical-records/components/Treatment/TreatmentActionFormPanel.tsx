@@ -208,14 +208,14 @@ export default function TreatmentActionFormPanel({
             type="button"
             disabled={!detailTreatment || isSubmitting}
             onClick={onSaveAndContinue}
-            className="bg-emerald-800 text-white hover:bg-emerald-700"
+            className="bg-emerald-800 text-white hover:bg-primary"
           >
             Lưu và tiếp tục
           </Button>
           <Button
             type="submit"
             disabled={!detailTreatment || isSubmitting}
-            className="bg-emerald-800 text-white hover:bg-emerald-700"
+            className="bg-emerald-800 text-white hover:bg-primary"
           >
             Lưu
           </Button>

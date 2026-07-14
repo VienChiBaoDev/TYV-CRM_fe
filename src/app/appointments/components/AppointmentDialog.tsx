@@ -166,16 +166,15 @@ export function AppointmentDialog({
     canCheckInAppointment(appointment.status, appointment.visitId)
 
   const canCancel =
-    isEdit &&
-    appointment != null &&
-    canCancelAppointment(appointment.status)
+    isEdit && appointment != null && canCancelAppointment(appointment.status)
 
   const statusOptions =
     appointment != null
       ? getEditableStatusOptions(appointment.status, appointment.visitId)
       : []
 
-  const showStatusSelect = isEdit && appointment != null && statusOptions.length > 0
+  const showStatusSelect =
+    isEdit && appointment != null && statusOptions.length > 0
 
   const handleCheckIn = async () => {
     if (!appointment) return
@@ -255,11 +254,7 @@ export function AppointmentDialog({
 
   const handleSubmitClick = async () => {
     if (lockedPatientId && !isEdit) {
-      const isValid = await form.trigger([
-        "scheduledAt",
-        "endedAt",
-        "doctorId",
-      ])
+      const isValid = await form.trigger(["scheduledAt", "endedAt", "doctorId"])
       if (!isValid) return
       await submitCreate(lockedPatientId, form.getValues())
       return
@@ -285,7 +280,7 @@ export function AppointmentDialog({
             ? "Chọn thời gian khám"
             : "Chọn bệnh nhân và thời gian khám"
       }
-      footerClassName="w-full sm:justify-between"
+      footerClassName="flex flex-1 sm:justify-between"
       footer={
         <>
           <div className="flex justify-end gap-2">
@@ -306,7 +301,7 @@ export function AppointmentDialog({
                 type="button"
                 disabled={isPending}
                 onClick={() => void handleCheckIn()}
-                className="bg-green-500 hover:bg-green-600"
+                className="bg-green-500 text-white hover:bg-green-600"
               >
                 {checkInMutation.isPending ? "Đang tiếp nhận..." : "Tiếp nhận"}
               </Button>

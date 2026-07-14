@@ -111,17 +111,14 @@ export default function SettingsPage() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={openCreate}
-          className="bg-emerald-700 hover:bg-emerald-800"
-        >
+        <Button onClick={openCreate} className="bg-primary hover:bg-primary/80">
           <Plus className="h-4 w-4" /> Thêm tài khoản
         </Button>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-gray-200">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-200 bg-[#f8fbfb] text-xs font-semibold uppercase text-slate-700">
+          <thead className="border-b border-gray-200 bg-[#f8fbfb] text-xs font-semibold text-slate-700 uppercase">
             <tr>
               <th className="px-4 py-3">Họ tên</th>
               <th className="px-4 py-3">Email</th>
@@ -134,13 +131,19 @@ export default function SettingsPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                <td
+                  colSpan={6}
+                  className="px-4 py-10 text-center text-slate-400"
+                >
                   Đang tải...
                 </td>
               </tr>
             ) : staffList.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                <td
+                  colSpan={6}
+                  className="px-4 py-10 text-center text-slate-400"
+                >
                   Chưa có tài khoản nào
                 </td>
               </tr>
@@ -418,7 +421,7 @@ function StaffFormDialog({
             <Button
               type="submit"
               disabled={mutation.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800"
+              className="bg-primary hover:bg-primary/80"
             >
               {mutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

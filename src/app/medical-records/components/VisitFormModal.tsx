@@ -422,7 +422,7 @@ export function VisitFormModal() {
               <button
                 type="button"
                 onClick={onAddHerb}
-                className="cursor-pointer rounded-lg bg-emerald-700 px-3 py-1 text-xs font-bold text-white hover:bg-emerald-600"
+                className="cursor-pointer rounded-lg bg-primary px-3 py-1 text-xs font-bold text-white hover:bg-emerald-600"
               >
                 Thêm vị
               </button>

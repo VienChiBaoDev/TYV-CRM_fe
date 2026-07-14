@@ -17,14 +17,14 @@ export function ComingSoonPage({ title }: ComingSoonPageProps) {
         Chức năng {title}
       </h3>
       <p className="font-sans text-sm leading-relaxed text-slate-600">
-        Bạn đang trải nghiệm giao diện quản trị phòng khám. Chế độ xem trọng
-        tâm chính hiện tại là Hồ Sơ Khám Bệnh Chuyên Sâu thiết kế chuẩn Đông Y.
-        Vui lòng nhấn chọn &quot;Hồ sơ khám&quot; trên thanh menu bên trái hoặc
-        nút dưới đây để quay lại màn hình chính.
+        Bạn đang trải nghiệm giao diện quản trị phòng khám. Chế độ xem trọng tâm
+        chính hiện tại là Hồ Sơ Khám Bệnh Chuyên Sâu thiết kế chuẩn Đông Y. Vui
+        lòng nhấn chọn &quot;Hồ sơ khám&quot; trên thanh menu bên trái hoặc nút
+        dưới đây để quay lại màn hình chính.
       </p>
       <Link
         to={urlPaths.medicalRecords}
-        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-800 px-5 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-emerald-700"
+        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-800 px-5 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-primary"
       >
         <FileText className="h-4 w-4" /> Quay lại Hồ sơ khám
       </Link>
