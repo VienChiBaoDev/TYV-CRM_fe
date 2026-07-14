@@ -11,7 +11,6 @@ import {
   treatmentFormSchema,
   type TreatmentFormValues,
 } from "@/app/medical-records/schemas/treatment-form"
-import { useUpsertTreatmentSessionMutation } from "@/app/medical-records/hooks/use-patient-treatment-mutations"
 import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
 import { parseDisplayDatetimeToIsoDate } from "@/lib/date-vi"
 import { cn } from "@/lib/utils"
@@ -24,6 +23,12 @@ import { useParams } from "react-router-dom"
 import TreatmentActionFormPanel from "./TreatmentActionFormPanel"
 import TreatmentActionSidebar from "./TreatmentActionSidebar"
 import { INFO_TABS, STATUS_FILTER } from "./treatment-action.constants"
+import { useWatch } from "react-hook-form"
+import {
+  useDeleteTreatmentSessionImageMutation,
+  useUploadTreatmentSessionImageMutation,
+  useUpsertTreatmentSessionMutation,
+} from "@/app/medical-records/hooks/use-patient-treatment-mutations"
 
 interface TreatmentActionProps {
   onClose: () => void
@@ -78,7 +83,23 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
     resolver: zodResolver(treatmentFormSchema),
     defaultValues: treatmentFormDefaultValues,
   })
+  const currentSession = useWatch({
+    control: form.control,
+    name: "currentSession",
+  })
 
+  const currentSessionData = sessionData?.sessions.find(
+    (session) => session.sessionNumber === currentSession
+  )
+
+  const uploadImageMutation = useUploadTreatmentSessionImageMutation(
+    patientId,
+    selectedServiceId
+  )
+  const deleteImageMutation = useDeleteTreatmentSessionImageMutation(
+    patientId,
+    selectedServiceId
+  )
   const filteredTreatmentItems = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase()
 
@@ -234,6 +255,18 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
           onPickSession={handlePickSession}
           onSave={handleSave}
           onSaveAndContinue={handleSaveAndContinue}
+          sessionImages={currentSessionData?.images ?? []}
+          isImageUploading={uploadImageMutation.isPending}
+          isImageDeleting={deleteImageMutation.isPending}
+          onImageUpload={(file) =>
+            uploadImageMutation.mutate({ sessionNumber: currentSession, file })
+          }
+          onImageDelete={(imageId) =>
+            deleteImageMutation.mutate({
+              sessionNumber: currentSession,
+              imageId,
+            })
+          }
         />
       </div>
     </div>

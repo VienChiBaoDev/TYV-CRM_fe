@@ -60,6 +60,19 @@ const API_PATHS = {
       `/patients/${patientId}/services/${serviceId}/treatment-sessions`,
     upsert: (patientId: string, serviceId: string) =>
       `/patients/${patientId}/services/${serviceId}/treatment-sessions`,
+    uploadImage: (
+      patientId: string,
+      serviceId: string,
+      sessionNumber: number
+    ) =>
+      `/patients/${patientId}/services/${serviceId}/treatment-sessions/${sessionNumber}/images`,
+    deleteImage: (
+      patientId: string,
+      serviceId: string,
+      sessionNumber: number,
+      imageId: string
+    ) =>
+      `/patients/${patientId}/services/${serviceId}/treatment-sessions/${sessionNumber}/images/${imageId}`,
   },
 }
 

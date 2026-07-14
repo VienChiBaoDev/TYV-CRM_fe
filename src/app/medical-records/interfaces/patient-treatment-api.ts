@@ -1,4 +1,13 @@
 /**
+ * Interface response cho ảnh buổi điều trị
+ */
+export interface TreatmentSessionImageApi {
+  id: string
+  imageUrl: string
+  sortOrder: number
+}
+
+/**
  * Interface response cho màn hình hiển thị danh sách điều trị chi tiết
  */
 export interface TreatmentSessionApi {
@@ -15,6 +24,7 @@ export interface TreatmentSessionApi {
   nextTreatmentDate: string | null
   performedAt: string
   performedByName: string | null
+  images: TreatmentSessionImageApi[]
 }
 
 /**

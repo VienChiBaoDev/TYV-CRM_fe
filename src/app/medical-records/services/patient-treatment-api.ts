@@ -3,6 +3,7 @@ import API_PATHS from "@/constants/apiPaths"
 import type {
   TreatmentHistoryItemApi,
   TreatmentSessionApi,
+  TreatmentSessionImageApi,
   TreatmentSessionListApi,
 } from "@/app/medical-records/interfaces/patient-treatment-api"
 
@@ -46,4 +47,34 @@ export async function upsertTreatmentSession(
     payload
   )
   return data
+}
+
+export async function uploadTreatmentSessionImage(
+  patientId: string,
+  serviceId: string,
+  sessionNumber: number,
+  file: File
+): Promise<TreatmentSessionImageApi> {
+  const formData = new FormData()
+  formData.append("file", file)
+  const { data } = await httpService.post<TreatmentSessionImageApi>(
+    API_PATHS.patientTreatment.uploadImage(patientId, serviceId, sessionNumber),
+    formData
+  )
+  return data
+}
+export async function deleteTreatmentSessionImage(
+  patientId: string,
+  serviceId: string,
+  sessionNumber: number,
+  imageId: string
+): Promise<void> {
+  await httpService.delete(
+    API_PATHS.patientTreatment.deleteImage(
+      patientId,
+      serviceId,
+      sessionNumber,
+      imageId
+    )
+  )
 }

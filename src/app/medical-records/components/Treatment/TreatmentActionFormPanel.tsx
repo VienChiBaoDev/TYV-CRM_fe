@@ -18,6 +18,8 @@ import {
   labelClassName,
 } from "./treatment-action.constants"
 import { buildSessionSteps } from "./treatment-session-steps"
+import type { TreatmentSessionImageApi } from "../../interfaces/patient-treatment-api"
+import { TreatmentSessionImageZone } from "./TreatmentSessionImageZone"
 
 interface TreatmentActionFormPanelProps {
   form: UseFormReturn<TreatmentFormValues>
@@ -32,6 +34,11 @@ interface TreatmentActionFormPanelProps {
   onPickSession: (step: number) => void
   onSave: () => void
   onSaveAndContinue: () => void
+  sessionImages: TreatmentSessionImageApi[]
+  isImageUploading: boolean
+  isImageDeleting: boolean
+  onImageUpload: (file: File) => void
+  onImageDelete: (imageId: string) => void
 }
 
 export default function TreatmentActionFormPanel({
@@ -47,6 +54,11 @@ export default function TreatmentActionFormPanel({
   onPickSession,
   onSave,
   onSaveAndContinue,
+  sessionImages,
+  isImageUploading,
+  isImageDeleting,
+  onImageUpload,
+  onImageDelete,
 }: TreatmentActionFormPanelProps) {
   const currentSession = useWatch({
     control: form.control,
@@ -206,6 +218,15 @@ export default function TreatmentActionFormPanel({
                   placeholder="eg .nội dung điều trị"
                   rows={4}
                   textareaClassName={cn(fieldClassName, "resize-y")}
+                />
+
+                <TreatmentSessionImageZone
+                  images={sessionImages}
+                  canUpload={currentSession <= maxAllowedSession}
+                  isUploading={isImageUploading}
+                  isDeleting={isImageDeleting}
+                  onUpload={onImageUpload}
+                  onDelete={onImageDelete}
                 />
 
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-700">
