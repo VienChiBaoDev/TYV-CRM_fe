@@ -132,39 +132,71 @@ export default function TreatmentActionFormPanel({
                   </button>
                 </div>
 
+                <p className="mb-2 flex flex-wrap gap-3 text-[10px] text-slate-500">
+                  <span>
+                    <span className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-600" />
+                    Đang chọn
+                  </span>
+                  <span>
+                    <span className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-100 ring-1 ring-emerald-200" />
+                    Đã hoàn thành
+                  </span>
+                  <span>
+                    <span className="mr-1 inline-block h-2 w-2 rounded-full border border-slate-200" />
+                    Chưa điều trị
+                  </span>
+                </p>
+
                 <div className="mb-3 flex flex-wrap items-center gap-1.5">
                   {buildSessionSteps(
                     detailTreatment.totalSessions,
                     currentSession
-                  ).map((step, index) =>
-                    step === "ellipsis" ? (
-                      <span
-                        key={`ellipsis-${index}`}
-                        className="px-1 text-xs text-slate-400"
-                      >
-                        ...
-                      </span>
-                    ) : (
+                  ).map((step, index) => {
+                    if (step === "ellipsis") {
+                      return (
+                        <span
+                          key={`ellipsis-${index}`}
+                          className="px-1 text-xs text-slate-400"
+                        >
+                          ...
+                        </span>
+                      )
+                    }
+
+                    const isLocked = step > maxAllowedSession
+                    const isCurrent = step === currentSession
+                    const isCompleted = step <= detailTreatment.completedSession
+
+                    return (
                       <button
                         key={step}
                         type="button"
                         onClick={() => onPickSession(step)}
-                        disabled={step > maxAllowedSession}
+                        disabled={isLocked}
+                        aria-current={isCurrent ? "step" : undefined}
                         className={cn(
-                          step > maxAllowedSession &&
-                            "cursor-not-allowed opacity-40",
-                          "flex h-7 min-w-7 items-center justify-center rounded-full px-1.5 text-xs font-bold transition-colors",
-                          step === currentSession
-                            ? "border border-slate-700 bg-white text-slate-800"
-                            : step <= detailTreatment.completedSession
-                              ? "bg-emerald-600 text-white"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          "flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-xs font-bold transition-all duration-150",
+                          "focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:outline-none",
+                          isLocked
+                            ? "cursor-not-allowed border border-slate-100 bg-slate-50 text-slate-300"
+                            : "cursor-pointer",
+                          !isLocked &&
+                            isCurrent &&
+                            "border-2 border-emerald-600 bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/20",
+                          !isLocked &&
+                            !isCurrent &&
+                            isCompleted &&
+                            "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+                          !isLocked &&
+                            !isCurrent &&
+                            !isCompleted &&
+                            "border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/50 hover:text-emerald-700"
                         )}
                       >
                         {step}
                       </button>
                     )
-                  )}
+                  })}
                 </div>
 
                 <FormTextarea
