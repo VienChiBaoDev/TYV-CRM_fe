@@ -49,6 +49,7 @@ export interface TreatmentHistoryItemApi {
   serviceId: string
   serviceName: string
   sessionNumber: number
+  sessionTotal: number
   treatmentContent: string
   performedAt: string
   doctorName: string | null
