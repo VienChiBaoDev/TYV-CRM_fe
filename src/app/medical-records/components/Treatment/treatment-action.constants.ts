@@ -8,11 +8,6 @@ export const STATUS_FILTER = {
   COMPLETED: "completed",
 } as const
 
-export const SCOPE_FILTER = {
-  MINE: "mine",
-  ALL: "all",
-} as const
-
 export const filterInputClassName =
   "border-slate-250 w-full rounded-lg border bg-white px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
 

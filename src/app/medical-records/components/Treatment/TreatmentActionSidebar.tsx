@@ -1,21 +1,13 @@
 import type { TreatmentServiceItem } from "@/app/medical-records/mappers/map-patient-service-to-treatment-item"
 import { cn } from "@/lib/utils"
-import { ChevronDown, Search } from "lucide-react"
-import {
-  filterInputClassName,
-  SCOPE_FILTER,
-  STATUS_FILTER,
-} from "./treatment-action.constants"
+import { Search } from "lucide-react"
+import { filterInputClassName, STATUS_FILTER } from "./treatment-action.constants"
 
 interface TreatmentActionSidebarProps {
   statusFilter: string
   onStatusFilterChange: (value: string) => void
   searchQuery: string
   onSearchQueryChange: (value: string) => void
-  staffFilter: string
-  onStaffFilterChange: (value: string) => void
-  scopeFilter: string
-  onScopeFilterChange: (value: string) => void
   isLoading: boolean
   items: TreatmentServiceItem[]
   paidItemsCount: number
@@ -28,10 +20,6 @@ export default function TreatmentActionSidebar({
   onStatusFilterChange,
   searchQuery,
   onSearchQueryChange,
-  staffFilter,
-  onStaffFilterChange,
-  scopeFilter,
-  onScopeFilterChange,
   isLoading,
   items,
   paidItemsCount,
@@ -78,49 +66,6 @@ export default function TreatmentActionSidebar({
           placeholder="eg. tìm kiếm"
           className={cn(filterInputClassName, "pl-9")}
         />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <select
-            value={staffFilter}
-            onChange={(e) => onStaffFilterChange(e.target.value)}
-            className={cn(
-              filterInputClassName,
-              "cursor-pointer appearance-none pr-8"
-            )}
-          >
-            <option value="all">Tất cả nhân viên</option>
-          </select>
-          <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
-        </div>
-
-        <div className="flex shrink-0 overflow-hidden rounded-lg border border-slate-200">
-          <button
-            type="button"
-            onClick={() => onScopeFilterChange(SCOPE_FILTER.MINE)}
-            className={cn(
-              "px-2.5 py-1.5 text-[11px] font-bold transition-colors",
-              scopeFilter === SCOPE_FILTER.MINE
-                ? "bg-primary text-white"
-                : "bg-white text-slate-600 hover:bg-slate-50"
-            )}
-          >
-            Của tôi
-          </button>
-          <button
-            type="button"
-            onClick={() => onScopeFilterChange(SCOPE_FILTER.ALL)}
-            className={cn(
-              "px-2.5 py-1.5 text-[11px] font-bold transition-colors",
-              scopeFilter === SCOPE_FILTER.ALL
-                ? "bg-primary text-white"
-                : "bg-white text-slate-600 hover:bg-slate-50"
-            )}
-          >
-            Tất cả
-          </button>
-        </div>
       </div>
 
       <div className="space-y-2">

@@ -23,11 +23,7 @@ import { useForm } from "react-hook-form"
 import { useParams } from "react-router-dom"
 import TreatmentActionFormPanel from "./TreatmentActionFormPanel"
 import TreatmentActionSidebar from "./TreatmentActionSidebar"
-import {
-  INFO_TABS,
-  SCOPE_FILTER,
-  STATUS_FILTER,
-} from "./treatment-action.constants"
+import { INFO_TABS, STATUS_FILTER } from "./treatment-action.constants"
 
 interface TreatmentActionProps {
   onClose: () => void
@@ -48,13 +44,11 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
   const [statusFilter, setStatusFilter] = useState<string>(
     STATUS_FILTER.IN_PROGRESS
   )
-  const [scopeFilter, setScopeFilter] = useState<string>(SCOPE_FILTER.ALL)
   const [selectedId, setSelectedId] = useState("")
   const [detailTreatmentId, setDetailTreatmentId] = useState<string | null>(
     null
   )
   const [searchQuery, setSearchQuery] = useState("")
-  const [staffFilter, setStaffFilter] = useState("all")
 
   const selectedServiceId = detailTreatmentId ?? ""
   const { data: sessionData } = useQuery(
@@ -220,10 +214,6 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
           onStatusFilterChange={setStatusFilter}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
-          staffFilter={staffFilter}
-          onStaffFilterChange={setStaffFilter}
-          scopeFilter={scopeFilter}
-          onScopeFilterChange={setScopeFilter}
           isLoading={isLoading}
           items={filteredTreatmentItems}
           paidItemsCount={paidTreatmentItems.length}
