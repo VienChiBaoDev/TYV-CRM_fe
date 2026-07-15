@@ -25,7 +25,7 @@ export function WeekNavigator({
   appointmentCount,
 }: WeekNavigatorProps) {
   return (
-    <div className="space-y-2">
+    <div className="flex gap-10 space-y-2">
       <PageHeader
         title="Lịch hẹn"
         description={formatWeekTitle(anchorDate)}
@@ -61,7 +61,7 @@ export function WeekNavigator({
         }
       />
 
-      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-start gap-2 pt-1 text-sm text-muted-foreground">
         <CalendarDays className="size-4 shrink-0" />
 
         <span>
