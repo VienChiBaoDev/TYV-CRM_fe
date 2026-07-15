@@ -23,7 +23,7 @@ export function ComingSoonPage({ title }: ComingSoonPageProps) {
         dưới đây để quay lại màn hình chính.
       </p>
       <Link
-        to={urlPaths.medicalRecords}
+        to={urlPaths.medicalRecordList}
         className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-800 px-5 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-primary"
       >
         <FileText className="h-4 w-4" /> Quay lại Hồ sơ khám

@@ -14,7 +14,7 @@ export default function MedicalRecordList() {
 
   const [patients, setPatients] = useState<Patient[]>([])
   const [referrers, setReferrers] = useState<Referrer[]>([])
-  const [selectedReferrer, setSelectedReferrer] = useState<string>("all")
+  const [selectedReferrer] = useState<string>("all")
   const [loading, setLoading] = useState(true)
 
   // Nạp danh sách người giới thiệu cho dropdown (1 lần)

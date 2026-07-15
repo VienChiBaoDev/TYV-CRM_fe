@@ -1,5 +1,6 @@
 import type { PatientService } from "@/app/medical-records/interfaces/patient-service"
 import type { PatientServiceFormValues } from "@/app/medical-records/schemas/patient-service-form"
+import { PATIENT_SERVICE_STATUS } from "@/app/medical-records/constants/patient-service-status"
 import { calculatePatientServiceTotal } from "@/app/medical-records/utils/patient-service-pricing"
 import type { TreatmentService } from "@/app/treatment-services/types/treatment-service"
 
@@ -47,11 +48,15 @@ export function mapPatientServiceFormToRow({
 
   return {
     id: crypto.randomUUID(),
+    status: PATIENT_SERVICE_STATUS.ACTIVE,
+    cancelledAt: null,
+    hasPaymentHistory: false,
     serviceCode: service.code,
     serviceName: service.name,
     progress: {
       current: 0,
       total: values.quantity,
+      maxAllowed: values.quantity,
     },
     amount: hasDiscount
       ? {
@@ -78,5 +83,19 @@ export function mapPatientServiceFormToRow({
       initials: getInitials(finalizedBy.fullName),
     },
     finalizedAt: formatFinalizedAt(new Date()),
+    form: {
+      consultantId: values.consultantId,
+      telesaleId: values.telesaleId || null,
+      groupId: values.groupId,
+      catalogServiceId: values.serviceId,
+      unitPrice: values.unitPrice,
+      vatPercent: values.vatPercent,
+      vatAmount: values.vatAmount,
+      unitPriceAfterVat: values.unitPriceAfterVat,
+      quantity: values.quantity,
+      discount: values.discount,
+      treatmentCount: values.treatmentCount,
+      expiryDate: values.expiryDate || null,
+    },
   }
 }
