@@ -44,13 +44,15 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-primary px-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
         <div className="mb-6 flex flex-col items-center text-center">
-          <span className="font-display text-4xl font-semibold text-emerald-700">
-            §
-          </span>
+          <img
+            src="../public/Logo.jpg"
+            alt="Thượng Y Viên"
+            className="h-20 w-20 rounded-xl object-cover"
+          />
           <h1 className="mt-2 text-xl font-bold tracking-tight text-slate-800">
             Thượng Y Viên
           </h1>
-          <p className="text-[11px] font-medium tracking-widest text-emerald-600 uppercase">
+          <p className="text-[11px] font-medium tracking-widest text-[#f6c83e] uppercase">
             Nhân • Tâm • Trí
           </p>
         </div>
