@@ -45,6 +45,12 @@ export function AppointmentsPage() {
   )
 
   const openCreateDialog = (day?: Date, hour?: number, minute?: number) => {
+    if (day != null && hour != null && minute != null) {
+      const slotDate = new Date(day)
+      slotDate.setHours(hour, minute, 0, 0)
+      if (slotDate < new Date()) return
+    }
+
     setDialogContext({
       mode: "create",
 

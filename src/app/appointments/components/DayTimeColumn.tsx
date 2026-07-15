@@ -42,6 +42,7 @@ export function DayTimeColumn({
     <div
       className={cn(
         "relative flex h-full min-h-0 flex-col border-r border-border",
+        isToday && "bg-primary/[0.07]",
         className
       )}
     >
@@ -54,7 +55,6 @@ export function DayTimeColumn({
             <TimeSlotCell
               key={`${dayKey}-${slot.label}`}
               isPast={slotDate < now}
-              isToday={isToday}
               onEmptyClick={() => onSlotClick(slot.hour, slot.minute)}
             />
           )

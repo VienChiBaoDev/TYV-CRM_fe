@@ -1,4 +1,4 @@
-import { format } from "date-fns"
+import { format, isBefore, startOfDay } from "date-fns"
 
 import { Badge } from "@/components/ui/badge"
 
@@ -83,20 +83,24 @@ export function WeeklyCalendarGrid({
 
                 {weekDays.map((day) => {
                   const today = isSameDay(day, now)
+                  const pastDay = isBefore(day, startOfDay(now))
 
                   return (
                     <div
                       key={day.toISOString()}
                       className={cn(
                         "sticky top-0 z-10 border-r border-b border-border bg-muted p-2 text-center text-xs font-semibold",
-
-                        today && "bg-primary/10 text-primary"
+                        today &&
+                          "border-b-2 border-b-primary bg-primary/10 text-primary",
+                        !today &&
+                          pastDay &&
+                          "text-muted-foreground"
                       )}
                     >
                       <div>{formatDayHeader(day)}</div>
 
                       {today ? (
-                        <Badge variant="secondary" className="mt-1">
+                        <Badge className="mt-1 border-primary/20 bg-primary text-primary-foreground">
                           Hôm nay
                         </Badge>
                       ) : null}
