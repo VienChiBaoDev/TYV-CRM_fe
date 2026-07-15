@@ -11,61 +11,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-function VoucherCell({ payment }: { payment: PatientPayment }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-600">
-        {payment.processedBy.initials}
-      </div>
-      <div>
-        <p className="text-sm font-medium text-slate-800">{payment.voucherCode}</p>
-        <p className="text-[11px] text-slate-500">{payment.voucherDate}</p>
-      </div>
-    </div>
-  )
-}
-
-function PaymentMethodCell({ method }: { method: string }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-white">
-        <Plus className="h-2.5 w-2.5" />
-      </span>
-      <span className="text-sm text-slate-700">{method}</span>
-    </div>
-  )
-}
-
-function PaymentDetailsCell({
-  details,
-}: {
-  details: PatientPayment["details"]
-}) {
-  return (
-    <div className="space-y-2">
-      {details.map((detail) => (
-        <div key={detail.serviceCode} className="flex items-start gap-1.5">
-          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
-            <Plus className="h-2.5 w-2.5" />
-          </span>
-          <div className="min-w-[200px]">
-            <p className="text-sm font-semibold text-slate-800">
-              {formatPrice(detail.amount)}
-            </p>
-            <p className="text-xs font-semibold text-emerald-600">
-              {detail.serviceCode}
-            </p>
-            <p className="text-sm text-slate-700">{detail.serviceName}</p>
-            <p className="text-sm font-medium text-emerald-600">
-              {formatPrice(detail.amount)}
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export function createPaymentTableColumns(): ColumnDef<PatientPayment>[] {
   return [
     {
@@ -78,13 +23,34 @@ export function createPaymentTableColumns(): ColumnDef<PatientPayment>[] {
     {
       id: "voucher",
       header: "Mã Phiếu",
-      cell: ({ row }) => <VoucherCell payment={row.original} />,
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-600">
+            {row.original.processedBy.initials}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-800">
+              {row.original.voucherCode}
+            </p>
+            <p className="text-[11px] text-slate-500">
+              {row.original.voucherDate}
+            </p>
+          </div>
+        </div>
+      ),
     },
     {
       id: "paymentMethod",
       header: "Hình Thức Thanh Toán",
       cell: ({ row }) => (
-        <PaymentMethodCell method={row.original.paymentMethod} />
+        <div className="flex items-center gap-1.5">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-white">
+            <Plus className="h-2.5 w-2.5" />
+          </span>
+          <span className="text-sm text-slate-700">
+            {row.original.paymentMethod}
+          </span>
+        </div>
       ),
     },
     {
@@ -100,7 +66,27 @@ export function createPaymentTableColumns(): ColumnDef<PatientPayment>[] {
       id: "details",
       header: "Chi Tiết",
       cell: ({ row }) => (
-        <PaymentDetailsCell details={row.original.details} />
+        <div className="space-y-2">
+          {row.original.details.map((detail) => (
+            <div key={detail.serviceCode} className="flex items-start gap-1.5">
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
+                <Plus className="h-2.5 w-2.5" />
+              </span>
+              <div className="min-w-[200px]">
+                <p className="text-sm font-semibold text-slate-800">
+                  {formatPrice(detail.amount)}
+                </p>
+                <p className="text-xs font-semibold text-emerald-600">
+                  {detail.serviceCode}
+                </p>
+                <p className="text-sm text-slate-700">{detail.serviceName}</p>
+                <p className="text-sm font-medium text-emerald-600">
+                  {formatPrice(detail.amount)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
       ),
     },
     {

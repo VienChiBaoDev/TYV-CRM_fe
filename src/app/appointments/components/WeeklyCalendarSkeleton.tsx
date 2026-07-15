@@ -8,7 +8,7 @@ const SKELETON_DAYS = 7
 export function WeeklyCalendarSkeleton() {
   return (
     <div
-      className="grid min-w-[900px]"
+      className="grid min-w-[900px] bg-white p-4"
       style={{ gridTemplateColumns: "72px repeat(7, minmax(120px, 1fr))" }}
     >
       <Skeleton className="h-10 rounded-none" />
@@ -18,11 +18,11 @@ export function WeeklyCalendarSkeleton() {
 
       {Array.from({ length: SKELETON_ROWS }).map((_, rowIndex) => (
         <div key={`row-${rowIndex}`} className="contents">
-          <Skeleton className="min-h-10 rounded-none" />
+          <Skeleton className="mt-2 min-h-10 rounded-none" />
           {Array.from({ length: SKELETON_DAYS }).map((__, colIndex) => (
             <Skeleton
               key={`cell-${rowIndex}-${colIndex}`}
-              className="min-h-10 rounded-none"
+              className="mt-2 min-h-10 rounded-none"
             />
           ))}
         </div>

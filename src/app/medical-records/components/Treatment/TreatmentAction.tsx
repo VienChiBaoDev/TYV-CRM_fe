@@ -16,7 +16,7 @@ import { parseDisplayDatetimeToIsoDate } from "@/lib/date-vi"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQuery } from "@tanstack/react-query"
-import { Activity, ClipboardList } from "lucide-react"
+import { ClipboardList } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useParams } from "react-router-dom"
@@ -190,15 +190,6 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
             <ClipboardList className="h-4 w-4" />
             Điều trị
           </button>
-          <button
-            type="button"
-            disabled
-            title="Phase 2"
-            className="flex cursor-not-allowed items-center gap-2 rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-400 opacity-60"
-          >
-            <Activity className="h-4 w-4" />
-            Công việc điều trị
-          </button>
         </div>
 
         <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
@@ -213,18 +204,6 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
             )}
           >
             Thông tin
-          </button>
-          <button
-            type="button"
-            onClick={() => setInfoTab(INFO_TABS.OTHER)}
-            className={cn(
-              "rounded-md px-4 py-1.5 text-xs font-bold transition-colors",
-              infoTab === INFO_TABS.OTHER
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            Khác
           </button>
         </div>
       </div>

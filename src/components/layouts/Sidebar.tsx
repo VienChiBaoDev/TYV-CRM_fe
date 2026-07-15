@@ -300,7 +300,7 @@ export function Sidebar() {
             <img
               src="../public/Logo.jpg"
               alt="Thượng Y Viên"
-              className="h-20 w-20 rounded-xl object-cover"
+              className="h-20 w-20 rounded-xl border border-[#f8e3a3] object-cover"
             />
             <div>
               <h1 className="font-display text-lg font-bold tracking-tight text-sidebar-primary-foreground">
