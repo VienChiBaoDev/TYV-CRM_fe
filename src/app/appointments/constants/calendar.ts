@@ -1,8 +1,10 @@
 import type { AppointmentStatus } from "@/app/appointments/services/appointmentService"
 
-export const SLOT_MINUTES = 15 as const
+export const SLOT_MINUTES = 60 as const
 export const DAY_START_HOUR = 7
 export const DAY_END_HOUR = 18
+/** flex-1 + min height — rows stretch to fill viewport (see WeeklyCalendarGrid). */
+export const CALENDAR_HOUR_ROW_CLASS = "min-h-14 flex-1" as const
 export const DEFAULT_APPOINTMENT_DURATION_MINUTES = 30 as const
 
 export function getCalendarRowCount(): number {

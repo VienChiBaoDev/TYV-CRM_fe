@@ -1,54 +1,18 @@
-import type { Appointment } from "@/app/appointments/services/appointmentService"
-
-import { Badge } from "@/components/ui/badge"
-
 import { cn } from "@/lib/utils"
 
-import type { TimeSlot } from "../utils/time-slots"
-
-import { getSlotKey } from "../utils/map-appointments-to-grid"
-
-import { AppointmentCard } from "./AppointmentCard"
+import { CALENDAR_HOUR_ROW_CLASS } from "../constants/calendar"
 
 interface TimeSlotCellProps {
-  day: Date
-
-  slot: TimeSlot
-
-  appointments: Appointment[]
-
   isPast: boolean
-
   isToday: boolean
-
   onEmptyClick: () => void
-
-  onAppointmentClick: (appointment: Appointment) => void
 }
 
-const MAX_VISIBLE_APPOINTMENTS = 2
-
 export function TimeSlotCell({
-  day,
-
-  slot,
-
-  appointments,
-
   isPast,
-
   isToday,
-
   onEmptyClick,
-
-  onAppointmentClick,
 }: TimeSlotCellProps) {
-  const slotKey = getSlotKey(day, slot.hour, slot.minute)
-
-  const visible = appointments.slice(0, MAX_VISIBLE_APPOINTMENTS)
-
-  const hiddenCount = appointments.length - visible.length
-
   return (
     <div
       role="button"
@@ -57,46 +21,20 @@ export function TimeSlotCell({
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault()
-
           onEmptyClick()
         }
       }}
       className={cn(
-        "group min-h-10 border-r border-b border-border p-0.5 transition-colors",
-
+        "group relative border-b border-border transition-colors",
+        CALENDAR_HOUR_ROW_CLASS,
         isToday && "bg-primary/5",
-
         isPast
           ? "cursor-default bg-muted/40"
-          : "cursor-pointer hover:bg-primary/10",
-
-        appointments.length === 0 &&
-          !isPast &&
-          "hover:ring-1 hover:ring-primary/20 hover:ring-inset"
+          : "cursor-pointer hover:bg-primary/10 hover:ring-1 hover:ring-primary/20 hover:ring-inset"
       )}
-      data-slot-key={slotKey}
     >
-      <div className="flex h-full flex-col gap-1">
-        {visible.map((appointment) => (
-          <AppointmentCard
-            key={appointment.id}
-            appointment={appointment}
-            onClick={() => onAppointmentClick(appointment)}
-          />
-        ))}
-
-        {hiddenCount > 0 ? (
-          <Badge variant="secondary" className="w-fit text-[10px]">
-            +{hiddenCount} lịch
-          </Badge>
-        ) : null}
-
-        {appointments.length === 0 && !isPast ? (
-          <span className="mt-auto hidden px-1 text-[10px] text-muted-foreground group-hover:inline">
-            + Đặt lịch
-          </span>
-        ) : null}
-      </div>
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-border/35" />
+      <span className="sr-only">Đặt lịch</span>
     </div>
   )
 }

@@ -16,12 +16,13 @@ import { APPOINTMENT_STATUS_STYLES } from "../constants/calendar"
 
 interface AppointmentCardProps {
   appointment: Appointment
-
+  variant?: "default" | "overlay"
   onClick: () => void
 }
 
 export function AppointmentCard({
   appointment,
+  variant = "default",
   onClick,
 }: AppointmentCardProps) {
   const patientName =
@@ -30,6 +31,8 @@ export function AppointmentCard({
   const statusStyle =
     APPOINTMENT_STATUS_STYLES[appointment.status] ??
     APPOINTMENT_STATUS_STYLES.BOOKED
+
+  const isOverlay = variant === "overlay"
 
   return (
     <Card
@@ -51,36 +54,38 @@ export function AppointmentCard({
         }
       }}
       className={cn(
-        "cursor-pointer gap-1 py-1.5 shadow-none ring-0 transition-colors hover:brightness-95",
-
+        "cursor-pointer gap-0.5 shadow-none ring-0 transition-colors hover:brightness-95",
+        isOverlay ? "h-full min-h-0 overflow-hidden py-1" : "gap-1 py-1.5",
         statusStyle
       )}
     >
-      <div className="flex items-start justify-between gap-1 px-2">
+      <div className="flex items-start justify-between gap-1 px-1.5 sm:px-2">
         <p className="truncate text-[11px] leading-tight font-semibold">
           {patientName}
         </p>
 
-        <AppointmentStatusBadge
-          status={appointment.status}
-          className="hidden shrink-0 sm:inline-flex"
-        />
+        {!isOverlay ? (
+          <AppointmentStatusBadge
+            status={appointment.status}
+            className="hidden shrink-0 sm:inline-flex"
+          />
+        ) : null}
       </div>
 
-      <p className="truncate px-2 text-[10px] opacity-80">
+      <p className="truncate px-1.5 text-[10px] opacity-80 sm:px-2">
         {formatAppointmentTimeRangeVi(
           appointment.scheduledAt,
           appointment.endedAt
         )}
       </p>
 
-      {appointment.doctorName ? (
+      {!isOverlay && appointment.doctorName ? (
         <p className="truncate px-2 text-[10px] opacity-80">
           {appointment.doctorName}
         </p>
       ) : null}
 
-      {appointment.patient?.id ? (
+      {!isOverlay && appointment.patient?.id ? (
         <Link
           to={urlPaths.medicalRecords(appointment.patient.id)}
           onClick={(event) => event.stopPropagation()}

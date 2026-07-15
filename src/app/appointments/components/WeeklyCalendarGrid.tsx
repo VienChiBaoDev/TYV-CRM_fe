@@ -1,8 +1,8 @@
+import { format } from "date-fns"
+
 import { Badge } from "@/components/ui/badge"
 
 import { Card, CardContent } from "@/components/ui/card"
-
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 import { cn } from "@/lib/utils"
 
@@ -12,12 +12,11 @@ import { formatDayHeader, getWeekDays, isSameDay } from "../utils/week-range"
 
 import { buildTimeSlots } from "../utils/time-slots"
 
-import {
-  getSlotKey,
-  groupAppointmentsBySlot,
-} from "../utils/map-appointments-to-grid"
+import { groupAppointmentsByDay } from "../utils/appointment-position"
 
-import { TimeSlotCell } from "./TimeSlotCell"
+import { CALENDAR_HOUR_ROW_CLASS } from "../constants/calendar"
+
+import { DayTimeColumn } from "./DayTimeColumn"
 
 import { WeeklyCalendarSkeleton } from "./WeeklyCalendarSkeleton"
 
@@ -37,6 +36,14 @@ interface WeeklyCalendarGridProps {
 
 const TIME_SLOTS = buildTimeSlots()
 
+const GRID_STYLE = {
+  gridTemplateColumns: "72px repeat(7, minmax(120px, 1fr))",
+  gridTemplateRows: "auto minmax(0, 1fr)",
+} as const
+
+/** ponytail: min-height ≈ viewport minus header chrome; overflow-y if taller */
+const CALENDAR_MIN_HEIGHT = "min-h-[calc(100dvh-10.5rem)]"
+
 export function WeeklyCalendarGrid({
   anchorDate,
 
@@ -52,7 +59,7 @@ export function WeeklyCalendarGrid({
 }: WeeklyCalendarGridProps) {
   const weekDays = getWeekDays(anchorDate)
 
-  const slotMap = groupAppointmentsBySlot(appointments)
+  const dayMap = groupAppointmentsByDay(appointments)
 
   const now = new Date()
 
@@ -63,88 +70,72 @@ export function WeeklyCalendarGrid({
         className
       )}
     >
-      <CardContent className="min-h-0 flex-1 p-0">
-        <ScrollArea className="h-full w-full">
+      <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
+        <div className="h-full overflow-x-auto overflow-y-auto">
           {loading ? (
             <WeeklyCalendarSkeleton />
           ) : (
             <div
-              className="grid min-w-[900px]"
-              style={{
-                gridTemplateColumns: "72px repeat(7, minmax(120px, 1fr))",
-              }}
+              className={cn("grid h-full min-w-[900px]", CALENDAR_MIN_HEIGHT)}
+              style={GRID_STYLE}
             >
-              <div className="sticky left-0 z-20 border-r border-b border-border bg-muted" />
+                <div className="sticky left-0 z-20 border-r border-b border-border bg-muted" />
 
-              {weekDays.map((day) => {
-                const today = isSameDay(day, now)
+                {weekDays.map((day) => {
+                  const today = isSameDay(day, now)
 
-                return (
-                  <div
-                    key={day.toISOString()}
-                    className={cn(
-                      "sticky top-0 z-10 border-r border-b border-border bg-muted p-2 text-center text-xs font-semibold",
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        "sticky top-0 z-10 border-r border-b border-border bg-muted p-2 text-center text-xs font-semibold",
 
-                      today && "bg-primary/10 text-primary"
-                    )}
-                  >
-                    <div>{formatDayHeader(day)}</div>
+                        today && "bg-primary/10 text-primary"
+                      )}
+                    >
+                      <div>{formatDayHeader(day)}</div>
 
-                    {today ? (
-                      <Badge variant="secondary" className="mt-1">
-                        Hôm nay
-                      </Badge>
-                    ) : null}
-                  </div>
-                )
-              })}
+                      {today ? (
+                        <Badge variant="secondary" className="mt-1">
+                          Hôm nay
+                        </Badge>
+                      ) : null}
+                    </div>
+                  )
+                })}
 
-              {TIME_SLOTS.map((slot) => (
-                <div key={slot.label} className="contents">
-                  <div
-                    className={cn(
-                      "sticky left-0 z-10 border-r border-b border-border bg-muted px-2 py-1.5 text-[11px]",
-                      slot.minute === 0
-                        ? "font-medium text-foreground"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {slot.label}
-                  </div>
-
-                  {weekDays.map((day) => {
-                    const slotDate = new Date(day)
-
-                    slotDate.setHours(slot.hour, slot.minute, 0, 0)
-
-                    const isPast = slotDate < now
-
-                    const isToday = isSameDay(day, now)
-
-                    const key = getSlotKey(day, slot.hour, slot.minute)
-
-                    return (
-                      <TimeSlotCell
-                        key={`${key}-${slot.label}`}
-                        day={day}
-                        slot={slot}
-                        appointments={slotMap.get(key) ?? []}
-                        isPast={isPast}
-                        isToday={isToday}
-                        onEmptyClick={() =>
-                          onSlotClick(day, slot.hour, slot.minute)
-                        }
-                        onAppointmentClick={onAppointmentClick}
-                      />
-                    )
-                  })}
+                <div className="sticky left-0 z-10 row-start-2 flex h-full min-h-0 flex-col border-r border-border bg-muted">
+                  {TIME_SLOTS.map((slot) => (
+                    <div
+                      key={slot.label}
+                      className={cn(
+                        "flex items-start border-b border-border px-2 pt-1.5 text-[11px] font-medium text-foreground",
+                        CALENDAR_HOUR_ROW_CLASS
+                      )}
+                    >
+                      {slot.label}
+                    </div>
+                  ))}
                 </div>
-              ))}
+
+                {weekDays.map((day) => (
+                  <DayTimeColumn
+                    key={day.toISOString()}
+                    className="row-start-2"
+                    day={day}
+                    slots={TIME_SLOTS}
+                    appointments={dayMap.get(format(day, "yyyy-MM-dd")) ?? []}
+                    isToday={isSameDay(day, now)}
+                    now={now}
+                    onSlotClick={(hour, minute) =>
+                      onSlotClick(day, hour, minute)
+                    }
+                    onAppointmentClick={onAppointmentClick}
+                  />
+                ))}
             </div>
           )}
-
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   )
