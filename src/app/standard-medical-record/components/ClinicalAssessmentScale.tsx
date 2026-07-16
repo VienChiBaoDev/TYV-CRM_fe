@@ -4,7 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { ClinicalAssessmentScale } from "../interfaces/StandardMedicalRecord"
 import { CLINICAL_ASSESSMENT_SCALE_RESULT } from "@/constants/common"
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { FormInput } from "@/components/FieldCustom/FormInput"
 import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
@@ -16,26 +16,39 @@ import {
 } from "../schemas/clinical-assessment-scale-form"
 import { FormSelect } from "@/components/FieldCustom/FormSelect"
 import { pendingAssessmentsQueryOptions } from "../queries/follow-up-query"
+import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import { useQuery } from "@tanstack/react-query"
 import { useSubmitAssessmentMutation } from "../hooks/use-follow-up-mutations"
 import { mapFeResultToApi } from "../mappers/map-follow-up-response"
 import { Link } from "react-router-dom"
 import { urlPaths } from "@/constants/urlPaths"
+import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
+import { DEFAULT_LIMIT } from "@/types/pagination"
 
 export function ClinicalAssessmentScale() {
   const [open, setOpen] = useState(false)
   const activeBranch = useClinicStore((s) => s.activeBranch)
   const [activeRowId, setActiveRowId] = useState<string | null>(null)
+  const branch = toClinicBranchCode(activeBranch)
+  const [page, setPage] = useState(1)
 
-  const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
+  useEffect(() => {
+    setPage(1)
+  }, [branch])
+
   const form = useForm<ClinicalAssessmentScaleFormValues>({
     resolver: zodResolver(clinicalAssessmentScaleFormSchema),
+
     defaultValues: clinicalAssessmentScaleFormDefaultValues,
   })
-  const { data = [], isLoading } = useQuery(
-    pendingAssessmentsQueryOptions(branch)
+
+  const { data, isLoading } = useQuery(
+    pendingAssessmentsQueryOptions({ branch, page, limit: DEFAULT_LIMIT })
   )
+
+  const rows = data?.data ?? []
+  const pageCount = Math.max(data?.meta.totalPages ?? 0, 1)
   const assessmentMutation = useSubmitAssessmentMutation()
   const handleOpenDialog = useCallback(
     (row: ClinicalAssessmentScale) => {
@@ -78,14 +91,24 @@ export function ClinicalAssessmentScale() {
         )
       },
     },
+
+    {
+      accessorKey: "followUpDate",
+      header: "Hạn tái khám",
+      cell: ({ row }) => formatIsoDateToVi(row.original.followUpDate),
+    },
+
     {
       accessorKey: "appointmentDate",
-      header: "Hạn tái khám",
+      header: "Ngày hỏi thăm",
+      cell: ({ row }) => formatIsoDateToVi(row.original.appointmentDate),
     },
+
     {
       accessorKey: "physicianInCharge",
       header: "Bác sĩ phụ trách",
     },
+
     {
       accessorKey: "result",
       header: "Kết quả",
@@ -116,6 +139,7 @@ export function ClinicalAssessmentScale() {
         )
       },
     },
+
     {
       accessorKey: "note",
       header: "Ghi chú",
@@ -123,18 +147,18 @@ export function ClinicalAssessmentScale() {
         return <div>{row.original.note}</div>
       },
     },
+
     {
       accessorKey: "actions",
       header: "Thao tác",
       cell: ({ row }) => {
         return (
           <div>
-            {(Number(row.original.result) === 5 ||
-              row.original.result === null) && (
+            {row.original.result === null && (
               <Button
                 size="icon"
                 onClick={() => handleOpenDialog(row.original)}
-                className="w-full bg-yellow-700 text-white hover:bg-emerald-800"
+                className="w-full bg-[#f8e3a3] text-sidebar-primary hover:bg-[#f8e3a3]/80"
               >
                 Hỏi thăm
               </Button>
@@ -151,16 +175,17 @@ export function ClinicalAssessmentScale() {
         title="Đánh giá lâm sàng gần nhất (Hỏi thăm)"
         classNameTable="mt-4"
         columns={columns}
-        data={data}
+        data={rows}
         loading={isLoading}
-        pageIndex={0}
-        pageCount={2}
-        onPageChange={() => {}}
+        pageIndex={page - 1}
+        pageCount={pageCount}
+        onPageChange={(nextPageIndex) => setPage(nextPageIndex + 1)}
       />
+
       <DialogCommon
         open={open}
         onOpenChange={setOpen}
-        title="Đánh giá lâm sàng gần nhất (Hỏi thăm)"
+        title="Đánh giá lâm sàng gần nhất (Hỏi thăm — trong hạn tái khám)"
         onSubmit={handleSave}
         loading={form.formState.isSubmitting}
         submitText="Lưu"
@@ -180,6 +205,7 @@ export function ClinicalAssessmentScale() {
                 })
               )}
             />
+
             <FormInput control={form.control} name="note" label="Ghi chú" />
           </div>
         </Form>

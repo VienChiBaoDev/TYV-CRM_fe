@@ -1,14 +1,11 @@
 import { AlertCircle, Printer, Plus } from "lucide-react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
+import { Button } from "@/components/ui/button"
 
 export default function PatientProfile() {
-  const {
-    activePatient,
-    activeVisit,
-    setShowExportModal,
-    openAddVisitModal,
-  } = useMedicalRecordContext()
+  const { activePatient, activeVisit, setShowExportModal, openAddVisitModal } =
+    useMedicalRecordContext()
 
   const followUpDisplayDate = activeVisit?.followUpPlan?.followUpDate
     ? formatIsoDateToVi(activeVisit.followUpPlan.followUpDate)
@@ -106,14 +103,14 @@ export default function PatientProfile() {
               Xuất BA
             </button>
 
-            <button
+            <Button
               id="add-visit-btn"
               onClick={openAddVisitModal}
-              className="shadow-emerald-850/10 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-emerald-800 px-3.5 py-1.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-emerald-700"
+              className="shadow-emerald-850/10 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold shadow-md transition-colors"
             >
               <Plus className="h-4 w-4" />
               Thêm lần khám
-            </button>
+            </Button>
           </div>
         </div>
       </div>

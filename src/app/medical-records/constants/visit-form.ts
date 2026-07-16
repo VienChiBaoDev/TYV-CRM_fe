@@ -50,11 +50,7 @@ export function computeAssessmentDateIso(
   return `${y}-${m}-${d}`
 }
 
-export function formatIsoDateToVi(isoDate: string): string {
-  const [year, month, day] = isoDate.split("-")
-  if (!year || !month || !day) return isoDate
-  return `${day}/${month}/${year}`
-}
+export { formatIsoDateToVi } from "@/lib/date-vi"
 
 export function getDefaultVisitForm(): Partial<Visit> {
   return {

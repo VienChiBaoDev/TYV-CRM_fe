@@ -1,5 +1,5 @@
+import { Building2, UserPlus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { UserPlus, Building2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -42,7 +42,7 @@ export function ListFilters() {
         </div>
         <Button
           onClick={() => navigate(urlPaths.medicalRecordCreate)}
-          className="shrink-0 bg-emerald-600 text-white hover:bg-emerald-700"
+          className="shrink-0"
         >
           <UserPlus className="h-4 w-4" />
           Tạo mới hồ sơ
@@ -64,7 +64,7 @@ export function ListFilters() {
         </div> */}
 
         {/* Bộ lọc chi nhánh */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex shrink-0 items-center gap-1.5">
           <Building2 className="h-4 w-4 text-emerald-600" />
           <Select value={activeBranch} onValueChange={setActiveBranch}>
             <SelectTrigger className="w-[150px] bg-white text-sm">

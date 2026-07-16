@@ -3,29 +3,48 @@ import httpService from "@/services/httpService"
 import type {
   FollowUpScheduleApiResponse,
   PendingAssessmentApiResponse,
+  RescheduleFollowUpPayload,
   ScheduleFollowUpPayload,
   SubmitAssessmentPayload,
 } from "../interfaces/StandardMedicalRecord"
 import API_PATHS from "@/constants/apiPaths"
+import type { PaginatedResponse } from "@/types/pagination"
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/types/pagination"
 
-export async function fetchUpcomingFollowUps(params?: {
+interface FollowUpListParams {
   branch?: ClinicBranchCode
-  daysAhead?: number
-}): Promise<FollowUpScheduleApiResponse[]> {
-  const { data } = await httpService.get<FollowUpScheduleApiResponse[]>(
-    API_PATHS.followUps.upcoming,
-    { params }
-  )
+  page?: number
+  limit?: number
+}
+
+export async function fetchUpcomingFollowUps(
+  params?: FollowUpListParams & { daysAhead?: number }
+): Promise<PaginatedResponse<FollowUpScheduleApiResponse>> {
+  const { data } = await httpService.get<
+    PaginatedResponse<FollowUpScheduleApiResponse>
+  >(API_PATHS.followUps.upcoming, {
+    params: {
+      branch: params?.branch,
+      daysAhead: params?.daysAhead,
+      page: params?.page ?? DEFAULT_PAGE,
+      limit: params?.limit ?? DEFAULT_LIMIT,
+    },
+  })
   return data
 }
 
-export async function fetchPendingAssessments(params?: {
-  branch?: ClinicBranchCode
-}): Promise<PendingAssessmentApiResponse[]> {
-  const { data } = await httpService.get<PendingAssessmentApiResponse[]>(
-    API_PATHS.followUps.pendingAssessment,
-    { params }
-  )
+export async function fetchPendingAssessments(
+  params?: FollowUpListParams
+): Promise<PaginatedResponse<PendingAssessmentApiResponse>> {
+  const { data } = await httpService.get<
+    PaginatedResponse<PendingAssessmentApiResponse>
+  >(API_PATHS.followUps.pendingAssessment, {
+    params: {
+      branch: params?.branch,
+      page: params?.page ?? DEFAULT_PAGE,
+      limit: params?.limit ?? DEFAULT_LIMIT,
+    },
+  })
   return data
 }
 
@@ -46,6 +65,17 @@ export async function submitAssessment(
 ): Promise<PendingAssessmentApiResponse> {
   const { data } = await httpService.patch<PendingAssessmentApiResponse>(
     API_PATHS.followUps.submitAssessment(followUpId),
+    payload
+  )
+  return data
+}
+
+export async function rescheduleFollowUp(
+  followUpId: string,
+  payload: RescheduleFollowUpPayload
+): Promise<FollowUpScheduleApiResponse> {
+  const { data } = await httpService.patch<FollowUpScheduleApiResponse>(
+    API_PATHS.followUps.rescheduleFollowUp(followUpId),
     payload
   )
   return data

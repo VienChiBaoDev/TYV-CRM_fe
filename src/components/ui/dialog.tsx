@@ -5,6 +5,14 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
+function isNestedRadixOverlayTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false
+
+  return !!target.closest(
+    '[data-slot="popover-content"], [data-slot="select-content"], [data-slot="dropdown-menu-content"]',
+  )
+}
+
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -69,16 +77,19 @@ function DialogContent({
         )}
         {...props}
         onPointerDownOutside={(event) => {
+          if (isNestedRadixOverlayTarget(event.target)) return
           if (!closeOnOutsideClick) {
             event.preventDefault()
           }
           onPointerDownOutside?.(event)
         }}
         onFocusOutside={(event) => {
+          if (isNestedRadixOverlayTarget(event.target)) return
           event.preventDefault()
           onFocusOutside?.(event)
         }}
         onInteractOutside={(event) => {
+          if (isNestedRadixOverlayTarget(event.target)) return
           if (!closeOnOutsideClick) {
             event.preventDefault()
           }

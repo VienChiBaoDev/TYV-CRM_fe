@@ -1,0 +1,51 @@
+import { useMemo } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { fetchStaffOptions, type StaffOption } from "@/services/staffService"
+import type { FormSelectOption } from "@/components/FieldCustom/FormSelect"
+
+export function findStaffIdByName(
+  staffList: StaffOption[],
+  name: string
+): string {
+  return staffList.find((staff) => staff.fullName === name)?.id ?? ""
+}
+
+export function staffNameById(
+  staffList: StaffOption[],
+  id: string | undefined
+): string | undefined {
+  if (!id) return undefined
+  return staffList.find((staff) => staff.id === id)?.fullName
+}
+
+export function useStaffPickerOptions(enabled = true) {
+  const { data: staffOptions = [], isLoading } = useQuery<StaffOption[]>({
+    queryKey: ["staff", "options"],
+    queryFn: fetchStaffOptions,
+    enabled,
+  })
+
+  const doctorOptions = useMemo<FormSelectOption[]>(
+    () =>
+      staffOptions
+        .filter((staff: StaffOption) => staff.role === "DOCTOR")
+        .map((staff: StaffOption) => ({
+          value: staff.id,
+          label: staff.fullName,
+        })),
+    [staffOptions]
+  )
+
+  const assistantOptions = useMemo<FormSelectOption[]>(
+    () =>
+      staffOptions
+        .filter((staff: StaffOption) => staff.role === "ASSISTANT")
+        .map((staff: StaffOption) => ({
+          value: staff.id,
+          label: staff.fullName,
+        })),
+    [staffOptions]
+  )
+
+  return { staffOptions, doctorOptions, assistantOptions, isLoading }
+}

@@ -8,34 +8,72 @@ import {
   mapToClinicalAssessment,
   mapToFollowUpSchedule,
 } from "../mappers/map-follow-up-response"
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/types/pagination"
+import type { PaginatedMeta } from "@/types/pagination"
+import { UPCOMING_DAYS_AHEAD } from "../components/FollowUpSchedule"
+
+export interface FollowUpListQueryParams {
+  branch?: ClinicBranchCode
+  page?: number
+  limit?: number
+}
+
+export interface MappedPaginatedResult<T> {
+  data: T[]
+  meta: PaginatedMeta
+}
 
 export const followUpKeys = {
   all: ["follow-ups"] as const,
-  upcoming: (branch?: ClinicBranchCode, daysAhead = 3) =>
-    [...followUpKeys.all, "upcoming", branch, daysAhead] as const,
-  pendingAssessment: (branch?: ClinicBranchCode) =>
-    [...followUpKeys.all, "pending-assessment", branch] as const,
+  upcoming: (params: FollowUpListQueryParams & { daysAhead?: number }) =>
+    [
+      ...followUpKeys.all,
+      "upcoming",
+      params.branch,
+      params.daysAhead ?? UPCOMING_DAYS_AHEAD,
+      params.page ?? DEFAULT_PAGE,
+      params.limit ?? DEFAULT_LIMIT,
+    ] as const,
+  pendingAssessment: (params: FollowUpListQueryParams) =>
+    [
+      ...followUpKeys.all,
+      "pending-assessment",
+      params.branch,
+      params.page ?? DEFAULT_PAGE,
+      params.limit ?? DEFAULT_LIMIT,
+    ] as const,
 }
 
 export function upcomingFollowUpsQueryOptions(
-  branch?: ClinicBranchCode,
-  daysAhead = 3
+  params: FollowUpListQueryParams & { daysAhead?: number }
 ) {
   return queryOptions({
-    queryKey: followUpKeys.upcoming(branch, daysAhead),
-    queryFn: async () => {
-      const rows = await fetchUpcomingFollowUps({ branch, daysAhead })
-      return rows.map(mapToFollowUpSchedule)
+    queryKey: followUpKeys.upcoming(params),
+    queryFn: async (): Promise<
+      MappedPaginatedResult<ReturnType<typeof mapToFollowUpSchedule>>
+    > => {
+      const response = await fetchUpcomingFollowUps(params)
+      return {
+        data: response.data.map(mapToFollowUpSchedule),
+        meta: response.meta,
+      }
     },
   })
 }
 
-export function pendingAssessmentsQueryOptions(branch?: ClinicBranchCode) {
+export function pendingAssessmentsQueryOptions(
+  params: FollowUpListQueryParams
+) {
   return queryOptions({
-    queryKey: followUpKeys.pendingAssessment(branch),
-    queryFn: async () => {
-      const rows = await fetchPendingAssessments({ branch })
-      return rows.map(mapToClinicalAssessment)
+    queryKey: followUpKeys.pendingAssessment(params),
+    queryFn: async (): Promise<
+      MappedPaginatedResult<ReturnType<typeof mapToClinicalAssessment>>
+    > => {
+      const response = await fetchPendingAssessments(params)
+      return {
+        data: response.data.map(mapToClinicalAssessment),
+        meta: response.meta,
+      }
     },
   })
 }

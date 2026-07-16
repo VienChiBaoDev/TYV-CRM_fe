@@ -1,6 +1,8 @@
 import { create } from "zustand"
 
-export type ClinicBranch = "Hàng Bông" | "Cầu Giấy"
+import type { ClinicBranchLabel } from "@/constants/clinic-branches"
+
+export type ClinicBranch = ClinicBranchLabel
 
 interface ClinicStore {
   activeBranch: ClinicBranch

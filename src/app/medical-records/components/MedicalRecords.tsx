@@ -32,7 +32,7 @@ function MedicalRecordContent() {
         <button
           type="button"
           onClick={() => refetch()}
-          className="rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+          className="rounded-lg bg-emerald-800 px-4 py-2 text-xs font-semibold text-white hover:bg-primary"
         >
           Thử lại
         </button>

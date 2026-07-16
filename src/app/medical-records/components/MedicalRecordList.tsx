@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
+import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import { ListFilters } from "./List/ListFilters"
 import { PatientTable } from "./List/PatientTable"
@@ -9,7 +10,7 @@ import { getReferrers, type Referrer } from "../data/referrerService"
 
 export default function MedicalRecordList() {
   const activeBranch = useClinicStore((state) => state.activeBranch)
-  const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
+  const branch = toClinicBranchCode(activeBranch)
 
   const [patients, setPatients] = useState<Patient[]>([])
   const [referrers, setReferrers] = useState<Referrer[]>([])

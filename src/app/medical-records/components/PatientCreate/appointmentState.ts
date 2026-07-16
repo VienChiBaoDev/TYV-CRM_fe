@@ -3,9 +3,9 @@ export interface AppointmentFormState {
   date: string
   hour: string
   minute: string
-  doctorName: string
+  doctorId: string
+  assistantId: string
   /** Các trường dưới đây chưa có cột DB — chỉ nhập, chưa lưu */
-  doctor2: string
   consultant: string
   service: string
   note: string
@@ -21,8 +21,8 @@ export const defaultAppointmentForm: AppointmentFormState = {
   date: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
   hour: pad(now.getHours()),
   minute: pad(now.getMinutes()),
-  doctorName: "",
-  doctor2: "",
+  doctorId: "",
+  assistantId: "",
   consultant: "",
   service: "",
   note: "",

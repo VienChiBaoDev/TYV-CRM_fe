@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner"
 export default function MainLayout() {
   return (
     <div
-      className="flex min-h-screen flex-col bg-[#f3f6f4] font-sans text-slate-800 antialiased md:flex-row"
+      className="flex h-screen flex-col overflow-hidden bg-background font-sans text-slate-800 antialiased md:flex-row"
       id="clinic-dashboard"
     >
       <Sidebar />

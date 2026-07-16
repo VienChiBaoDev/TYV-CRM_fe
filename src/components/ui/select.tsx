@@ -73,7 +73,7 @@ function SelectContent({
   position = "item-aligned",
   align = "center",
   usePortal = true,
-  disableOutsidePointerEvents,
+  disableOutsidePointerEvents: _disableOutsidePointerEvents,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content> & {
   usePortal?: boolean
@@ -83,9 +83,6 @@ function SelectContent({
     <SelectPrimitive.Content
       data-slot="select-content"
       data-align-trigger={position === "item-aligned"}
-      {...({
-        disableOutsidePointerEvents: disableOutsidePointerEvents ?? usePortal,
-      } as React.ComponentProps<typeof SelectPrimitive.Content>)}
       className={cn(
         "pointer-events-auto relative z-100 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) origin-(--radix-select-content-transform-origin) overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
         "data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
@@ -102,8 +99,9 @@ function SelectContent({
       <SelectPrimitive.Viewport
         data-position={position}
         className={cn(
-          "max-h-60 overflow-y-auto",
-          "data-[position=popper]:h-(--radix-select-trigger-height) data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)"
+          "max-h-60 overflow-y-auto p-1",
+          position === "popper" &&
+            "w-full min-w-(--radix-select-trigger-width)",
         )}
       >
         {children}

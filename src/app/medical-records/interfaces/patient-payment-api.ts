@@ -1,0 +1,29 @@
+export interface PatientPaymentDetailApi {
+  readonly amount: number
+  readonly serviceCode: string
+  readonly serviceName: string
+}
+
+export interface PatientPaymentApi {
+  readonly id: string
+  readonly voucherCode: string
+  readonly voucherDate: string
+  readonly processedBy: { readonly initials: string; readonly name: string }
+  readonly paymentMethod: string
+  readonly totalAmount: number
+  readonly details: PatientPaymentDetailApi[]
+}
+
+export interface PatientPaymentSummaryApi {
+  readonly total: number
+  readonly paid: number
+  readonly remaining: number
+  readonly deposit: number
+  readonly products: number
+  readonly services: number
+}
+
+export interface PatientPaymentsListApi {
+  readonly summary: PatientPaymentSummaryApi
+  readonly payments: PatientPaymentApi[]
+}

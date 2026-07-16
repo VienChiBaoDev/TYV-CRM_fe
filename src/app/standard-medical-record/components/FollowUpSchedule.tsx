@@ -1,8 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/data-table/data-table"
+import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import { FOLLOW_UP_SCHEDULE_STATUS } from "@/constants/common"
 import { upcomingFollowUpsQueryOptions } from "../queries/follow-up-query"
@@ -10,17 +11,36 @@ import type { FollowUpSchedule } from "../interfaces/StandardMedicalRecord"
 import { QuickScheduleDialog } from "./QuickScheduleDialog"
 import { Link } from "react-router-dom"
 import { urlPaths } from "@/constants/urlPaths"
-// import { QuickScheduleDialog } from "./QuickScheduleDialog"
+import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
+import { DEFAULT_LIMIT } from "@/types/pagination"
+import { RescheduleFollowUpDialog } from "./RescheduleFollowUpDialog"
+
+export const UPCOMING_DAYS_AHEAD = 7
 
 export function FollowUpSchedule() {
   const activeBranch = useClinicStore((s) => s.activeBranch)
-  const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
-
-  const { data = [], isLoading } = useQuery(
-    upcomingFollowUpsQueryOptions(branch, 3)
+  const branch = toClinicBranchCode(activeBranch)
+  const [page, setPage] = useState(1)
+  const [selectedRow, setSelectedRow] = useState<FollowUpSchedule | null>(null)
+  const [rescheduleRow, setRescheduleRow] = useState<FollowUpSchedule | null>(
+    null
   )
 
-  const [selectedRow, setSelectedRow] = useState<FollowUpSchedule | null>(null)
+  useEffect(() => {
+    setPage(1)
+  }, [branch])
+
+  const { data, isLoading } = useQuery(
+    upcomingFollowUpsQueryOptions({
+      branch,
+      daysAhead: UPCOMING_DAYS_AHEAD,
+      page,
+      limit: DEFAULT_LIMIT,
+    })
+  )
+
+  const rows = data?.data ?? []
+  const pageCount = Math.max(data?.meta.totalPages ?? 0, 1)
 
   const columns: ColumnDef<FollowUpSchedule>[] = [
     {
@@ -37,7 +57,21 @@ export function FollowUpSchedule() {
     {
       accessorKey: "followUpAppointmentDate",
       header: "Hạn tái khám",
-      // format ngày vi-VN nếu muốn
+      cell: ({ row }) =>
+        formatIsoDateToVi(row.original.followUpAppointmentDate),
+    },
+    {
+      accessorKey: "rescheduledFollowUpDate",
+      header: "Lịch đổi",
+      cell: ({ row }) =>
+        row.original.rescheduledFollowUpDate
+          ? formatIsoDateToVi(row.original.rescheduledFollowUpDate)
+          : "—",
+    },
+    {
+      accessorKey: "rescheduleNote",
+      header: "Ghi chú đổi lịch",
+      cell: ({ row }) => row.original.rescheduleNote ?? "—",
     },
     { accessorKey: "physicianInCharge", header: "Bác sĩ phụ trách" },
     { accessorKey: "facility", header: "Cơ sở" },
@@ -57,29 +91,47 @@ export function FollowUpSchedule() {
     {
       id: "actions",
       header: "Thao tác",
-      cell: ({ row }) => (
-        <Button
-          size="sm"
-          disabled={row.original.status === 1}
-          onClick={() => setSelectedRow(row.original)}
-          className="bg-emerald-700 text-white hover:bg-emerald-800"
-        >
-          Đặt nhanh
-        </Button>
-      ),
+      cell: ({ row }) => {
+        const isScheduled = row.original.status === 1
+
+        return (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isScheduled}
+              title={
+                isScheduled
+                  ? "Đã đặt lịch — hủy lịch hẹn trên lịch trước"
+                  : undefined
+              }
+              onClick={() => setRescheduleRow(row.original)}
+            >
+              Đổi lịch
+            </Button>
+            <Button
+              size="sm"
+              disabled={isScheduled}
+              onClick={() => setSelectedRow(row.original)}
+            >
+              Đặt nhanh
+            </Button>
+          </div>
+        )
+      },
     },
   ]
 
   return (
     <>
       <DataTable
-        title="Bệnh nhân sắp đến hạn tái khám (3 ngày tới)"
+        title={`Bệnh nhân sắp đến hạn tái khám (${UPCOMING_DAYS_AHEAD} ngày tới)`}
         columns={columns}
-        data={data}
+        data={rows}
         loading={isLoading}
-        pageIndex={0}
-        pageCount={1}
-        onPageChange={() => {}}
+        pageIndex={page - 1}
+        pageCount={pageCount}
+        onPageChange={(nextPageIndex) => setPage(nextPageIndex + 1)}
       />
 
       {selectedRow && (
@@ -87,6 +139,14 @@ export function FollowUpSchedule() {
           open={Boolean(selectedRow)}
           onOpenChange={(open) => !open && setSelectedRow(null)}
           row={selectedRow}
+        />
+      )}
+
+      {rescheduleRow && (
+        <RescheduleFollowUpDialog
+          open={Boolean(rescheduleRow)}
+          onOpenChange={(open) => !open && setRescheduleRow(null)}
+          row={rescheduleRow}
         />
       )}
     </>

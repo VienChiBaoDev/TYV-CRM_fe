@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { urlPaths } from "@/constants/urlPaths"
+import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import { GeneralInfoTab } from "./GeneralInfoTab"
 import { OtherInfoTab } from "./OtherInfoTab"
@@ -22,7 +23,11 @@ import {
   type SetAppointmentField,
 } from "./appointmentState"
 import { createPatient } from "../../data/patientService"
-import { createAppointment } from "../../data/appointmentService"
+import { createAppointment } from "../../../appointments/services/appointmentService"
+import {
+  staffNameById,
+  useStaffPickerOptions,
+} from "@/hooks/use-staff-picker-options"
 
 /** Chuyển dd-mm-yyyy người dùng nhập sang ISO yyyy-mm-dd, trả undefined nếu không hợp lệ. */
 function toIsoDate(input: string): string | undefined {
@@ -39,8 +44,9 @@ export default function PatientCreatePage() {
   const [submitting, setSubmitting] = useState(false)
   const [createAppt, setCreateAppt] = useState(false)
   const [apptForm, setApptForm] = useState<AppointmentFormState>(
-    defaultAppointmentForm,
+    defaultAppointmentForm
   )
+  const { staffOptions } = useStaffPickerOptions(createAppt)
 
   const setField: SetPatientField = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -57,10 +63,14 @@ export default function PatientCreatePage() {
       toast.error("Vui lòng nhập số điện thoại")
       return
     }
+    if (createAppt && !apptForm.doctorId) {
+      toast.error("Vui lòng chọn bác sĩ cho lịch hẹn")
+      return
+    }
 
     setSubmitting(true)
     try {
-      const branch = activeBranch === "Cầu Giấy" ? "CAU_GIAY" : "HANG_BONG"
+      const branch = toClinicBranchCode(activeBranch)
       const created = await createPatient({
         fullName: form.fullName.trim(),
         gender: form.gender,
@@ -73,13 +83,16 @@ export default function PatientCreatePage() {
 
       if (createAppt) {
         const scheduledAt = new Date(
-          `${apptForm.date}T${apptForm.hour || "00"}:${apptForm.minute || "00"}:00`,
+          `${apptForm.date}T${apptForm.hour || "00"}:${apptForm.minute || "00"}:00`
         )
         if (apptForm.date && !Number.isNaN(scheduledAt.getTime())) {
+          const endedAt = new Date(scheduledAt.getTime() + 30 * 60 * 1000)
           await createAppointment({
             patientId: created.id,
             scheduledAt: scheduledAt.toISOString(),
-            doctorName: apptForm.doctorName.trim() || undefined,
+            endedAt: endedAt.toISOString(),
+            doctorName: staffNameById(staffOptions, apptForm.doctorId),
+            assistantName: staffNameById(staffOptions, apptForm.assistantId),
             note: apptForm.note.trim() || undefined,
             clinicBranch: branch,
           })
@@ -89,7 +102,7 @@ export default function PatientCreatePage() {
       toast.success(
         createAppt
           ? `Đã lưu hồ sơ ${created.patientCode} và lịch hẹn`
-          : `Đã lưu hồ sơ ${created.patientCode}`,
+          : `Đã lưu hồ sơ ${created.patientCode}`
       )
       navigate(urlPaths.medicalRecordList)
     } catch {
@@ -100,33 +113,38 @@ export default function PatientCreatePage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 relative pb-20">
+    <div className="relative flex h-full flex-col bg-slate-50 pb-20">
       {/* Header and Main Content */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-6">
         <Tabs defaultValue="general" className="w-full">
-          <div className="flex items-start justify-between mb-4">
+          <div className="mb-4 flex items-start justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-800">Hồ sơ khách hàng</h2>
+              <h2 className="text-lg font-bold text-slate-800">
+                Hồ sơ khách hàng
+              </h2>
               <p className="text-sm text-slate-500">Thông tin cá nhân</p>
             </div>
-            <TabsList className="bg-white border rounded-lg h-auto p-1 shadow-sm gap-1">
-              <TabsTrigger 
-                value="general" 
-                className="rounded-md data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm px-4 py-1.5 text-slate-600 border border-transparent data-[state=active]:border-gray-200"
+            <TabsList className="h-auto gap-1 rounded-lg border bg-white p-1 shadow-sm">
+              <TabsTrigger
+                value="general"
+                className="rounded-md border border-transparent px-4 py-1.5 text-slate-600 data-[state=active]:border-gray-200 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm"
               >
                 Thông tin chung
               </TabsTrigger>
-              <TabsTrigger 
-                value="other" 
-                className="rounded-md data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm px-4 py-1.5 text-slate-600 border border-transparent data-[state=active]:border-gray-200"
+              <TabsTrigger
+                value="other"
+                className="rounded-md border border-transparent px-4 py-1.5 text-slate-600 data-[state=active]:border-gray-200 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm"
               >
                 Khác
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <TabsContent value="general" className="m-0 border-none outline-none">
+          <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+            <TabsContent
+              value="general"
+              className="m-0 border-none outline-none"
+            >
               <GeneralInfoTab
                 form={form}
                 setField={setField}
@@ -149,25 +167,30 @@ export default function PatientCreatePage() {
         )}
 
         {/* Footer Checkbox */}
-        <div className="flex items-center gap-2 mt-6 mb-16">
-          <Checkbox className="bg-slate-800 border-slate-800 text-white rounded-[4px] data-[state=checked]:bg-slate-800 data-[state=checked]:text-white h-5 w-5" defaultChecked />
-          <span className="text-sm font-medium text-slate-700">Thỏa thuận khách hàng ...</span>
+        <div className="mt-6 mb-16 flex items-center gap-2">
+          <Checkbox
+            className="h-5 w-5 rounded-[4px] border-slate-800 bg-slate-800 text-white data-[state=checked]:bg-slate-800 data-[state=checked]:text-white"
+            defaultChecked
+          />
+          <span className="text-sm font-medium text-slate-700">
+            Thỏa thuận khách hàng ...
+          </span>
         </div>
       </div>
 
       {/* Sticky Footer Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-white p-4 flex justify-end gap-3 border-t border-slate-300 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] z-10">
+      <div className="fixed right-0 bottom-0 left-0 z-10 flex justify-end gap-3 border-t border-slate-300 bg-white p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] md:left-64">
         <Button
           onClick={() => navigate(urlPaths.medicalRecordList)}
           disabled={submitting}
-          className="h-11 px-6 text-base bg-slate-700 text-white hover:bg-slate-800 border border-slate-800 shadow-sm min-w-[110px]"
+          className="h-11 min-w-[110px] border border-slate-800 bg-slate-700 px-6 text-base text-white shadow-sm hover:bg-slate-800"
         >
           Đóng
         </Button>
         <Button
           onClick={handleSave}
           disabled={submitting}
-          className="h-11 px-6 text-base bg-[#00a64c] text-white hover:bg-[#008f41] shadow-sm min-w-[110px]"
+          className="h-11 min-w-[110px] bg-[#00a64c] px-6 text-base text-white shadow-sm hover:bg-[#008f41]"
         >
           {submitting ? "Đang lưu..." : "Lưu"}
         </Button>

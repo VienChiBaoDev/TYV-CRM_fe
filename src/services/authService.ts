@@ -11,6 +11,6 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
 }
 
 export async function fetchMe(): Promise<AuthUser> {
-  const { data } = await httpService.get<AuthUser>("/auth/me")
+  const { data } = await httpService.get<AuthUser>(API_PATHS.AUTH.ME)
   return data
 }

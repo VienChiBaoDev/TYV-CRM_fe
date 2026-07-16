@@ -1,12 +1,26 @@
 import httpService from "@/services/httpService"
 import type {
+  ClinicBranchValue,
   CreateStaffPayload,
   Staff,
+  StaffRole,
   UpdateStaffPayload,
 } from "@/interfaces/auth"
 
 export async function fetchStaffList(): Promise<Staff[]> {
   const { data } = await httpService.get<Staff[]>("/staff")
+  return data
+}
+
+export interface StaffOption {
+  id: string
+  fullName: string
+  role: StaffRole
+  clinicBranch: ClinicBranchValue | null
+}
+
+export async function fetchStaffOptions(): Promise<StaffOption[]> {
+  const { data } = await httpService.get<StaffOption[]>("/staff/options")
   return data
 }
 

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { urlPaths } from "@/constants/urlPaths"
 import { login } from "@/services/authService"
 import { useAuthStore } from "@/stores/auth-store"
+import { syncClinicBranchFromUser } from "@/lib/sync-clinic-branch-from-user"
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -26,6 +27,7 @@ export default function LoginPage() {
     try {
       const { accessToken, user } = await login({ email, password })
       setAuth(accessToken, user)
+      syncClinicBranchFromUser(user)
       navigate(urlPaths.medicalRecordList, { replace: true })
     } catch (err) {
       const message = isAxiosError(err)
@@ -39,16 +41,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-emerald-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-primary px-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
         <div className="mb-6 flex flex-col items-center text-center">
-          <span className="font-display text-4xl font-semibold text-emerald-700">
-            §
-          </span>
+          <img
+            src="../public/Logo.jpg"
+            alt="Thượng Y Viên"
+            className="h-20 w-20 rounded-xl object-cover"
+          />
           <h1 className="mt-2 text-xl font-bold tracking-tight text-slate-800">
             Thượng Y Viên
           </h1>
-          <p className="text-[11px] font-medium tracking-widest text-emerald-600 uppercase">
+          <p className="text-[11px] font-medium tracking-widest text-[#f6c83e] uppercase">
             Nhân • Tâm • Trí
           </p>
         </div>
@@ -89,7 +93,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-700 hover:bg-emerald-800"
+            className="w-full bg-primary hover:bg-primary/80"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />

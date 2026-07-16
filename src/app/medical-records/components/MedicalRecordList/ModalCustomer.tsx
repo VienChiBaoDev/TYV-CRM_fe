@@ -1,7 +1,7 @@
 import { FormInput } from "@/components/FieldCustom/FormInput"
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
 import { Form } from "@/components/ui/form"
-import type { ModalCustomerModeType } from "@/constants/common"
+import { MODAL_MODE, type ModalModeType } from "@/constants/common"
 import { useForm } from "react-hook-form"
 
 export default function ModalCustomer({
@@ -9,11 +9,12 @@ export default function ModalCustomer({
   open,
   onOpenChange,
 }: {
-  mode: ModalCustomerModeType
+  mode: ModalModeType
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const title = mode === "add" ? "Thêm khách hàng" : "Sửa khách hàng"
+  const title =
+    mode === MODAL_MODE.ADD ? "Thêm khách hàng" : "Sửa khách hàng"
   const form = useForm()
 
   return (

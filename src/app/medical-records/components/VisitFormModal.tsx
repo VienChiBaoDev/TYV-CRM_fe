@@ -10,6 +10,19 @@ import {
 } from "@/app/medical-records/constants/visit-form"
 import type { VisitFollowUpPlan } from "@/app/medical-records/interfaces/types"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
+import {
+  CLINIC_BRANCHES,
+  type ClinicBranchLabel,
+} from "@/constants/clinic-branches"
+import { DatePickerFieldIso } from "@/components/FieldCustom/DatePickerField"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 const MODAL_CONFIG = {
   add: {
@@ -23,6 +36,76 @@ const MODAL_CONFIG = {
     submitLabel: "Lưu cập nhật",
   },
 } as const
+
+const fieldLabelClassName =
+  "block text-[11px] font-bold text-slate-500 uppercase"
+
+const selectTriggerClassName = "mt-1 h-8 w-full text-xs shadow-xs"
+
+interface VisitFormSelectProps {
+  label: string
+  value: string
+  onValueChange: (value: string) => void
+  options: readonly { value: string; label: string }[]
+  id?: string
+}
+
+function VisitFormSelect({
+  label,
+  value,
+  onValueChange,
+  options,
+  id,
+}: VisitFormSelectProps) {
+  return (
+    <div>
+      <label htmlFor={id} className={fieldLabelClassName}>
+        {label}
+      </label>
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger id={id} className={selectTriggerClassName}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent position="popper" sideOffset={4}>
+          {options.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              className="text-xs"
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+const VISIT_MODE_OPTIONS = [
+  { value: "Trực tiếp", label: "Trực tiếp" },
+  { value: "Online", label: "Online (Khám xa)" },
+] as const
+
+const LOCATION_OPTIONS = CLINIC_BRANCHES.map((branch) => ({
+  value: branch.label,
+  label: `${branch.emoji} ${branch.label}`,
+}))
+
+const REMINDER_OPTIONS = REMINDER_DAYS_OPTIONS.map((days) => ({
+  value: String(days),
+  label: `${days} ngày trước`,
+}))
+
+const TREATMENT_OPTIONS = TREATMENT_STATUS_OPTIONS.map((status) => ({
+  value: status,
+  label: status,
+}))
+
+function resolveLocationValue(location: string | undefined): ClinicBranchLabel {
+  const match = CLINIC_BRANCHES.find((branch) => branch.label === location)
+  return match?.label ?? CLINIC_BRANCHES[0].label
+}
 
 export function VisitFormModal() {
   const {
@@ -83,7 +166,7 @@ export function VisitFormModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto border bg-slate-900/65 p-4 backdrop-blur-xs">
-      <div className="relative max-h-[90vh] w-full max-w-2xl animate-in overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl duration-150 zoom-in-95 fade-in">
+      <div className="max-w-8xl relative max-h-[90vh] w-full animate-in overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl duration-150 zoom-in-95 fade-in">
         <button
           type="button"
           onClick={onClose}
@@ -140,35 +223,22 @@ export function VisitFormModal() {
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-            <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase">
-                Hình thức
-              </label>
-              <select
-                value={visit.mode || "Trực tiếp"}
-                onChange={(e) =>
-                  updateVisit({
-                    mode: e.target.value as Visit["mode"],
-                  })
-                }
-                className="border-slate-250 mt-1 w-full rounded-lg border px-3 py-1.5 text-xs focus:outline-none"
-              >
-                <option value="Trực tiếp">Trực tiếp</option>
-                <option value="Online">Online (Khám xa)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase">
-                Địa điểm
-              </label>
-              <input
-                type="text"
-                value={visit.location || ""}
-                onChange={(e) => updateVisit({ location: e.target.value })}
-                className={inputClassName}
-                placeholder="Hàng Bông"
-              />
-            </div>
+            <VisitFormSelect
+              id="visit-mode"
+              label="Hình thức"
+              value={visit.mode || "Trực tiếp"}
+              onValueChange={(value) =>
+                updateVisit({ mode: value as Visit["mode"] })
+              }
+              options={VISIT_MODE_OPTIONS}
+            />
+            <VisitFormSelect
+              id="visit-location"
+              label="Địa điểm"
+              value={resolveLocationValue(visit.location)}
+              onValueChange={(value) => updateVisit({ location: value })}
+              options={LOCATION_OPTIONS}
+            />
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase">
                 Huyết áp
@@ -352,7 +422,7 @@ export function VisitFormModal() {
               <button
                 type="button"
                 onClick={onAddHerb}
-                className="cursor-pointer rounded-lg bg-emerald-700 px-3 py-1 text-xs font-bold text-white hover:bg-emerald-600"
+                className="cursor-pointer rounded-lg bg-primary px-3 py-1 text-xs font-bold text-white hover:bg-emerald-600"
               >
                 Thêm vị
               </button>
@@ -398,68 +468,51 @@ export function VisitFormModal() {
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <span className="mb-2 block text-[10px] font-bold text-slate-500 uppercase">
+            <span className={cn(fieldLabelClassName, "mb-3")}>
               Chăm sóc tiếp theo
             </span>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
-                <label className="block text-[10px] font-medium text-slate-600">
-                  Lịch tái khám
-                </label>
-                <input
-                  type="date"
+                <label className={fieldLabelClassName}>Lịch tái khám</label>
+                <DatePickerFieldIso
                   value={followUpPlan.followUpDate}
-                  onChange={(e) =>
-                    updateFollowUpPlan({ followUpDate: e.target.value })
+                  onChange={(isoDate) =>
+                    updateFollowUpPlan({ followUpDate: isoDate })
                   }
-                  className="border-slate-250 mt-1 w-full rounded-md border bg-white px-2 py-1 text-xs"
+                  placeholder="Chọn ngày tái khám"
+                  className={cn(selectTriggerClassName, "bg-white font-normal")}
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-medium text-slate-600">
-                  Nhắc nhở tự động
-                </label>
-                <select
-                  value={followUpPlan.reminderDaysBefore}
-                  onChange={(e) =>
+                <VisitFormSelect
+                  id="follow-up-reminder"
+                  label="Nhắc nhở tự động"
+                  value={String(followUpPlan.reminderDaysBefore)}
+                  onValueChange={(value) =>
                     updateFollowUpPlan({
-                      reminderDaysBefore: Number(e.target.value),
+                      reminderDaysBefore: Number(value),
                     })
                   }
-                  className="border-slate-250 mt-1 w-full rounded-md border bg-white px-2 py-1 text-xs"
-                >
-                  {REMINDER_DAYS_OPTIONS.map((days) => (
-                    <option key={days} value={days}>
-                      {days} ngày trước
-                    </option>
-                  ))}
-                </select>
+                  options={REMINDER_OPTIONS}
+                />
                 {assessmentDateIso && (
                   <p className="mt-1 text-[10px] text-slate-500">
                     Hỏi thăm: {formatIsoDateToVi(assessmentDateIso)}
                   </p>
                 )}
               </div>
-              <div>
-                <label className="block text-[10px] font-medium text-slate-600">
-                  Trạng thái điều trị
-                </label>
-                <select
-                  value={followUpPlan.treatmentStatus}
-                  onChange={(e) =>
-                    updateFollowUpPlan({
-                      treatmentStatus: e.target.value as VisitFollowUpPlan["treatmentStatus"],
-                    })
-                  }
-                  className="border-slate-250 mt-1 w-full rounded-md border bg-white px-2 py-1 text-xs"
-                >
-                  {TREATMENT_STATUS_OPTIONS.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <VisitFormSelect
+                id="follow-up-treatment-status"
+                label="Trạng thái điều trị"
+                value={followUpPlan.treatmentStatus}
+                onValueChange={(value) =>
+                  updateFollowUpPlan({
+                    treatmentStatus:
+                      value as VisitFollowUpPlan["treatmentStatus"],
+                  })
+                }
+                options={TREATMENT_OPTIONS}
+              />
             </div>
           </div>
 
