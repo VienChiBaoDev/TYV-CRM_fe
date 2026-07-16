@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import {
   CALENDAR_HOUR_ROW_CLASS,
   getCalendarRowCount,
-} from "../constants/calendar"
+} from "@/app/appointments/constants/calendar"
 
 const SKELETON_ROWS = getCalendarRowCount()
 const SKELETON_DAYS = 7
@@ -17,7 +17,7 @@ const GRID_STYLE = {
 
 const CALENDAR_MIN_HEIGHT = "min-h-[calc(100dvh-10.5rem)]"
 
-export function WeeklyCalendarSkeleton() {
+export function StaffScheduleSkeleton() {
   return (
     <div
       className={cn("grid h-full min-w-[900px] bg-white", CALENDAR_MIN_HEIGHT)}

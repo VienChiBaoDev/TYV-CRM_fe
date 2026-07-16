@@ -74,6 +74,13 @@ const API_PATHS = {
     ) =>
       `/patients/${patientId}/services/${serviceId}/treatment-sessions/${sessionNumber}/images/${imageId}`,
   },
+  staffShifts: {
+    list: "/staff-shifts",
+    create: "/staff-shifts",
+    detail: (id: string) => `/staff-shifts/${id}`,
+    update: (id: string) => `/staff-shifts/${id}`,
+    delete: (id: string) => `/staff-shifts/${id}`,
+  },
 }
 
 export default API_PATHS

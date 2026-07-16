@@ -6,31 +6,30 @@ import { Card, CardContent } from "@/components/ui/card"
 
 import { cn } from "@/lib/utils"
 
-import type { Appointment } from "@/app/appointments/services/appointmentService"
+import { CALENDAR_HOUR_ROW_CLASS } from "@/app/appointments/constants/calendar"
 
-import { formatDayHeader, getWeekDays, isSameDay } from "../utils/week-range"
+import {
+  formatDayHeader,
+  getWeekDays,
+  isSameDay,
+} from "@/app/appointments/utils/week-range"
 
-import { buildTimeSlots } from "../utils/time-slots"
+import { buildTimeSlots } from "@/app/appointments/utils/time-slots"
 
-import { groupAppointmentsByDay } from "../utils/appointment-position"
+import type { StaffShift } from "../services/staffShiftService"
 
-import { CALENDAR_HOUR_ROW_CLASS } from "../constants/calendar"
+import { groupShiftsByDay } from "../utils/shift-position"
 
-import { DayTimeColumn } from "./DayTimeColumn"
+import { DayShiftColumn } from "./DayShiftColumn"
 
-import { WeeklyCalendarSkeleton } from "./WeeklyCalendarSkeleton"
+import { StaffScheduleSkeleton } from "./StaffScheduleSkeleton"
 
-interface WeeklyCalendarGridProps {
+interface StaffScheduleGridProps {
   anchorDate: Date
-
-  appointments: Appointment[]
-
+  shifts: StaffShift[]
   loading: boolean
-
   onSlotClick: (day: Date, hour: number, minute: number) => void
-
-  onAppointmentClick: (appointment: Appointment) => void
-
+  onShiftClick: (shift: StaffShift) => void
   className?: string
 }
 
@@ -41,25 +40,19 @@ const GRID_STYLE = {
   gridTemplateRows: "auto minmax(0, 1fr)",
 } as const
 
-const CALENDAR_MIN_HEIGHT = "min-h-[calc(100dvh-10.5rem)]"
+const CALENDAR_MIN_HEIGHT = "min-h-[calc(100dvh-12rem)]"
 
-export function WeeklyCalendarGrid({
+/**Lưới lịch làm việc của nhân viên. Grid tuần + tuần được chọn.*/
+export function StaffScheduleGrid({
   anchorDate,
-
-  appointments,
-
+  shifts,
   loading,
-
   onSlotClick,
-
-  onAppointmentClick,
-
+  onShiftClick,
   className,
-}: WeeklyCalendarGridProps) {
+}: StaffScheduleGridProps) {
   const weekDays = getWeekDays(anchorDate)
-
-  const dayMap = groupAppointmentsByDay(appointments)
-
+  const dayMap = groupShiftsByDay(shifts)
   const now = new Date()
 
   return (
@@ -72,7 +65,7 @@ export function WeeklyCalendarGrid({
       <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
         <div className="h-full overflow-x-auto overflow-y-auto">
           {loading ? (
-            <WeeklyCalendarSkeleton />
+            <StaffScheduleSkeleton />
           ) : (
             <div
               className={cn("grid h-full min-w-[900px]", CALENDAR_MIN_HEIGHT)}
@@ -120,18 +113,16 @@ export function WeeklyCalendarGrid({
               </div>
 
               {weekDays.map((day) => (
-                <DayTimeColumn
+                <DayShiftColumn
                   key={day.toISOString()}
                   className="row-start-2"
                   day={day}
                   slots={TIME_SLOTS}
-                  appointments={dayMap.get(format(day, "yyyy-MM-dd")) ?? []}
+                  shifts={dayMap.get(format(day, "yyyy-MM-dd")) ?? []}
                   isToday={isSameDay(day, now)}
                   now={now}
-                  onSlotClick={(hour, minute) =>
-                    onSlotClick(day, hour, minute)
-                  }
-                  onAppointmentClick={onAppointmentClick}
+                  onSlotClick={(hour, minute) => onSlotClick(day, hour, minute)}
+                  onShiftClick={onShiftClick}
                 />
               ))}
             </div>

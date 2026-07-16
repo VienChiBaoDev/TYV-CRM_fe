@@ -17,18 +17,19 @@ export interface TimeSlot {
   label: string
 }
 
+/**Hàm này dùng để tạo các time slot cho lịch làm việc.*/
 export function buildTimeSlots(): TimeSlot[] {
   return buildClinicTimeSlotOptions(
     DAY_START_HOUR,
     DAY_END_HOUR,
-    SLOT_MINUTES,
+    SLOT_MINUTES
   ).map(({ hour, minute, label }) => ({ hour, minute, label }))
 }
 
 export function slotToDatetimeLocal(
   day: Date,
   hour: number,
-  minute: number,
+  minute: number
 ): string {
   return slotToFormDatetime(day, hour, minute)
 }

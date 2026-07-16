@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import {
   LayoutDashboard,
   Calendar,
+  CalendarClock,
   Users,
   Briefcase,
   TrendingUp,
@@ -49,6 +50,11 @@ const OPERATION_NAV_ITEMS: NavItem[] = [
     to: urlPaths.appointments,
     label: "Lịch hẹn",
     icon: <Calendar className="h-4.5 w-4.5" />,
+  },
+  {
+    to: urlPaths.staffSchedules,
+    label: "Lịch làm việc",
+    icon: <CalendarClock className="h-4.5 w-4.5" />,
   },
   {
     to: urlPaths.medicalRecordList,

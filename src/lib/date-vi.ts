@@ -28,7 +28,7 @@ export interface TimeSlotOption {
   label: string
   value: string
 }
-
+/**Hàm này dùng để tạo các time slot cho lịch làm việc.*/
 export function buildClinicTimeSlotOptions(
   startHour = DEFAULT_CLINIC_START_HOUR,
   endHour = DEFAULT_CLINIC_END_HOUR,
