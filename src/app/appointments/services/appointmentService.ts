@@ -66,6 +66,7 @@ interface FetchAppointmentsParams {
   from: string
   to: string
   status?: AppointmentStatus
+  doctorId?: string
 }
 
 export async function fetchAppointments(

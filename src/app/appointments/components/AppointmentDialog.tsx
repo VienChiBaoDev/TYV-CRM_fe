@@ -49,6 +49,7 @@ export interface AppointmentDialogContext {
   hour?: number
   minute?: number
   appointment?: Appointment
+  defaultDoctorId?: string
   /** BN cố định khi đặt lịch từ hồ sơ */
   fixedPatient?: {
     id: string
@@ -96,7 +97,7 @@ function buildDefaultValues(
         scheduledAt,
         DEFAULT_APPOINTMENT_DURATION_MINUTES
       ),
-      doctorId: "",
+      doctorId: context.defaultDoctorId ?? "",
       assistantId: "",
       note: "",
       status: "BOOKED",
@@ -107,7 +108,7 @@ function buildDefaultValues(
     patientId: "",
     scheduledAt: "",
     endedAt: "",
-    doctorId: "",
+    doctorId: context?.defaultDoctorId ?? "",
     assistantId: "",
     note: "",
     status: "BOOKED",
