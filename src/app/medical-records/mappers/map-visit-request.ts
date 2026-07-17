@@ -3,6 +3,7 @@ import type {
   TreatmentStatus,
   Visit,
   VisitFollowUpPlan,
+  Herb,
 } from "@/app/medical-records/interfaces/types"
 import type { MedicalVisitApiResponse } from "@/app/medical-records/mappers/map-patient-response"
 
@@ -34,7 +35,17 @@ interface VisitBodyApiPayload {
   prescriptionFormula?: string
   prescriptionDosage?: string
   labResults?: string
-  herbs?: Array<{ name: string; weight: string }>
+  herbs?: VisitHerbApiPayload[]
+}
+
+interface VisitHerbApiPayload {
+  name: string
+  weight: string
+  medicineId?: string
+  unit?: string
+  quantity?: number
+  unitPrice?: number
+  lineTotal?: number
 }
 
 interface FollowUpPlanApiPayload {
@@ -96,6 +107,27 @@ function mapFollowUpPlanToApi(
   }
 }
 
+function mapHerbToApi(herb: Herb): VisitHerbApiPayload {
+  const payload: VisitHerbApiPayload = {
+    name: herb.name.trim(),
+    weight: herb.weight.trim(),
+  }
+
+  if (herb.medicineId) payload.medicineId = herb.medicineId
+  if (herb.unit) payload.unit = herb.unit
+  if (herb.quantity != null) payload.quantity = herb.quantity
+  if (herb.unitPrice != null) payload.unitPrice = herb.unitPrice
+
+  const lineTotal =
+    herb.lineTotal ??
+    (herb.quantity != null && herb.unitPrice != null
+      ? herb.quantity * herb.unitPrice
+      : undefined)
+  if (lineTotal != null) payload.lineTotal = lineTotal
+
+  return payload
+}
+
 function mapVisitBodyToApi(visit: Partial<Visit>): VisitBodyApiPayload {
   const mode = visit.mode ?? "Trực tiếp"
   const status = visit.status ?? "Tái khám"
@@ -139,10 +171,7 @@ function mapVisitBodyToApi(visit: Partial<Visit>): VisitBodyApiPayload {
     prescriptionDosage: visit.prescriptionDosage?.trim() || undefined,
     labResults: visit.labResults?.trim() || undefined,
     herbs: visit.herbs?.length
-      ? visit.herbs.map((herb) => ({
-          name: herb.name.trim(),
-          weight: herb.weight.trim(),
-        }))
+      ? visit.herbs.map(mapHerbToApi)
       : undefined,
   }
 }

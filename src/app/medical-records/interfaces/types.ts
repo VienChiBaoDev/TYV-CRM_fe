@@ -1,6 +1,11 @@
 export interface Herb {
   name: string
   weight: string
+  medicineId?: string
+  unit?: string
+  quantity?: number
+  unitPrice?: number
+  lineTotal?: number
 }
 
 export type ClinicalImageCategory =

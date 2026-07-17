@@ -2,6 +2,12 @@ import { Edit, Heart, Activity, Info, Leaf, Eye } from "lucide-react"
 import { useMemo } from "react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { ClinicalImageZone } from "@/app/medical-records/components/ClinicalImageZone"
+import { HerbPrescriptionTable } from "@/app/medical-records/components/HerbPrescriptionTable"
+import {
+  getPrescriptionHerbsTotal,
+  hasPricedHerbs,
+} from "@/app/medical-records/utils/herb-pricing"
+import { formatPrice } from "@/app/treatment-services/utils/format-price"
 import type { ClinicalImage } from "@/app/medical-records/interfaces/types"
 import { CLINICAL_IMAGE_CATEGORY_LABELS } from "@/app/medical-records/constants/clinical-image"
 import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
@@ -44,6 +50,10 @@ export default function VisitDetails() {
   }, [activeVisit?.id, activeVisit?.clinicalImages])
 
   if (!activeVisit) return null
+
+  const herbs = activeVisit.herbs ?? []
+  const showPrescriptionTotal = hasPricedHerbs(herbs)
+  const prescriptionTotal = getPrescriptionHerbsTotal(herbs)
 
   return (
     <section className="relative" id="current-visit-details">
@@ -198,6 +208,11 @@ export default function VisitDetails() {
                     {activeVisit.prescriptionDosage}
                   </span>
                 )}
+                {showPrescriptionTotal && (
+                  <span className="rounded border border-emerald-200 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                    Tổng: {formatPrice(prescriptionTotal)} đ
+                  </span>
+                )}
               </div>
 
               <div className="space-y-4 rounded-xl border border-amber-200/50 bg-amber-50/40 p-4 text-xs shadow-2xs">
@@ -210,27 +225,10 @@ export default function VisitDetails() {
                   </span>
                 </div>
 
-                {activeVisit.herbs && activeVisit.herbs.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {activeVisit.herbs.map((herb, idx) => (
-                      <div
-                        key={idx}
-                        className="border-amber-201/40 shadow-3xs flex items-center justify-between rounded-lg border bg-white p-2"
-                      >
-                        <span className="text-slate-755 font-semibold">
-                          {herb.name}
-                        </span>
-                        <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-700">
-                          {herb.weight}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-slate-400 italic">
-                    Không có đơn thuốc kê cho lần khám này.
-                  </p>
-                )}
+                <HerbPrescriptionTable
+                  herbs={herbs}
+                  emptyMessage="Không có đơn thuốc kê cho lần khám này."
+                />
               </div>
             </div>
 

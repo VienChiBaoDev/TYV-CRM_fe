@@ -23,6 +23,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import { formatPrice } from "@/app/treatment-services/utils/format-price"
+import { MedicineCatalogCombobox } from "@/app/medical-records/components/MedicineCatalogCombobox"
+import {
+  getHerbLineTotal,
+  getPrescriptionHerbsTotal,
+  hasPricedHerbs,
+} from "@/app/medical-records/utils/herb-pricing"
 
 const MODAL_CONFIG = {
   add: {
@@ -116,10 +123,10 @@ export function VisitFormModal() {
     handleVisitSubmit,
     isSubmittingVisit,
     visitSubmitError,
-    tempHerbName,
-    setTempHerbName,
-    tempHerbWeight,
-    setTempHerbWeight,
+    selectedMedicine,
+    setSelectedMedicine,
+    tempHerbQuantity,
+    setTempHerbQuantity,
     addHerbToVisit,
     removeHerbFromVisit,
   } = useMedicalRecordContext()
@@ -131,10 +138,21 @@ export function VisitFormModal() {
   const onClose = closeVisitModal
   const onSubmit = handleVisitSubmit
   const onVisitChange = setVisitForm
-  const onTempHerbNameChange = setTempHerbName
-  const onTempHerbWeightChange = setTempHerbWeight
   const onAddHerb = addHerbToVisit
   const onRemoveHerb = removeHerbFromVisit
+
+  const quantityNumber = Number(tempHerbQuantity)
+  const previewLineTotal =
+    selectedMedicine && Number.isFinite(quantityNumber) && quantityNumber > 0
+      ? selectedMedicine.unitPrice * quantityNumber
+      : 0
+  const herbs = visit.herbs ?? []
+  const prescriptionTotal = getPrescriptionHerbsTotal(herbs)
+  const showPrescriptionTotal = hasPricedHerbs(herbs)
+  const canAddHerb =
+    !!selectedMedicine &&
+    Number.isFinite(quantityNumber) &&
+    quantityNumber > 0
 
   const { icon: Icon, title, submitLabel } = MODAL_CONFIG[mode]
   const inputClassName =
@@ -400,52 +418,173 @@ export function VisitFormModal() {
           </div>
 
           <div className="rounded-xl border border-slate-200 p-3">
-            <span className="mb-2 block text-[10px] font-bold text-slate-500 uppercase">
-              Thảo dược & Cân lượng bài thuốc
-            </span>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <span className="block text-[10px] font-bold text-slate-500 uppercase">
+                Thảo dược & Cân lượng bài thuốc
+              </span>
+              {showPrescriptionTotal && (
+                <span className="text-[11px] font-bold text-emerald-800">
+                  Tổng: {formatPrice(prescriptionTotal)} đ
+                </span>
+              )}
+            </div>
 
-            <div className="mb-3 flex gap-2">
-              <input
-                type="text"
-                placeholder="Tên thảo dược (e.g. Sài hồ)"
-                value={tempHerbName}
-                onChange={(e) => onTempHerbNameChange(e.target.value)}
-                className="border-slate-250 flex-1 rounded-lg border px-2.5 py-1 text-xs"
-              />
-              <input
-                type="text"
-                placeholder="Cân lượng (e.g. 15g)"
-                value={tempHerbWeight}
-                onChange={(e) => onTempHerbWeightChange(e.target.value)}
-                className="border-slate-250 w-32 rounded-lg border px-2.5 py-1 text-xs"
-              />
+            <div className="mb-3 space-y-2">
+              <div>
+                <label className="mb-1 block text-[10px] font-medium text-slate-600">
+                  Thuốc trong kho
+                </label>
+                <MedicineCatalogCombobox
+                  selectedMedicine={selectedMedicine}
+                  onChange={(medicineId) => {
+                    if (!medicineId) {
+                      setSelectedMedicine(null)
+                      setTempHerbQuantity("")
+                    }
+                  }}
+                  onSelectMedicine={(medicine) => {
+                    setSelectedMedicine(medicine)
+                    if (!tempHerbQuantity) setTempHerbQuantity(1)
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-[minmax(88px,1fr)_72px_minmax(96px,1.2fr)_auto] lg:items-end">
+              <div>
+                <label className="mb-1 block text-[10px] font-medium text-slate-600">
+                  Số lượng
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step="any"
+                  placeholder="0"
+                  value={tempHerbQuantity}
+                  disabled={!selectedMedicine}
+                  onChange={(e) => {
+                    const next = e.target.value
+                    setTempHerbQuantity(next === "" ? "" : Number(next))
+                  }}
+                  className="border-slate-250 h-8 w-full rounded-lg border px-2.5 text-xs disabled:bg-slate-50"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-[10px] font-medium text-slate-600">
+                  Đơn vị
+                </label>
+                <div className="border-slate-250 flex h-8 items-center rounded-lg border bg-slate-50 px-2.5 text-xs font-medium text-slate-600">
+                  {selectedMedicine?.unit ?? "—"}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-[10px] font-medium text-slate-600">
+                  Thành tiền
+                </label>
+                <div className="border-emerald-100 flex h-8 items-center rounded-lg border bg-emerald-50 px-2.5 text-xs font-bold text-emerald-800">
+                  {previewLineTotal > 0
+                    ? `${formatPrice(previewLineTotal)} đ`
+                    : "—"}
+                </div>
+              </div>
+
               <button
                 type="button"
                 onClick={onAddHerb}
-                className="cursor-pointer rounded-lg bg-primary px-3 py-1 text-xs font-bold text-white hover:bg-emerald-600"
+                disabled={!canAddHerb}
+                className="h-8 cursor-pointer rounded-lg bg-primary px-3 text-xs font-bold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-4 lg:col-span-1"
               >
                 Thêm vị
               </button>
+              </div>
             </div>
 
-            {visit.herbs && visit.herbs.length > 0 ? (
-              <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto pt-1">
-                {visit.herbs.map((herb, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800"
-                  >
-                    {herb.name}:{" "}
-                    <span className="font-bold">{herb.weight}</span>
-                    <button
-                      type="button"
-                      onClick={() => onRemoveHerb(index)}
-                      className="hover:text-red-750 ml-1 cursor-pointer font-bold text-red-500"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
+            {selectedMedicine && (
+              <p className="mb-3 text-[10px] text-slate-500">
+                Đơn giá: {formatPrice(selectedMedicine.unitPrice)} đ/
+                {selectedMedicine.unit}
+              </p>
+            )}
+
+            {herbs.length > 0 ? (
+              <div className="overflow-hidden rounded-lg border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase">
+                    <tr>
+                      <th className="px-2.5 py-2">Thuốc</th>
+                      <th className="px-2.5 py-2 text-right">SL</th>
+                      <th className="hidden px-2.5 py-2 text-right sm:table-cell">
+                        Đơn giá
+                      </th>
+                      <th className="px-2.5 py-2 text-right">Thành tiền</th>
+                      <th className="px-2.5 py-2 text-center"> </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {herbs.map((herb, index) => {
+                      const lineTotal = getHerbLineTotal(herb)
+
+                      return (
+                        <tr
+                          key={`${herb.medicineId ?? herb.name}-${index}`}
+                          className="border-t border-slate-100"
+                        >
+                          <td className="px-2.5 py-2 font-medium text-slate-800">
+                            {herb.name}
+                          </td>
+                          <td className="px-2.5 py-2 text-right font-mono text-slate-700">
+                            {herb.quantity != null && herb.unit
+                              ? `${herb.quantity} ${herb.unit}`
+                              : herb.weight}
+                          </td>
+                          <td className="hidden px-2.5 py-2 text-right text-slate-600 sm:table-cell">
+                            {herb.unitPrice != null
+                              ? `${formatPrice(herb.unitPrice)} đ`
+                              : "—"}
+                          </td>
+                          <td className="px-2.5 py-2 text-right font-semibold text-emerald-800">
+                            {lineTotal != null
+                              ? `${formatPrice(lineTotal)} đ`
+                              : "—"}
+                          </td>
+                          <td className="px-2.5 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => onRemoveHerb(index)}
+                              className="hover:text-red-750 cursor-pointer font-bold text-red-500"
+                              aria-label={`Xóa ${herb.name}`}
+                            >
+                              ×
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                  {showPrescriptionTotal && (
+                    <tfoot>
+                      <tr className="border-t border-slate-200 bg-emerald-50/60">
+                        <td
+                          colSpan={3}
+                          className="hidden px-2.5 py-2 text-right text-[10px] font-bold text-slate-600 uppercase sm:table-cell"
+                        >
+                          Tổng thanh toán
+                        </td>
+                        <td
+                          colSpan={2}
+                          className="px-2.5 py-2 text-right text-[10px] font-bold text-slate-600 uppercase sm:hidden"
+                        >
+                          Tổng
+                        </td>
+                        <td className="px-2.5 py-2 text-right text-sm font-bold text-emerald-800">
+                          {formatPrice(prescriptionTotal)} đ
+                        </td>
+                        <td />
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
               </div>
             ) : (
               <p className="text-[10px] text-slate-400 italic">
