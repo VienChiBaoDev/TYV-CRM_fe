@@ -28,6 +28,8 @@ import { WeekNavigator } from "./WeekNavigator"
 
 import { WeeklyCalendarGrid } from "./WeeklyCalendarGrid"
 
+import { DoctorColorLegend } from "./DoctorColorLegend"
+
 import {
   AppointmentDialog,
   type AppointmentDialogContext,
@@ -57,6 +59,13 @@ export function AppointmentsPage() {
         .filter((staff) => !staff.clinicBranch || staff.clinicBranch === branch)
         .map((staff) => ({ value: staff.id, label: staff.fullName })),
     [staffOptions, branch]
+  )
+
+  const showAllDoctors = !doctorId
+
+  const legendDoctorNames = useMemo(
+    () => doctorSelectOptions.map((option) => option.label),
+    [doctorSelectOptions]
   )
 
   const { start, end } = getWeekRange(anchorDate)
@@ -140,10 +149,15 @@ export function AppointmentsPage() {
         </div>
       </div>
 
+      {showAllDoctors ? (
+        <DoctorColorLegend doctors={legendDoctorNames} />
+      ) : null}
+
       <WeeklyCalendarGrid
         anchorDate={anchorDate}
         appointments={appointments}
         loading={isLoading}
+        showDoctor={showAllDoctors}
         onSlotClick={(day, hour, minute) => openCreateDialog(day, hour, minute)}
         onAppointmentClick={openEditDialog}
       />
