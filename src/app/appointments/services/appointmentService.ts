@@ -25,6 +25,8 @@ export interface CreateAppointmentPayload {
   patientId: string
   scheduledAt: string
   endedAt: string
+  doctorId: string
+  assistantId?: string
   doctorName?: string
   assistantName?: string
   note?: string
@@ -34,6 +36,8 @@ export interface CreateAppointmentPayload {
 export interface UpdateAppointmentPayload {
   scheduledAt?: string
   endedAt?: string
+  doctorId?: string
+  assistantId?: string
   doctorName?: string
   assistantName?: string
   clinicBranch?: ClinicBranchCode
