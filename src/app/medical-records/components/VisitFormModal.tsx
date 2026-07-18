@@ -150,9 +150,7 @@ export function VisitFormModal() {
   const prescriptionTotal = getPrescriptionHerbsTotal(herbs)
   const showPrescriptionTotal = hasPricedHerbs(herbs)
   const canAddHerb =
-    !!selectedMedicine &&
-    Number.isFinite(quantityNumber) &&
-    quantityNumber > 0
+    !!selectedMedicine && Number.isFinite(quantityNumber) && quantityNumber > 0
 
   const { icon: Icon, title, submitLabel } = MODAL_CONFIG[mode]
   const inputClassName =
@@ -184,7 +182,7 @@ export function VisitFormModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto border bg-slate-900/65 p-4 backdrop-blur-xs">
-      <div className="max-w-8xl relative max-h-[90vh] w-full animate-in overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl duration-150 zoom-in-95 fade-in">
+      <div className="relative max-h-[90vh] w-full max-w-7xl animate-in overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl duration-150 zoom-in-95 fade-in">
         <button
           type="button"
           onClick={onClose}
@@ -320,12 +318,12 @@ export function VisitFormModal() {
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
             <span className="mb-2 block text-[10px] font-bold text-slate-500 uppercase">
-              Mạch chẩn (Tứ chẩn)
+              Mạch chẩn
             </span>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
                 <label className="block text-[10px] font-medium text-slate-600">
-                  Mạch tả
+                  Mạch tả(Trái)
                 </label>
                 <input
                   type="text"
@@ -345,7 +343,7 @@ export function VisitFormModal() {
               </div>
               <div>
                 <label className="block text-[10px] font-medium text-slate-600">
-                  Mạch hữu
+                  Mạch hữu(Phải)
                 </label>
                 <input
                   type="text"
@@ -365,7 +363,7 @@ export function VisitFormModal() {
               </div>
               <div>
                 <label className="block text-[10px] font-medium text-slate-600">
-                  Ấn bụng
+                  Thiệt chẩn(Nhìn lưỡi)
                 </label>
                 <input
                   type="text"
@@ -380,7 +378,7 @@ export function VisitFormModal() {
                     })
                   }
                   className="border-slate-250 mt-1 w-full rounded-md border bg-white px-2 py-1 text-xs"
-                  placeholder="e.g. Ấn đau tức hạ sườn"
+                  placeholder="e.g. Xơ hóa mạch máu"
                 />
               </div>
             </div>
@@ -389,7 +387,7 @@ export function VisitFormModal() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase">
-                Tên cổ phương / Bài thuốc
+                Kê đơn
               </label>
               <input
                 type="text"
@@ -420,13 +418,13 @@ export function VisitFormModal() {
           <div className="rounded-xl border border-slate-200 p-3">
             <div className="mb-3 flex items-center justify-between gap-2">
               <span className="block text-[10px] font-bold text-slate-500 uppercase">
-                Thảo dược & Cân lượng bài thuốc
+                Dược liệu
               </span>
-              {showPrescriptionTotal && (
+              {/* {showPrescriptionTotal && (
                 <span className="text-[11px] font-bold text-emerald-800">
                   Tổng: {formatPrice(prescriptionTotal)} đ
                 </span>
-              )}
+              )} */}
             </div>
 
             <div className="mb-3 space-y-2">
@@ -450,53 +448,53 @@ export function VisitFormModal() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-[minmax(88px,1fr)_72px_minmax(96px,1.2fr)_auto] lg:items-end">
-              <div>
-                <label className="mb-1 block text-[10px] font-medium text-slate-600">
-                  Số lượng
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  step="any"
-                  placeholder="0"
-                  value={tempHerbQuantity}
-                  disabled={!selectedMedicine}
-                  onChange={(e) => {
-                    const next = e.target.value
-                    setTempHerbQuantity(next === "" ? "" : Number(next))
-                  }}
-                  className="border-slate-250 h-8 w-full rounded-lg border px-2.5 text-xs disabled:bg-slate-50"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-[10px] font-medium text-slate-600">
-                  Đơn vị
-                </label>
-                <div className="border-slate-250 flex h-8 items-center rounded-lg border bg-slate-50 px-2.5 text-xs font-medium text-slate-600">
-                  {selectedMedicine?.unit ?? "—"}
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-slate-600">
+                    Số lượng
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="any"
+                    placeholder="0"
+                    value={tempHerbQuantity}
+                    disabled={!selectedMedicine}
+                    onChange={(e) => {
+                      const next = e.target.value
+                      setTempHerbQuantity(next === "" ? "" : Number(next))
+                    }}
+                    className="border-slate-250 h-8 w-full rounded-lg border px-2.5 text-xs disabled:bg-slate-50"
+                  />
                 </div>
-              </div>
 
-              <div>
-                <label className="mb-1 block text-[10px] font-medium text-slate-600">
-                  Thành tiền
-                </label>
-                <div className="border-emerald-100 flex h-8 items-center rounded-lg border bg-emerald-50 px-2.5 text-xs font-bold text-emerald-800">
-                  {previewLineTotal > 0
-                    ? `${formatPrice(previewLineTotal)} đ`
-                    : "—"}
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-slate-600">
+                    Đơn vị
+                  </label>
+                  <div className="border-slate-250 flex h-8 items-center rounded-lg border bg-slate-50 px-2.5 text-xs font-medium text-slate-600">
+                    {selectedMedicine?.unit ?? "—"}
+                  </div>
                 </div>
-              </div>
 
-              <button
-                type="button"
-                onClick={onAddHerb}
-                disabled={!canAddHerb}
-                className="h-8 cursor-pointer rounded-lg bg-primary px-3 text-xs font-bold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-4 lg:col-span-1"
-              >
-                Thêm vị
-              </button>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-slate-600">
+                    Thành tiền
+                  </label>
+                  <div className="flex h-8 items-center rounded-lg border border-emerald-100 bg-emerald-50 px-2.5 text-xs font-bold text-emerald-800">
+                    {previewLineTotal > 0
+                      ? `${formatPrice(previewLineTotal)} đ`
+                      : "—"}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onAddHerb}
+                  disabled={!canAddHerb}
+                  className="h-8 cursor-pointer rounded-lg bg-primary px-3 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-4 lg:col-span-1"
+                >
+                  Thêm vị
+                </button>
               </div>
             </div>
 
@@ -595,7 +593,7 @@ export function VisitFormModal() {
 
           <div>
             <label className="block text-[11px] font-bold text-slate-500 uppercase">
-              Kết quả Lab
+              Chuẩn đoán
             </label>
             <input
               type="text"
