@@ -1,4 +1,8 @@
 import type {
+  HerbDecoctionOrder,
+  HerbDecoctionPrep,
+} from "@/app/medical-records/constants/herb-decoction"
+import type {
   Patient,
   TreatmentStatus,
   Visit,
@@ -68,8 +72,8 @@ export interface MedicalVisitApiResponse {
     readonly quantity: number | null
     readonly unitPrice: number | null
     readonly lineTotal: number | null
-    readonly decoctionOrder: string | null
-    readonly decoctionPrep: string | null
+    readonly decoctionOrder: HerbDecoctionOrder | null
+    readonly decoctionPrep: HerbDecoctionPrep | null
   }>
   readonly clinicalImages: ReadonlyArray<{
     readonly id: string
@@ -93,11 +97,13 @@ export interface MedicalVisitApiResponse {
   readonly updatedAt: string
 }
 
-const GENDER_LABEL: Record<PatientDetailApiResponse["gender"], Patient["gender"]> =
-  {
-    MALE: "Nam",
-    FEMALE: "Nữ",
-  }
+const GENDER_LABEL: Record<
+  PatientDetailApiResponse["gender"],
+  Patient["gender"]
+> = {
+  MALE: "Nam",
+  FEMALE: "Nữ",
+}
 
 const VISIT_MODE_LABEL: Record<MedicalVisitApiResponse["mode"], Visit["mode"]> =
   {
