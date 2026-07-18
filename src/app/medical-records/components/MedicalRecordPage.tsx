@@ -25,17 +25,17 @@ export function MedicalRecordPage() {
   } = useMedicalRecordContext()
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col">
       <ClinicHeader />
 
-      <div className="flex-1 space-y-2 p-4 lg:p-6">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3 sm:p-4 lg:p-6">
         <PatientProfile />
 
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as typeof activeTab)}
         >
-          <TabsList>
+          <TabsList className="h-auto w-full justify-start overflow-x-auto">
             <TabsTrigger value={MEDICAL_RECORD_TABS.VISITS}>
               Lần khám
             </TabsTrigger>
@@ -86,6 +86,6 @@ export function MedicalRecordPage() {
         activePatient={activePatient}
         activeVisit={activeVisit}
       />
-    </>
+    </div>
   )
 }

@@ -56,18 +56,21 @@ export function HerbPrescriptionTable({
   }
 
   return (
-    <div className={cn("overflow-hidden rounded-lg border border-slate-200", className)}>
+    <div
+      className={cn(
+        "overflow-x-auto rounded-lg border border-slate-200",
+        className
+      )}
+    >
       <table className="w-full text-left text-xs">
         <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase">
           <tr>
             <th className="px-2.5 py-2">Thuốc</th>
             <th className="px-2.5 py-2 text-right">SL</th>
-            <th className="hidden px-2.5 py-2 sm:table-cell">Thứ tự sắc</th>
-            <th className="hidden px-2.5 py-2 sm:table-cell">Sắc thuốc</th>
+            <th className="px-2.5 py-2 sm:table-cell">Thứ tự sắc</th>
+            <th className="px-2.5 py-2 sm:table-cell">Sắc thuốc</th>
             {!compact && (
-              <th className="hidden px-2.5 py-2 text-right md:table-cell">
-                Đơn giá
-              </th>
+              <th className="px-2.5 py-2 text-right md:table-cell">Đơn giá</th>
             )}
             <th className="px-2.5 py-2 text-right">Thành tiền</th>
           </tr>
@@ -89,14 +92,14 @@ export function HerbPrescriptionTable({
                     ? `${herb.quantity} ${herb.unit}`
                     : herb.weight}
                 </td>
-                <td className="hidden px-2.5 py-2 text-slate-600 sm:table-cell">
+                <td className="px-2.5 py-2 text-slate-600 sm:table-cell">
                   {herb.decoctionOrder ?? "—"}
                 </td>
-                <td className="hidden px-2.5 py-2 text-slate-600 sm:table-cell">
+                <td className="px-2.5 py-2 text-slate-600 sm:table-cell">
                   {herb.decoctionPrep ?? "—"}
                 </td>
                 {!compact && (
-                  <td className="hidden px-2.5 py-2 text-right text-slate-600 md:table-cell">
+                  <td className="px-2.5 py-2 text-right text-slate-600 md:table-cell">
                     {herb.unitPrice != null
                       ? `${formatPrice(herb.unitPrice)} đ`
                       : "—"}
@@ -110,7 +113,7 @@ export function HerbPrescriptionTable({
           })}
         </tbody>
         <tfoot>
-          <tr className="border-t border-slate-200 bg-emerald-50/60">
+          <tr className="border-t border-slate-200 bg-emerald-50/60 whitespace-nowrap">
             <td
               colSpan={compact ? 4 : 5}
               className="px-2.5 py-2 text-right text-[10px] font-bold text-slate-600 uppercase"

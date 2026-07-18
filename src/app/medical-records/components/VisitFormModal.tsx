@@ -246,7 +246,7 @@ export function VisitFormModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto border bg-slate-900/65 p-4 backdrop-blur-xs">
-      <div className="relative max-h-[90vh] w-full max-w-7xl animate-in overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl duration-150 zoom-in-95 fade-in">
+      <div className="relative max-h-[90dvh] w-full max-w-7xl animate-in overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl duration-150 zoom-in-95 fade-in">
         <button
           type="button"
           onClick={onClose}

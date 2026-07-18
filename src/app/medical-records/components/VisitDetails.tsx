@@ -3,11 +3,6 @@ import { useMemo } from "react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { ClinicalImageZone } from "@/app/medical-records/components/ClinicalImageZone"
 import { HerbPrescriptionTable } from "@/app/medical-records/components/HerbPrescriptionTable"
-import {
-  getPrescriptionHerbsTotal,
-  hasPricedHerbs,
-} from "@/app/medical-records/utils/herb-pricing"
-import { formatPrice } from "@/app/treatment-services/utils/format-price"
 import type { ClinicalImage } from "@/app/medical-records/interfaces/types"
 import { CLINICAL_IMAGE_CATEGORY_LABELS } from "@/app/medical-records/constants/clinical-image"
 import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
@@ -52,8 +47,6 @@ export default function VisitDetails() {
   if (!activeVisit) return null
 
   const herbs = activeVisit.herbs ?? []
-  const showPrescriptionTotal = hasPricedHerbs(herbs)
-  const prescriptionTotal = getPrescriptionHerbsTotal(herbs)
 
   return (
     <section className="relative" id="current-visit-details">
@@ -210,11 +203,6 @@ export default function VisitDetails() {
                 {activeVisit.prescriptionDosage && (
                   <span className="rounded border border-emerald-100 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-800">
                     {activeVisit.prescriptionDosage}
-                  </span>
-                )}
-                {showPrescriptionTotal && (
-                  <span className="rounded border border-emerald-200 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                    Tổng: {formatPrice(prescriptionTotal)} đ
                   </span>
                 )}
               </div>

@@ -15,6 +15,8 @@ import {
   Stethoscope,
   LogOut,
   Settings,
+  X,
+  PanelLeftClose,
 } from "lucide-react"
 
 import { CLINIC_BRANCHES } from "@/constants/clinic-branches"
@@ -279,16 +281,33 @@ function SidebarNavScroll({ isAdmin }: { isAdmin: boolean }) {
   )
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  variant?: "desktop" | "drawer"
+  onClose?: () => void
+  onCollapse?: () => void
+}
+
+export function Sidebar({
+  variant = "desktop",
+  onClose,
+  onCollapse,
+}: SidebarProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
   const activeBranch = useClinicStore((state) => state.activeBranch)
   const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
   const isAdmin = user?.role === "ADMIN"
 
-  // Khóa chọn cơ sở khi không phải là ADMIN
-  // const canSwitchBranch = isAdmin || !user?.clinicBranch
+  const prevPathRef = useRef(location.pathname)
+
+  useEffect(() => {
+    if (variant !== "drawer") return
+    if (prevPathRef.current === location.pathname) return
+    prevPathRef.current = location.pathname
+    onClose?.()
+  }, [location.pathname, variant, onClose])
 
   function handleLogout() {
     logout()
@@ -297,12 +316,37 @@ export function Sidebar() {
 
   return (
     <aside
-      className="sticky top-0 grid h-screen w-full shrink-0 grid-rows-[auto_1fr_auto] overflow-hidden bg-sidebar-primary text-sidebar-primary-foreground shadow-lg md:w-64"
-      id="app-sidebar"
+      className={cn(
+        "grid h-full shrink-0 grid-rows-[auto_1fr_auto] overflow-hidden bg-sidebar-primary text-sidebar-primary-foreground shadow-lg",
+        variant === "desktop" &&
+          "sticky top-0 hidden h-screen w-full md:grid md:w-64",
+        variant === "drawer" && "h-full w-72 max-w-[85vw]"
+      )}
+      id={variant === "desktop" ? "app-sidebar" : undefined}
     >
       <div>
-        <div className="border-b border-emerald-900/40 p-6">
+        <div className="relative border-b border-emerald-900/40 p-6">
           <div className="flex items-center gap-3">
+            {variant === "drawer" ? (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Đóng menu"
+                className="absolute top-4 right-4 rounded-full p-1 text-emerald-200 hover:bg-emerald-900/40 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            ) : null}
+            {variant === "desktop" ? (
+              <button
+                type="button"
+                onClick={onCollapse}
+                aria-label="Thu gọn menu"
+                className="absolute top-4 right-4 rounded-full p-1 text-emerald-200 hover:bg-emerald-900/40 hover:text-white"
+              >
+                <PanelLeftClose className="h-5 w-5" />
+              </button>
+            ) : null}
             <img
               src="../public/Logo.jpg"
               alt="Thượng Y Viên"

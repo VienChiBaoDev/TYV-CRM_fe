@@ -173,7 +173,7 @@ export function ClinicalAssessmentScale() {
     <>
       <DataTable
         title="Đánh giá lâm sàng gần nhất (Hỏi thăm)"
-        classNameTable="mt-4"
+        classNameTable="mt-4 shadow-xl"
         columns={columns}
         data={rows}
         loading={isLoading}

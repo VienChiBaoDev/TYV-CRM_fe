@@ -21,7 +21,7 @@ export default function ExportBAModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/70 p-4 backdrop-blur-xs">
-      <div className="relative max-h-[95vh] w-full max-w-3xl animate-in overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl duration-150 zoom-in-95 fade-in">
+      <div className="relative max-h-[95dvh] w-full max-w-3xl animate-in overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl duration-150 zoom-in-95 fade-in">
         {/* Header controls overlay */}
         <div className="no-print absolute top-4 right-4 flex items-center gap-2">
           <button

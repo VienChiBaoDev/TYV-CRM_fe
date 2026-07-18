@@ -38,34 +38,26 @@ export default function ClinicHeader() {
   return (
     <>
       <header
-        className="flex shrink-0 flex-col items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-4 sm:flex-row"
+        className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-2.5 sm:px-6 sm:py-4"
         id="top-bar"
       >
-        <div className="flex w-full items-center gap-4 sm:w-auto">
-          <span className="font-display text-md flex items-center gap-2 font-bold text-slate-800">
-            <FileText className="h-5 w-5 text-emerald-700" />
-            Hồ sơ bệnh án
-          </span>
-        </div>
+        <span className="font-display flex min-w-0 items-center gap-1.5 text-sm font-bold text-slate-800 sm:gap-2 sm:text-base">
+          <FileText className="h-4 w-4 shrink-0 text-emerald-700 sm:h-5 sm:w-5" />
+          <span className="truncate">Hồ sơ bệnh án</span>
+        </span>
 
-        <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
+        <div className="flex shrink-0 items-center gap-2">
           <Button
             id="top-book-btn"
             type="button"
+            size="sm"
             disabled={!patientId}
             onClick={openAppointmentDialog}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-8 cursor-pointer gap-1 rounded-lg px-2.5 text-[11px] font-semibold shadow-sm sm:h-9 sm:px-4 sm:text-xs"
           >
             <Plus className="h-3.5 w-3.5" />
             Đặt lịch
           </Button>
-
-          <div
-            className="text-slate-750 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-100 bg-linear-to-b from-sky-100 to-indigo-100 text-xs font-bold shadow-2xs"
-            title="Tài khoản Đông Y"
-          >
-            TL
-          </div>
         </div>
       </header>
 
