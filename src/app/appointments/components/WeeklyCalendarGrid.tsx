@@ -27,6 +27,8 @@ interface WeeklyCalendarGridProps {
 
   loading: boolean
 
+  showDoctor?: boolean
+
   onSlotClick: (day: Date, hour: number, minute: number) => void
 
   onAppointmentClick: (appointment: Appointment) => void
@@ -49,6 +51,8 @@ export function WeeklyCalendarGrid({
   appointments,
 
   loading,
+
+  showDoctor = false,
 
   onSlotClick,
 
@@ -128,6 +132,7 @@ export function WeeklyCalendarGrid({
                   appointments={dayMap.get(format(day, "yyyy-MM-dd")) ?? []}
                   isToday={isSameDay(day, now)}
                   now={now}
+                  showDoctor={showDoctor}
                   onSlotClick={(hour, minute) =>
                     onSlotClick(day, hour, minute)
                   }

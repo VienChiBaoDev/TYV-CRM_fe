@@ -2,6 +2,12 @@ import { Edit, Heart, Activity, Info, Leaf, Eye } from "lucide-react"
 import { useMemo } from "react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { ClinicalImageZone } from "@/app/medical-records/components/ClinicalImageZone"
+import { HerbPrescriptionTable } from "@/app/medical-records/components/HerbPrescriptionTable"
+import {
+  getPrescriptionHerbsTotal,
+  hasPricedHerbs,
+} from "@/app/medical-records/utils/herb-pricing"
+import { formatPrice } from "@/app/treatment-services/utils/format-price"
 import type { ClinicalImage } from "@/app/medical-records/interfaces/types"
 import { CLINICAL_IMAGE_CATEGORY_LABELS } from "@/app/medical-records/constants/clinical-image"
 import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
@@ -44,6 +50,10 @@ export default function VisitDetails() {
   }, [activeVisit?.id, activeVisit?.clinicalImages])
 
   if (!activeVisit) return null
+
+  const herbs = activeVisit.herbs ?? []
+  const showPrescriptionTotal = hasPricedHerbs(herbs)
+  const prescriptionTotal = getPrescriptionHerbsTotal(herbs)
 
   return (
     <section className="relative" id="current-visit-details">
@@ -147,7 +157,7 @@ export default function VisitDetails() {
               <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
                 <Info className="h-3.5 w-3.5" /> Triệu chứng & bệnh sử
               </h5>
-              <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 font-sans text-xs leading-relaxed text-slate-700 shadow-2xs">
+              <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 font-sans text-xs leading-relaxed whitespace-pre-wrap text-slate-700 shadow-2xs">
                 {activeVisit.symptoms || (
                   <span className="text-slate-405 italic">
                     Chưa điền thông tin triệu chứng lâm sàng.
@@ -164,21 +174,25 @@ export default function VisitDetails() {
               <div className="space-y-2.5 rounded-xl border border-slate-200/50 bg-slate-50 p-4 text-xs shadow-2xs">
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                   <div>
-                    <span className="block font-bold text-slate-800">M Tả</span>
+                    <span className="block font-bold text-slate-800">
+                      Mạch tả(Trái)
+                    </span>
                     <span className="text-slate-650 text-[11px]">
                       {activeVisit.pulseDiagnosis.ta || "Chưa bắt mạch"}
                     </span>
                   </div>
                   <div>
                     <span className="block font-bold text-slate-800">
-                      M Hữu
+                      Mạch Hữu(Phải)
                     </span>
                     <span className="text-slate-650 text-[11px]">
                       {activeVisit.pulseDiagnosis.huu || "Chưa bắt mạch"}
                     </span>
                   </div>
                   <div>
-                    <span className="block font-bold text-slate-800">Bụng</span>
+                    <span className="block font-bold text-slate-800">
+                      Thiệt chẩn(Lưỡi)
+                    </span>
                     <span className="text-slate-650 text-[11px]">
                       {activeVisit.pulseDiagnosis.bung || "Chưa ấn chẩn"}
                     </span>
@@ -198,6 +212,11 @@ export default function VisitDetails() {
                     {activeVisit.prescriptionDosage}
                   </span>
                 )}
+                {showPrescriptionTotal && (
+                  <span className="rounded border border-emerald-200 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                    Tổng: {formatPrice(prescriptionTotal)} đ
+                  </span>
+                )}
               </div>
 
               <div className="space-y-4 rounded-xl border border-amber-200/50 bg-amber-50/40 p-4 text-xs shadow-2xs">
@@ -210,36 +229,19 @@ export default function VisitDetails() {
                   </span>
                 </div>
 
-                {activeVisit.herbs && activeVisit.herbs.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {activeVisit.herbs.map((herb, idx) => (
-                      <div
-                        key={idx}
-                        className="border-amber-201/40 shadow-3xs flex items-center justify-between rounded-lg border bg-white p-2"
-                      >
-                        <span className="text-slate-755 font-semibold">
-                          {herb.name}
-                        </span>
-                        <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-700">
-                          {herb.weight}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-slate-400 italic">
-                    Không có đơn thuốc kê cho lần khám này.
-                  </p>
-                )}
+                <HerbPrescriptionTable
+                  herbs={herbs}
+                  emptyMessage="Không có đơn thuốc kê cho lần khám này."
+                />
               </div>
             </div>
 
             {activeVisit.labResults && (
               <div id="lab-results-block" className="space-y-2">
                 <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
-                  Kết quả Lab
+                  Chuẩn đoán
                 </h5>
-                <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 text-xs leading-relaxed text-slate-700 shadow-2xs">
+                <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 text-xs leading-relaxed whitespace-pre-wrap text-slate-700 shadow-2xs">
                   {activeVisit.labResults}
                 </div>
               </div>

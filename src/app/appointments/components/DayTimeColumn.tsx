@@ -20,6 +20,7 @@ interface DayTimeColumnProps {
   appointments: Appointment[]
   isToday: boolean
   now: Date
+  showDoctor?: boolean
   className?: string
   onSlotClick: (hour: number, minute: number) => void
   onAppointmentClick: (appointment: Appointment) => void
@@ -31,6 +32,7 @@ export function DayTimeColumn({
   appointments,
   isToday,
   now,
+  showDoctor = false,
   className,
   onSlotClick,
   onAppointmentClick,
@@ -76,6 +78,7 @@ export function DayTimeColumn({
             <AppointmentCard
               appointment={layout.appointment}
               variant="overlay"
+              showDoctor={showDoctor}
               onClick={() => onAppointmentClick(layout.appointment)}
             />
           </div>

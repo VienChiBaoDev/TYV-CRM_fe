@@ -55,6 +55,8 @@ export interface PendingAssessmentApiResponse {
 export interface ScheduleFollowUpPayload {
   scheduledAt: string
   endedAt?: string
+  doctorId: string
+  assistantId?: string
   doctorName?: string
   assistantName?: string
   note?: string

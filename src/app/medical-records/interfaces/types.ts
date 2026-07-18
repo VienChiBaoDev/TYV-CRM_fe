@@ -1,6 +1,18 @@
+import type {
+  HerbDecoctionOrder,
+  HerbDecoctionPrep,
+} from "@/app/medical-records/constants/herb-decoction"
+
 export interface Herb {
   name: string
   weight: string
+  medicineId?: string
+  unit?: string
+  quantity?: number
+  unitPrice?: number
+  lineTotal?: number
+  decoctionOrder?: HerbDecoctionOrder
+  decoctionPrep?: HerbDecoctionPrep
 }
 
 export type ClinicalImageCategory =

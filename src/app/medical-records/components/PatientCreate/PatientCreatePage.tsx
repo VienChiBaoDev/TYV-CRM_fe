@@ -91,6 +91,8 @@ export default function PatientCreatePage() {
             patientId: created.id,
             scheduledAt: scheduledAt.toISOString(),
             endedAt: endedAt.toISOString(),
+            doctorId: apptForm.doctorId,
+            assistantId: apptForm.assistantId || undefined,
             doctorName: staffNameById(staffOptions, apptForm.doctorId),
             assistantName: staffNameById(staffOptions, apptForm.assistantId),
             note: apptForm.note.trim() || undefined,

@@ -23,8 +23,8 @@ export function useCreateAppointmentMutation() {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
       toast.success("Đã tạo lịch hẹn")
     },
-    onError: () => {
-      toast.error("Không thể tạo lịch hẹn")
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Không thể tạo lịch hẹn"))
     },
   })
 }

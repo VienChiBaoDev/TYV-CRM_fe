@@ -70,8 +70,9 @@ function SelectTrigger({
 function SelectContent({
   className,
   children,
-  position = "item-aligned",
+  position = "popper",
   align = "center",
+  sideOffset = 4,
   usePortal = true,
   disableOutsidePointerEvents: _disableOutsidePointerEvents,
   ...props
@@ -93,6 +94,7 @@ function SelectContent({
       )}
       position={position}
       align={align}
+      sideOffset={sideOffset}
       {...props}
     >
       <SelectScrollUpButton />

@@ -1,5 +1,6 @@
 import { Printer, X } from "lucide-react"
 import type { Patient, Visit } from "@/app/medical-records/interfaces/types"
+import { HerbPrescriptionTable } from "@/app/medical-records/components/HerbPrescriptionTable"
 
 interface ExportBAModalProps {
   showExportModal: boolean
@@ -193,27 +194,11 @@ export default function ExportBAModal({
                 </span>
               </div>
 
-              {activeVisit.herbs && activeVisit.herbs.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                  {activeVisit.herbs.map((h, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between border-b border-slate-100 pb-1"
-                    >
-                      <span className="text-slate-750 font-medium">
-                        {h.name}
-                      </span>
-                      <span className="font-bold text-emerald-800">
-                        {h.weight}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="py-2 text-center font-sans text-xs text-slate-500 italic">
-                  Chưa có chỉ định bốc thuốc tây/đông dược lâm sàng.
-                </p>
-              )}
+              <HerbPrescriptionTable
+                herbs={activeVisit.herbs ?? []}
+                compact
+                emptyMessage="Chưa có chỉ định bốc thuốc tây/đông dược lâm sàng."
+              />
 
               {activeVisit.labResults && (
                 <p className="col-span-full rounded bg-slate-50 p-2 font-sans text-[11px] text-slate-500">

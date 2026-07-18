@@ -12,6 +12,15 @@ import { submitAssessment } from "../services/follow-up-service"
 import { followUpKeys } from "../queries/follow-up-query"
 import { appointmentKeys } from "@/app/appointments/queries/appointment-query"
 import { toast } from "sonner"
+import { isAxiosError } from "axios"
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (!isAxiosError(error)) return fallback
+  const message = error.response?.data?.message
+  if (typeof message === "string") return message
+  if (Array.isArray(message)) return message[0] ?? fallback
+  return fallback
+}
 
 export function useScheduleFollowUpMutation() {
   const queryClient = useQueryClient()
@@ -29,8 +38,10 @@ export function useScheduleFollowUpMutation() {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
       toast.success("Đã đặt lịch tái khám thành công")
     },
-    onError: () => {
-      toast.error("Đặt lịch thất bại. Vui lòng thử lại.")
+    onError: (error) => {
+      toast.error(
+        getApiErrorMessage(error, "Đặt lịch thất bại. Vui lòng thử lại.")
+      )
     },
   })
 }

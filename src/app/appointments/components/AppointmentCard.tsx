@@ -13,16 +13,19 @@ import { cn } from "@/lib/utils"
 import { formatAppointmentTimeRangeVi } from "@/lib/date-vi"
 
 import { APPOINTMENT_STATUS_STYLES } from "../constants/calendar"
+import { getDoctorColor } from "../utils/doctor-colors"
 
 interface AppointmentCardProps {
   appointment: Appointment
   variant?: "default" | "overlay"
+  showDoctor?: boolean
   onClick: () => void
 }
 
 export function AppointmentCard({
   appointment,
   variant = "default",
+  showDoctor = false,
   onClick,
 }: AppointmentCardProps) {
   const patientName =
@@ -33,12 +36,25 @@ export function AppointmentCard({
     APPOINTMENT_STATUS_STYLES.BOOKED
 
   const isOverlay = variant === "overlay"
+  const doctorName = appointment.doctorName
+  const doctorColor =
+    showDoctor && doctorName ? getDoctorColor(doctorName) : null
+  const showDoctorBorder = isOverlay && doctorColor != null
+
+  const cardTitle = [
+    patientName,
+    doctorName,
+    formatAppointmentTimeRangeVi(appointment.scheduledAt, appointment.endedAt),
+  ]
+    .filter(Boolean)
+    .join(" · ")
 
   return (
     <Card
       size="sm"
       role="button"
       tabIndex={0}
+      title={cardTitle}
       onClick={(event) => {
         event.stopPropagation()
 
@@ -56,7 +72,8 @@ export function AppointmentCard({
       className={cn(
         "cursor-pointer gap-0.5 shadow-none ring-0 transition-colors hover:brightness-95",
         isOverlay ? "h-full min-h-0 overflow-hidden py-1" : "gap-1 py-1.5",
-        statusStyle
+        statusStyle,
+        showDoctorBorder && cn("border-l-4", doctorColor.border)
       )}
     >
       <div className="flex items-start justify-between gap-1 px-1.5 sm:px-2">
@@ -78,12 +95,6 @@ export function AppointmentCard({
           appointment.endedAt
         )}
       </p>
-
-      {!isOverlay && appointment.doctorName ? (
-        <p className="truncate px-2 text-[10px] opacity-80">
-          {appointment.doctorName}
-        </p>
-      ) : null}
 
       {!isOverlay && appointment.patient?.id ? (
         <Link
