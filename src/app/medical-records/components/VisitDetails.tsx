@@ -157,7 +157,7 @@ export default function VisitDetails() {
               <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
                 <Info className="h-3.5 w-3.5" /> Triệu chứng & bệnh sử
               </h5>
-              <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 font-sans text-xs leading-relaxed text-slate-700 shadow-2xs">
+              <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 font-sans text-xs leading-relaxed whitespace-pre-wrap text-slate-700 shadow-2xs">
                 {activeVisit.symptoms || (
                   <span className="text-slate-405 italic">
                     Chưa điền thông tin triệu chứng lâm sàng.
@@ -174,21 +174,25 @@ export default function VisitDetails() {
               <div className="space-y-2.5 rounded-xl border border-slate-200/50 bg-slate-50 p-4 text-xs shadow-2xs">
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                   <div>
-                    <span className="block font-bold text-slate-800">M Tả</span>
+                    <span className="block font-bold text-slate-800">
+                      Mạch tả(Trái)
+                    </span>
                     <span className="text-slate-650 text-[11px]">
                       {activeVisit.pulseDiagnosis.ta || "Chưa bắt mạch"}
                     </span>
                   </div>
                   <div>
                     <span className="block font-bold text-slate-800">
-                      M Hữu
+                      Mạch Hữu(Phải)
                     </span>
                     <span className="text-slate-650 text-[11px]">
                       {activeVisit.pulseDiagnosis.huu || "Chưa bắt mạch"}
                     </span>
                   </div>
                   <div>
-                    <span className="block font-bold text-slate-800">Bụng</span>
+                    <span className="block font-bold text-slate-800">
+                      Thiệt chẩn(Lưỡi)
+                    </span>
                     <span className="text-slate-650 text-[11px]">
                       {activeVisit.pulseDiagnosis.bung || "Chưa ấn chẩn"}
                     </span>
@@ -235,9 +239,9 @@ export default function VisitDetails() {
             {activeVisit.labResults && (
               <div id="lab-results-block" className="space-y-2">
                 <h5 className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wider text-[#1b5e3a] uppercase">
-                  Kết quả Lab
+                  Chuẩn đoán
                 </h5>
-                <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 text-xs leading-relaxed text-slate-700 shadow-2xs">
+                <div className="rounded-xl border border-slate-200/50 bg-slate-50 p-4 text-xs leading-relaxed whitespace-pre-wrap text-slate-700 shadow-2xs">
                   {activeVisit.labResults}
                 </div>
               </div>

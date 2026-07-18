@@ -62,8 +62,10 @@ export function HerbPrescriptionTable({
           <tr>
             <th className="px-2.5 py-2">Thuốc</th>
             <th className="px-2.5 py-2 text-right">SL</th>
+            <th className="hidden px-2.5 py-2 sm:table-cell">Thứ tự sắc</th>
+            <th className="hidden px-2.5 py-2 sm:table-cell">Sắc thuốc</th>
             {!compact && (
-              <th className="hidden px-2.5 py-2 text-right sm:table-cell">
+              <th className="hidden px-2.5 py-2 text-right md:table-cell">
                 Đơn giá
               </th>
             )}
@@ -87,8 +89,14 @@ export function HerbPrescriptionTable({
                     ? `${herb.quantity} ${herb.unit}`
                     : herb.weight}
                 </td>
+                <td className="hidden px-2.5 py-2 text-slate-600 sm:table-cell">
+                  {herb.decoctionOrder ?? "—"}
+                </td>
+                <td className="hidden px-2.5 py-2 text-slate-600 sm:table-cell">
+                  {herb.decoctionPrep ?? "—"}
+                </td>
                 {!compact && (
-                  <td className="hidden px-2.5 py-2 text-right text-slate-600 sm:table-cell">
+                  <td className="hidden px-2.5 py-2 text-right text-slate-600 md:table-cell">
                     {herb.unitPrice != null
                       ? `${formatPrice(herb.unitPrice)} đ`
                       : "—"}
@@ -104,7 +112,7 @@ export function HerbPrescriptionTable({
         <tfoot>
           <tr className="border-t border-slate-200 bg-emerald-50/60">
             <td
-              colSpan={compact ? 2 : 3}
+              colSpan={compact ? 4 : 5}
               className="px-2.5 py-2 text-right text-[10px] font-bold text-slate-600 uppercase"
             >
               Tổng thanh toán

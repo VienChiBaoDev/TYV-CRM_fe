@@ -68,6 +68,8 @@ export interface MedicalVisitApiResponse {
     readonly quantity: number | null
     readonly unitPrice: number | null
     readonly lineTotal: number | null
+    readonly decoctionOrder: string | null
+    readonly decoctionPrep: string | null
   }>
   readonly clinicalImages: ReadonlyArray<{
     readonly id: string
@@ -166,6 +168,8 @@ function mapVisit(
       quantity: herb.quantity ?? undefined,
       unitPrice: herb.unitPrice ?? undefined,
       lineTotal: herb.lineTotal ?? undefined,
+      decoctionOrder: herb.decoctionOrder ?? undefined,
+      decoctionPrep: herb.decoctionPrep ?? undefined,
     })),
     clinicalImages: visit.clinicalImages.map((image) => ({
       id: image.id,

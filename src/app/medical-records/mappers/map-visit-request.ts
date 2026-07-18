@@ -46,6 +46,8 @@ interface VisitHerbApiPayload {
   quantity?: number
   unitPrice?: number
   lineTotal?: number
+  decoctionOrder?: string
+  decoctionPrep?: string
 }
 
 interface FollowUpPlanApiPayload {
@@ -124,6 +126,8 @@ function mapHerbToApi(herb: Herb): VisitHerbApiPayload {
       ? herb.quantity * herb.unitPrice
       : undefined)
   if (lineTotal != null) payload.lineTotal = lineTotal
+  if (herb.decoctionOrder) payload.decoctionOrder = herb.decoctionOrder
+  if (herb.decoctionPrep) payload.decoctionPrep = herb.decoctionPrep
 
   return payload
 }

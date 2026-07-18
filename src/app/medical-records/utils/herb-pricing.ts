@@ -1,13 +1,23 @@
 import type { Medicine } from "@/app/medicines/types/medicine"
 import type { Herb } from "@/app/medical-records/interfaces/types"
+import type {
+  HerbDecoctionOrder,
+  HerbDecoctionPrep,
+} from "@/app/medical-records/constants/herb-decoction"
 
 export function formatHerbWeight(quantity: number, unit: string): string {
   return `${quantity} ${unit}`
 }
 
+interface BuildHerbOptions {
+  decoctionOrder: HerbDecoctionOrder
+  decoctionPrep: HerbDecoctionPrep
+}
+
 export function buildHerbFromMedicine(
   medicine: Medicine,
-  quantity: number
+  quantity: number,
+  options: BuildHerbOptions
 ): Herb {
   const lineTotal = medicine.unitPrice * quantity
 
@@ -19,6 +29,8 @@ export function buildHerbFromMedicine(
     unitPrice: medicine.unitPrice,
     lineTotal,
     weight: formatHerbWeight(quantity, medicine.unit),
+    decoctionOrder: options.decoctionOrder,
+    decoctionPrep: options.decoctionPrep,
   }
 }
 

@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Edit, Plus, X } from "lucide-react"
 import type { Visit } from "@/app/medical-records/interfaces/types"
 import {
@@ -30,6 +31,12 @@ import {
   getPrescriptionHerbsTotal,
   hasPricedHerbs,
 } from "@/app/medical-records/utils/herb-pricing"
+import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
+import { toClinicBranchCode } from "@/lib/clinic-branch"
+import {
+  HERB_DECOCTION_ORDER_OPTIONS,
+  HERB_DECOCTION_PREP_OPTIONS,
+} from "@/app/medical-records/constants/herb-decoction"
 
 const MODAL_CONFIG = {
   add: {
@@ -49,12 +56,17 @@ const fieldLabelClassName =
 
 const selectTriggerClassName = "mt-1 h-8 w-full text-xs shadow-xs"
 
+const longTextareaClassName =
+  "border-slate-255 mt-1 min-h-[100px] w-full resize-y rounded-lg border px-3 py-1.5 text-xs whitespace-pre-wrap focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+
 interface VisitFormSelectProps {
   label: string
   value: string
   onValueChange: (value: string) => void
   options: readonly { value: string; label: string }[]
   id?: string
+  disabled?: boolean
+  placeholder?: string
 }
 
 function VisitFormSelect({
@@ -63,15 +75,17 @@ function VisitFormSelect({
   onValueChange,
   options,
   id,
+  disabled,
+  placeholder,
 }: VisitFormSelectProps) {
   return (
     <div>
       <label htmlFor={id} className={fieldLabelClassName}>
         {label}
       </label>
-      <Select value={value} onValueChange={onValueChange}>
+      <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger id={id} className={selectTriggerClassName}>
-          <SelectValue />
+          <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent position="popper" sideOffset={4}>
           {options.map((option) => (
@@ -114,6 +128,18 @@ function resolveLocationValue(location: string | undefined): ClinicBranchLabel {
   return match?.label ?? CLINIC_BRANCHES[0].label
 }
 
+function buildSelectOptionsWithCurrent(
+  options: readonly { value: string; label: string }[],
+  currentValue: string | undefined
+) {
+  const trimmed = currentValue?.trim()
+  if (!trimmed || options.some((option) => option.value === trimmed)) {
+    return options
+  }
+
+  return [{ value: trimmed, label: trimmed }, ...options]
+}
+
 export function VisitFormModal() {
   const {
     visitModalMode,
@@ -123,13 +149,51 @@ export function VisitFormModal() {
     handleVisitSubmit,
     isSubmittingVisit,
     visitSubmitError,
+    activeBranch,
     selectedMedicine,
     setSelectedMedicine,
     tempHerbQuantity,
     setTempHerbQuantity,
+    tempHerbDecoctionOrder,
+    setTempHerbDecoctionOrder,
+    tempHerbDecoctionPrep,
+    setTempHerbDecoctionPrep,
     addHerbToVisit,
     removeHerbFromVisit,
   } = useMedicalRecordContext()
+
+  const branch = toClinicBranchCode(activeBranch)
+
+  const { doctorOptions, isLoading: isDoctorsLoading } = useStaffPickerOptions(
+    !!visitModalMode,
+    branch
+  )
+
+  const followUpPlanForOptions = {
+    ...getDefaultFollowUpPlan(),
+    ...visitForm.followUpPlan,
+  }
+
+  const doctorSelectOptions = useMemo(
+    () =>
+      buildSelectOptionsWithCurrent(
+        doctorOptions.map((doctor) => ({
+          value: doctor.label,
+          label: doctor.label,
+        })),
+        visitForm.doctor
+      ),
+    [doctorOptions, visitForm.doctor]
+  )
+
+  const reminderSelectOptions = useMemo(
+    () =>
+      buildSelectOptionsWithCurrent(
+        REMINDER_OPTIONS,
+        String(followUpPlanForOptions.reminderDaysBefore)
+      ),
+    [followUpPlanForOptions.reminderDaysBefore]
+  )
 
   if (!visitModalMode) return null
 
@@ -224,18 +288,15 @@ export function VisitFormModal() {
                 required
               />
             </div>
-            <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase">
-                Bác sĩ khám
-              </label>
-              <input
-                type="text"
-                value={visit.doctor || ""}
-                onChange={(e) => updateVisit({ doctor: e.target.value })}
-                className={inputClassName}
-                placeholder="BS Phi Hưng"
-              />
-            </div>
+            <VisitFormSelect
+              id="visit-doctor"
+              label="Bác sĩ khám"
+              value={visit.doctor || ""}
+              onValueChange={(value) => updateVisit({ doctor: value })}
+              options={doctorSelectOptions}
+              disabled={isDoctorsLoading}
+              placeholder="Chọn bác sĩ"
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
@@ -310,8 +371,8 @@ export function VisitFormModal() {
             <textarea
               value={visit.symptoms || ""}
               onChange={(e) => updateVisit({ symptoms: e.target.value })}
-              rows={mode === "edit" ? 3 : 2}
-              className="border-slate-255 mt-1 w-full rounded-lg border px-3 py-1.5 text-xs focus:outline-none"
+              rows={8}
+              className={longTextareaClassName}
               placeholder="Mô tả các triệu chứng mệt mỏi, nóng dạ dạ, nhức mỏi xương khớp..."
             />
           </div>
@@ -447,7 +508,7 @@ export function VisitFormModal() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-[minmax(88px,1fr)_72px_minmax(96px,1.2fr)_auto] lg:items-end">
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6 xl:items-end">
                 <div>
                   <label className="mb-1 block text-[10px] font-medium text-slate-600">
                     Số lượng
@@ -476,6 +537,32 @@ export function VisitFormModal() {
                   </div>
                 </div>
 
+                <VisitFormSelect
+                  id="herb-decoction-order"
+                  label="Thứ tự sắc"
+                  value={tempHerbDecoctionOrder}
+                  onValueChange={(value) =>
+                    setTempHerbDecoctionOrder(
+                      value as typeof tempHerbDecoctionOrder
+                    )
+                  }
+                  options={HERB_DECOCTION_ORDER_OPTIONS}
+                  disabled={!selectedMedicine}
+                />
+
+                <VisitFormSelect
+                  id="herb-decoction-prep"
+                  label="Sắc thuốc"
+                  value={tempHerbDecoctionPrep}
+                  onValueChange={(value) =>
+                    setTempHerbDecoctionPrep(
+                      value as typeof tempHerbDecoctionPrep
+                    )
+                  }
+                  options={HERB_DECOCTION_PREP_OPTIONS}
+                  disabled={!selectedMedicine}
+                />
+
                 <div>
                   <label className="mb-1 block text-[10px] font-medium text-slate-600">
                     Thành tiền
@@ -491,7 +578,7 @@ export function VisitFormModal() {
                   type="button"
                   onClick={onAddHerb}
                   disabled={!canAddHerb}
-                  className="h-8 cursor-pointer rounded-lg bg-primary px-3 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-4 lg:col-span-1"
+                  className="h-8 cursor-pointer rounded-lg bg-primary px-3 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 md:col-span-3 xl:col-span-1"
                 >
                   Thêm vị
                 </button>
@@ -512,7 +599,13 @@ export function VisitFormModal() {
                     <tr>
                       <th className="px-2.5 py-2">Thuốc</th>
                       <th className="px-2.5 py-2 text-right">SL</th>
-                      <th className="hidden px-2.5 py-2 text-right sm:table-cell">
+                      <th className="hidden px-2.5 py-2 sm:table-cell">
+                        Thứ tự sắc
+                      </th>
+                      <th className="hidden px-2.5 py-2 sm:table-cell">
+                        Sắc thuốc
+                      </th>
+                      <th className="hidden px-2.5 py-2 text-right md:table-cell">
                         Đơn giá
                       </th>
                       <th className="px-2.5 py-2 text-right">Thành tiền</th>
@@ -536,7 +629,13 @@ export function VisitFormModal() {
                               ? `${herb.quantity} ${herb.unit}`
                               : herb.weight}
                           </td>
-                          <td className="hidden px-2.5 py-2 text-right text-slate-600 sm:table-cell">
+                          <td className="hidden px-2.5 py-2 text-slate-600 sm:table-cell">
+                            {herb.decoctionOrder ?? "—"}
+                          </td>
+                          <td className="hidden px-2.5 py-2 text-slate-600 sm:table-cell">
+                            {herb.decoctionPrep ?? "—"}
+                          </td>
+                          <td className="hidden px-2.5 py-2 text-right text-slate-600 md:table-cell">
                             {herb.unitPrice != null
                               ? `${formatPrice(herb.unitPrice)} đ`
                               : "—"}
@@ -564,8 +663,8 @@ export function VisitFormModal() {
                     <tfoot>
                       <tr className="border-t border-slate-200 bg-emerald-50/60">
                         <td
-                          colSpan={3}
-                          className="hidden px-2.5 py-2 text-right text-[10px] font-bold text-slate-600 uppercase sm:table-cell"
+                          colSpan={5}
+                          className="hidden px-2.5 py-2 text-right text-[10px] font-bold text-slate-600 uppercase md:table-cell"
                         >
                           Tổng thanh toán
                         </td>
@@ -595,12 +694,12 @@ export function VisitFormModal() {
             <label className="block text-[11px] font-bold text-slate-500 uppercase">
               Chuẩn đoán
             </label>
-            <input
-              type="text"
+            <textarea
               value={visit.labResults || ""}
               onChange={(e) => updateVisit({ labResults: e.target.value })}
-              className={inputClassName}
-              placeholder="Nhập kết quả xét nghiệm (nếu có)"
+              rows={3}
+              className={longTextareaClassName}
+              placeholder="Nhập chuẩn đoán..."
             />
           </div>
 
@@ -630,7 +729,7 @@ export function VisitFormModal() {
                       reminderDaysBefore: Number(value),
                     })
                   }
-                  options={REMINDER_OPTIONS}
+                  options={reminderSelectOptions}
                 />
                 {assessmentDateIso && (
                   <p className="mt-1 text-[10px] text-slate-500">

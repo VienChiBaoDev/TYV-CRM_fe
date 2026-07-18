@@ -4,6 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { Patient, Visit } from "@/app/medical-records/interfaces/types"
 import type { Medicine } from "@/app/medicines/types/medicine"
 import { buildHerbFromMedicine } from "@/app/medical-records/utils/herb-pricing"
+import {
+  DEFAULT_HERB_DECOCTION_ORDER,
+  DEFAULT_HERB_DECOCTION_PREP,
+  type HerbDecoctionOrder,
+  type HerbDecoctionPrep,
+} from "@/app/medical-records/constants/herb-decoction"
 import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
 import { useClinicStore } from "@/stores/clinic-store"
 import {
@@ -81,6 +87,10 @@ export function useMedicalRecords() {
   const [selectedVisitIndex, setSelectedVisitIndex] = useState(0)
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null)
   const [tempHerbQuantity, setTempHerbQuantity] = useState<number | "">("")
+  const [tempHerbDecoctionOrder, setTempHerbDecoctionOrder] =
+    useState<HerbDecoctionOrder>(DEFAULT_HERB_DECOCTION_ORDER)
+  const [tempHerbDecoctionPrep, setTempHerbDecoctionPrep] =
+    useState<HerbDecoctionPrep>(DEFAULT_HERB_DECOCTION_PREP)
   const [clinicalImageError, setClinicalImageError] = useState<string | null>(
     null
   )
@@ -279,6 +289,8 @@ export function useMedicalRecords() {
   const resetHerbDraft = () => {
     setSelectedMedicine(null)
     setTempHerbQuantity("")
+    setTempHerbDecoctionOrder(DEFAULT_HERB_DECOCTION_ORDER)
+    setTempHerbDecoctionPrep(DEFAULT_HERB_DECOCTION_PREP)
   }
 
   const openAddVisitModal = () => {
@@ -337,7 +349,10 @@ export function useMedicalRecords() {
     const quantity = Number(tempHerbQuantity)
     if (!Number.isFinite(quantity) || quantity <= 0) return
 
-    const herb = buildHerbFromMedicine(selectedMedicine, quantity)
+    const herb = buildHerbFromMedicine(selectedMedicine, quantity, {
+      decoctionOrder: tempHerbDecoctionOrder,
+      decoctionPrep: tempHerbDecoctionPrep,
+    })
     setVisitForm((prev) => ({
       ...prev,
       herbs: [...(prev.herbs || []), herb],
@@ -391,6 +406,10 @@ export function useMedicalRecords() {
     setSelectedMedicine,
     tempHerbQuantity,
     setTempHerbQuantity,
+    tempHerbDecoctionOrder,
+    setTempHerbDecoctionOrder,
+    tempHerbDecoctionPrep,
+    setTempHerbDecoctionPrep,
     resetHerbDraft,
     addHerbToVisit,
     removeHerbFromVisit,
