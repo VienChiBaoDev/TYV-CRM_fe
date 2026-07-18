@@ -63,11 +63,6 @@ export function AppointmentsPage() {
 
   const showAllDoctors = !doctorId
 
-  const legendDoctorNames = useMemo(
-    () => doctorSelectOptions.map((option) => option.label),
-    [doctorSelectOptions]
-  )
-
   const { start, end } = getWeekRange(anchorDate)
 
   const { from, to } = toApiRangeIso(start, end)
@@ -80,6 +75,25 @@ export function AppointmentsPage() {
       doctorId: doctorId || undefined,
     })
   )
+
+  const legendDoctors = useMemo(() => {
+    const counts = new Map(
+      doctorSelectOptions.map((option) => [option.label, 0])
+    )
+
+    for (const appointment of appointments) {
+      if (!appointment.doctorName) continue
+      counts.set(
+        appointment.doctorName,
+        (counts.get(appointment.doctorName) ?? 0) + 1
+      )
+    }
+
+    return doctorSelectOptions.map((option) => ({
+      name: option.label,
+      count: counts.get(option.label) ?? 0,
+    }))
+  }, [doctorSelectOptions, appointments])
 
   const openCreateDialog = (day?: Date, hour?: number, minute?: number) => {
     if (day != null && hour != null && minute != null) {
@@ -149,9 +163,7 @@ export function AppointmentsPage() {
         </div>
       </div>
 
-      {showAllDoctors ? (
-        <DoctorColorLegend doctors={legendDoctorNames} />
-      ) : null}
+      {showAllDoctors ? <DoctorColorLegend doctors={legendDoctors} /> : null}
 
       <WeeklyCalendarGrid
         anchorDate={anchorDate}
