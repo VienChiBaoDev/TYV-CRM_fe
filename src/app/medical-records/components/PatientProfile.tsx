@@ -72,7 +72,7 @@ export default function PatientProfile() {
           </div>
         </div>
 
-        <div className="flex w-full flex-col gap-2.5 lg:w-auto lg:items-end">
+        <div className="flex w-full flex-col gap-2.5 lg:w-auto lg:flex-row lg:flex-wrap lg:items-center lg:justify-center">
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-lg border border-emerald-100 bg-emerald-50/70 px-2 py-1.5 text-center sm:min-w-[70px] sm:rounded-xl sm:px-4 sm:py-2">
               <p className="font-display text-lg leading-none font-bold text-emerald-800 sm:text-2xl">
