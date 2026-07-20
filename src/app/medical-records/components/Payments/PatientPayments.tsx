@@ -110,6 +110,7 @@ export default function PatientPayments() {
     deposit: 0,
     products: 0,
     services: 0,
+    refund: 0,
   }
   const payments = paymentsData?.payments ?? []
   const unpaidItems = useMemo(
@@ -167,7 +168,7 @@ export default function PatientPayments() {
             <SummaryCard
               label="Còn lại"
               value={summary.remaining}
-              accentClassName="bg-red-400"
+              accentClassName="bg-red-500"
             />
             <SummaryCard
               label="Tiền Cọc"
@@ -183,6 +184,11 @@ export default function PatientPayments() {
               label="Dịch Vụ"
               value={summary.services}
               accentClassName="bg-yellow-400"
+            />
+            <SummaryCard
+              label="Hoàn trả"
+              value={summary.refund}
+              accentClassName="bg-rose-200"
             />
           </div>
 

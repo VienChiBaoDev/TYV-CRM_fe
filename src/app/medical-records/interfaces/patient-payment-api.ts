@@ -21,6 +21,7 @@ export interface PatientPaymentSummaryApi {
   readonly deposit: number
   readonly products: number
   readonly services: number
+  readonly refund: number
 }
 
 export interface PatientPaymentsListApi {
