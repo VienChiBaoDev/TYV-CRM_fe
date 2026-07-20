@@ -77,8 +77,8 @@ function buildDefaultValues(
       patientId: context.appointment.patientId,
       scheduledAt,
       endedAt: toDatetimeLocalValue(context.appointment.endedAt),
-      doctorId: "",
-      assistantId: "",
+      doctorId: context.appointment.doctorId ?? "",
+      assistantId: context.appointment.assistantId ?? "",
       note: context.appointment.note ?? "",
       status: context.appointment.status,
     }
@@ -146,14 +146,17 @@ export function AppointmentDialog({
 
   useEffect(() => {
     if (!open || !isEdit || !appointment || staffOptions.length === 0) return
-    form.setValue(
-      "doctorId",
+
+    const doctorId =
+      appointment.doctorId ||
       findStaffIdByName(staffOptions, appointment.doctorName ?? "")
-    )
-    form.setValue(
-      "assistantId",
+
+    const assistantId =
+      appointment.assistantId ||
       findStaffIdByName(staffOptions, appointment.assistantName ?? "")
-    )
+
+    form.setValue("doctorId", doctorId)
+    form.setValue("assistantId", assistantId)
   }, [open, isEdit, appointment, staffOptions, form])
 
   const isPending =

@@ -50,6 +50,8 @@ export interface Appointment {
   patientId: string
   scheduledAt: string
   endedAt: string
+  doctorId: string | null
+  assistantId: string | null
   doctorName: string | null
   assistantName: string | null
   clinicBranch: ClinicBranchCode
