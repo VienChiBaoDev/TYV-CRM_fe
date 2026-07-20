@@ -37,6 +37,8 @@ import {
   HERB_DECOCTION_ORDER_OPTIONS,
   HERB_DECOCTION_PREP_OPTIONS,
 } from "@/app/medical-records/constants/herb-decoction"
+import { applyFormulaToVisit } from "@/app/prescription-formulas/utils/apply-formula-to-visit"
+import { FormulaPickerCombobox } from "@/app/prescription-formulas/components/FormulaPickerCombobox"
 
 const MODAL_CONFIG = {
   add: {
@@ -444,7 +446,21 @@ export function VisitFormModal() {
               </div>
             </div>
           </div>
-
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[10px] font-bold text-slate-500 uppercase">
+              Công thức mẫu
+            </span>
+            <FormulaPickerCombobox
+              onSelect={(formula) => {
+                const applied = applyFormulaToVisit(formula)
+                updateVisit({
+                  prescriptionFormula: applied.prescriptionFormula,
+                  prescriptionDosage: applied.prescriptionDosage,
+                  herbs: applied.herbs,
+                })
+              }}
+            />
+          </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase">

@@ -81,6 +81,13 @@ const API_PATHS = {
     update: (id: string) => `/staff-shifts/${id}`,
     delete: (id: string) => `/staff-shifts/${id}`,
   },
+  prescriptionFormulaTemplates: {
+    list: "/prescription-formula-templates",
+    create: "/prescription-formula-templates",
+    detail: (id: string) => `/prescription-formula-templates/${id}`,
+    update: (id: string) => `/prescription-formula-templates/${id}`,
+    delete: (id: string) => `/prescription-formula-templates/${id}`,
+  },
 }
 
 export default API_PATHS

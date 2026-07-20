@@ -1,11 +1,13 @@
 import { Edit, Heart, Activity, Info, Leaf, Eye } from "lucide-react"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { ClinicalImageZone } from "@/app/medical-records/components/ClinicalImageZone"
 import { HerbPrescriptionTable } from "@/app/medical-records/components/HerbPrescriptionTable"
 import type { ClinicalImage } from "@/app/medical-records/interfaces/types"
 import { CLINICAL_IMAGE_CATEGORY_LABELS } from "@/app/medical-records/constants/clinical-image"
 import type { ClinicalImageCategory } from "@/app/medical-records/constants/clinical-image"
+import { Button } from "@/components/ui/button"
+import { SaveFormulaDialog } from "@/app/prescription-formulas/components/SaveFormulaDialog"
 
 const CLINICAL_IMAGE_SECTIONS: ClinicalImageCategory[] = [
   "DIAGNOSIS",
@@ -25,6 +27,7 @@ function createEmptyClinicalImagesByCategory(): Record<
 }
 
 export default function VisitDetails() {
+  const [saveFormulaOpen, setSaveFormulaOpen] = useState(false)
   const {
     activeVisit,
     openEditVisitModal,
@@ -212,9 +215,14 @@ export default function VisitDetails() {
                   <span className="text-sm font-extrabold tracking-tight text-amber-900">
                     🫖 {activeVisit.prescriptionFormula}
                   </span>
-                  <span className="text-[10px] font-semibold text-amber-700/80 uppercase">
-                    Đơn trị liệu
-                  </span>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => setSaveFormulaOpen(true)}
+                    disabled={herbs.length === 0}
+                  >
+                    Lưu công thức
+                  </Button>
                 </div>
 
                 <HerbPrescriptionTable
@@ -264,6 +272,11 @@ export default function VisitDetails() {
           </div>
         </div>
       </div>
+      <SaveFormulaDialog
+        open={saveFormulaOpen}
+        onOpenChange={setSaveFormulaOpen}
+        visit={activeVisit}
+      />
     </section>
   )
 }
