@@ -83,9 +83,11 @@ export function useMedicalRecords() {
   )
   const [visitForm, setVisitForm] =
     useState<Partial<Visit>>(getDefaultVisitForm)
-  const [showExportModal, setShowExportModal] = useState(false)
+  const [printRequested, setPrintRequested] = useState(false)
   const [selectedVisitIndex, setSelectedVisitIndex] = useState(0)
-  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null)
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(
+    null
+  )
   const [tempHerbQuantity, setTempHerbQuantity] = useState<number | "">("")
   const [tempHerbDecoctionOrder, setTempHerbDecoctionOrder] =
     useState<HerbDecoctionOrder>(DEFAULT_HERB_DECOCTION_ORDER)
@@ -413,8 +415,8 @@ export function useMedicalRecords() {
     resetHerbDraft,
     addHerbToVisit,
     removeHerbFromVisit,
-    showExportModal,
-    setShowExportModal,
+    printRequested,
+    setPrintRequested,
     isLoading,
     isError,
     error,

@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Navigate } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { isAxiosError } from "axios"
-import { Loader2, Pencil, Plus, Trash2, UserCog } from "lucide-react"
+import { Landmark, Loader2, Pencil, Plus, Trash2, UserCog } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import BankAccountsSettings from "@/app/settings/BankAccountsSettings"
 import {
   Select,
   SelectContent,
@@ -98,128 +100,144 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-white p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <UserCog className="h-6 w-6 text-emerald-600" />
-          <div>
-            <h1 className="text-lg font-bold text-slate-800">
-              Quản lý tài khoản
-            </h1>
-            <p className="text-sm text-slate-500">
+    <div className="flex h-full flex-col overflow-y-auto bg-white p-6">
+      <h1 className="mb-4 text-lg font-bold text-slate-800">Cài đặt</h1>
+
+      <Tabs defaultValue="staff">
+        <TabsList className="mb-4">
+          <TabsTrigger value="staff" className="gap-1.5">
+            <UserCog className="h-4 w-4" /> Tài khoản nhân sự
+          </TabsTrigger>
+          <TabsTrigger value="bank-accounts" className="gap-1.5">
+            <Landmark className="h-4 w-4" /> Tài khoản ngân hàng
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="bank-accounts">
+          <BankAccountsSettings />
+        </TabsContent>
+
+        <TabsContent value="staff">
+          <div className="mb-4 flex items-start justify-between">
+            <p className="max-w-xl text-sm text-slate-500">
               Thêm, sửa, xóa tài khoản nhân sự và phân quyền.
             </p>
+            <Button
+              onClick={openCreate}
+              className="shrink-0 bg-primary hover:bg-primary/80"
+            >
+              <Plus className="h-4 w-4" /> Thêm tài khoản
+            </Button>
           </div>
-        </div>
-        <Button onClick={openCreate} className="bg-primary hover:bg-primary/80">
-          <Plus className="h-4 w-4" /> Thêm tài khoản
-        </Button>
-      </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-200 bg-[#f8fbfb] text-xs font-semibold text-slate-700 uppercase">
-            <tr>
-              <th className="px-4 py-3">Họ tên</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Vai trò</th>
-              <th className="px-4 py-3">Chi nhánh</th>
-              <th className="px-4 py-3">Trạng thái</th>
-              <th className="px-4 py-3 text-right">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-4 py-10 text-center text-slate-400"
-                >
-                  Đang tải...
-                </td>
-              </tr>
-            ) : staffList.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-4 py-10 text-center text-slate-400"
-                >
-                  Chưa có tài khoản nào
-                </td>
-              </tr>
-            ) : (
-              staffList.map((staff) => (
-                <tr
-                  key={staff.id}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="px-4 py-3 font-medium text-slate-700">
-                    {staff.fullName}
-                    {staff.id === currentUser?.id ? (
-                      <span className="ml-2 text-[10px] text-emerald-600">
-                        (Bạn)
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{staff.email}</td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {ROLE_LABEL[staff.role]}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {staff.clinicBranch
-                      ? CLINIC_BRANCH_LABEL[staff.clinicBranch]
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={
-                        staff.isActive
-                          ? "rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700"
-                          : "rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500"
-                      }
-                    >
-                      {staff.isActive ? "Hoạt động" : "Đã khóa"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => openEdit(staff)}
-                        title="Sửa"
-                        className="rounded-md p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(staff)}
-                        disabled={staff.id === currentUser?.id}
-                        title={
-                          staff.id === currentUser?.id
-                            ? "Không thể xóa chính bạn"
-                            : "Xóa"
-                        }
-                        className="rounded-md p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-gray-200 bg-[#f8fbfb] text-xs font-semibold text-slate-700 uppercase">
+                <tr>
+                  <th className="px-4 py-3">Họ tên</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Vai trò</th>
+                  <th className="px-4 py-3">Chi nhánh</th>
+                  <th className="px-4 py-3">Trạng thái</th>
+                  <th className="px-4 py-3 text-right">Hành động</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-4 py-10 text-center text-slate-400"
+                    >
+                      Đang tải...
+                    </td>
+                  </tr>
+                ) : staffList.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-4 py-10 text-center text-slate-400"
+                    >
+                      Chưa có tài khoản nào
+                    </td>
+                  </tr>
+                ) : (
+                  staffList.map((staff) => (
+                    <tr
+                      key={staff.id}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="px-4 py-3 font-medium text-slate-700">
+                        {staff.fullName}
+                        {staff.id === currentUser?.id ? (
+                          <span className="ml-2 text-[10px] text-emerald-600">
+                            (Bạn)
+                          </span>
+                        ) : null}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {staff.email}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {ROLE_LABEL[staff.role]}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {staff.clinicBranch
+                          ? CLINIC_BRANCH_LABEL[staff.clinicBranch]
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={
+                            staff.isActive
+                              ? "rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                              : "rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500"
+                          }
+                        >
+                          {staff.isActive ? "Hoạt động" : "Đã khóa"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEdit(staff)}
+                            title="Sửa"
+                            className="rounded-md p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(staff)}
+                            disabled={staff.id === currentUser?.id}
+                            title={
+                              staff.id === currentUser?.id
+                                ? "Không thể xóa chính bạn"
+                                : "Xóa"
+                            }
+                            className="rounded-md p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-      <StaffFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        editing={editing}
-        onSaved={() => {
-          setDialogOpen(false)
-          queryClient.invalidateQueries({ queryKey: staffKeys.all })
-        }}
-      />
+          <StaffFormDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            editing={editing}
+            onSaved={() => {
+              setDialogOpen(false)
+              queryClient.invalidateQueries({ queryKey: staffKeys.all })
+            }}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

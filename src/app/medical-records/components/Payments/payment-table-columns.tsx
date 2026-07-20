@@ -90,9 +90,16 @@ export function createPaymentTableColumns(
               )}
             </span>
           }
-          <span className="text-sm text-slate-700">
-            {row.original.paymentMethod}
-          </span>
+          <div className="min-w-0">
+            <p className="text-sm text-slate-700">
+              {row.original.paymentMethod}
+            </p>
+            {row.original.bankAccount?.accountNumber ? (
+              <p className="font-mono text-[11px] text-slate-500">
+                {row.original.bankAccount.accountNumber}
+              </p>
+            ) : null}
+          </div>
         </div>
       ),
     },

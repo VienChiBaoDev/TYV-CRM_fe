@@ -1,11 +1,23 @@
 import { AlertCircle, Printer, Plus } from "lucide-react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
+import { MEDICAL_RECORD_TABS } from "@/app/medical-records/constants/tab-values"
 import { Button } from "@/components/ui/button"
 
 export default function PatientProfile() {
-  const { activePatient, activeVisit, setShowExportModal, openAddVisitModal } =
-    useMedicalRecordContext()
+  const {
+    activePatient,
+    activeVisit,
+    setActiveTab,
+    setPrintRequested,
+    openAddVisitModal,
+  } = useMedicalRecordContext()
+
+  /** Chuyển sang tab Bệnh án rồi in — form sẽ tự gọi window.print() khi tải xong */
+  const handleExportBA = () => {
+    setActiveTab(MEDICAL_RECORD_TABS.MEDICAL_CASE)
+    setPrintRequested(true)
+  }
 
   const followUpDisplayDate = activeVisit?.followUpPlan?.followUpDate
     ? formatIsoDateToVi(activeVisit.followUpPlan.followUpDate)
@@ -105,7 +117,7 @@ export default function PatientProfile() {
           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
             <button
               id="export-ba-btn"
-              onClick={() => setShowExportModal(true)}
+              onClick={handleExportBA}
               className="border-slate-250 text-slate-705 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 py-2 text-[11px] font-semibold shadow-2xs transition-colors hover:bg-slate-50 sm:px-3.5 sm:py-1.5 sm:text-xs"
             >
               <Printer className="h-3.5 w-3.5" />
