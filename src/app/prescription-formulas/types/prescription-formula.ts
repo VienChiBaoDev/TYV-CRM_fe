@@ -34,6 +34,8 @@ export interface CreatePrescriptionFormulaPayload {
   }>
 }
 
+export type UpdatePrescriptionFormulaPayload = CreatePrescriptionFormulaPayload
+
 /**
  * Kết quả áp dụng công thức phiếu trị liệu
  */

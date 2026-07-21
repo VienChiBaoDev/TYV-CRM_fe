@@ -9,6 +9,7 @@ export const urlPaths = {
   revenueKpi: "/revenue-kpi",
   commissionPayroll: "/commission-payroll",
   herbsProducts: "/herbs-products",
+  prescriptionFormulas: "/prescription-formulas",
   medicalRecordList: "/medical-record",
   medicalRecordCreate: "/medical-record/create",
   referrers: "/referrers",

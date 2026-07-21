@@ -15,6 +15,7 @@ import { AppointmentsPage } from "@/app/appointments/components/AppointmentsPage
 import { StaffSchedulesPage } from "@/app/staff-schedule/components/StaffSchedulesPage"
 import { TreatmentServices } from "@/app/treatment-services/components/TreatmentServices"
 import { MedicinesPage } from "@/app/medicines/components/MedicinesPage"
+import { PrescriptionFormulasPage } from "@/app/prescription-formulas/components/PrescriptionFormulasPage"
 export const router = createBrowserRouter([
   {
     path: urlPaths.login,
@@ -86,6 +87,10 @@ export const router = createBrowserRouter([
       {
         path: urlPaths.herbsProducts,
         element: <MedicinesPage />,
+      },
+      {
+        path: urlPaths.prescriptionFormulas,
+        element: <PrescriptionFormulasPage />,
       },
     ],
   },

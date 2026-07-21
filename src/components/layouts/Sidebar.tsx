@@ -9,6 +9,7 @@ import {
   TrendingUp,
   DollarSign,
   Leaf,
+  FlaskConical,
   ChevronDown,
   ChevronRight,
   ChevronsDown,
@@ -93,6 +94,11 @@ const SALES_NAV_ITEMS: NavItem[] = [
     to: urlPaths.herbsProducts,
     label: "Dược liệu & Sản phẩm",
     icon: <Leaf className="h-4.5 w-4.5" />,
+  },
+  {
+    to: urlPaths.prescriptionFormulas,
+    label: "Công thức đơn",
+    icon: <FlaskConical className="h-4.5 w-4.5" />,
   },
 ]
 

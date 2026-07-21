@@ -4,6 +4,7 @@ import { mapPrescriptionFormulaFromApi } from "../mappers/map-prescription-formu
 import type {
   CreatePrescriptionFormulaPayload,
   PrescriptionFormula,
+  UpdatePrescriptionFormulaPayload,
 } from "../types/prescription-formula"
 
 /**
@@ -28,6 +29,17 @@ export async function createPrescriptionFormula(
 ): Promise<PrescriptionFormula> {
   const { data } = await httpService.post(
     API_PATHS.prescriptionFormulaTemplates.create,
+    payload
+  )
+  return mapPrescriptionFormulaFromApi(data)
+}
+
+export async function updatePrescriptionFormula(
+  id: string,
+  payload: UpdatePrescriptionFormulaPayload
+): Promise<PrescriptionFormula> {
+  const { data } = await httpService.patch(
+    API_PATHS.prescriptionFormulaTemplates.update(id),
     payload
   )
   return mapPrescriptionFormulaFromApi(data)
