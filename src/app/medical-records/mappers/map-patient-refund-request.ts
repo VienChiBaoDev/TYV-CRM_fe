@@ -4,7 +4,7 @@ import type { PatientRefundFormValues } from "../schemas/patient-refund-form"
 export interface CreatePatientRefundPayload {
   paymentMethod: string
   reason: string
-  paymentDetail?: string
+  bankAccountId?: string
   bankCode?: string
   branch: string
   content?: string
@@ -26,7 +26,7 @@ export function mapPatientRefundFormToCreatePayload(
 ): CreatePatientRefundPayload {
   return {
     paymentMethod: values.paymentMethod,
-    paymentDetail: values.paymentDetail || undefined,
+    bankAccountId: values.bankAccountId || undefined,
     bankCode: values.bankCode || undefined,
     branch: values.branch,
     content: values.content || undefined,

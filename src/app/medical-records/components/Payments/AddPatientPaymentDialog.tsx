@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useQuery } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ChevronDown, Printer, RotateCcw, Wallet } from "lucide-react"
 import type { UnpaidPaymentItem } from "@/app/medical-records/interfaces/patient-unpaid-item"
@@ -26,19 +27,16 @@ import { CLINIC_BRANCHES } from "@/constants/clinic-branches"
 import { toFormDatetimeValue } from "@/lib/date-vi"
 import { cn } from "@/lib/utils"
 import { useClinicStore } from "@/stores/clinic-store"
+import {
+  fetchBankAccountOptions,
+  formatBankAccountLabel,
+} from "@/services/bankAccountService"
 
 const PRIMARY_BTN = "bg-emerald-600 text-white hover:bg-primary font-semibold"
 
 const PAYMENT_METHOD_OPTIONS = [
   { value: PAYMENT_METHOD.CASH, label: "Tiền mặt" },
   { value: PAYMENT_METHOD.BANK_TRANSFER, label: "Chuyển khoản" },
-]
-
-const BANK_DETAIL_OPTIONS = [
-  { value: "mb", label: "MB Bank - Đặng Hữu Phúc" },
-  { value: "vcb", label: "Vietcombank" },
-  { value: "tcb", label: "Techcombank" },
-  { value: "acb", label: "ACB" },
 ]
 
 const BRANCH_OPTIONS = CLINIC_BRANCHES.map((branch) => ({
@@ -181,6 +179,21 @@ export function AddPatientPaymentDialog({
   })
 
   const paymentMethod = form.watch("paymentMethod")
+  const isBankTransfer = paymentMethod === PAYMENT_METHOD.BANK_TRANSFER
+
+  const { data: bankAccounts = [] } = useQuery({
+    queryKey: ["bank-accounts", "options"],
+    queryFn: fetchBankAccountOptions,
+  })
+
+  const bankAccountOptions = useMemo(
+    () =>
+      bankAccounts.map((account) => ({
+        value: account.id,
+        label: formatBankAccountLabel(account),
+      })),
+    [bankAccounts]
+  )
 
   const selectedItems = useMemo<SelectedItem[]>(() => {
     return unpaidItems
@@ -416,19 +429,24 @@ export function AddPatientPaymentDialog({
 
                   <FormSelect
                     control={form.control}
-                    name="paymentDetail"
-                    label="Chi tiết"
-                    placeholder="eg. chi tiết"
-                    options={BANK_DETAIL_OPTIONS}
-                    disabled={paymentMethod !== PAYMENT_METHOD.BANK_TRANSFER}
+                    name="bankAccountId"
+                    label="Tài khoản nhận tiền"
+                    placeholder={
+                      bankAccountOptions.length === 0
+                        ? "Chưa khai báo tài khoản ở mục Cài đặt"
+                        : "eg. chọn tài khoản"
+                    }
+                    options={bankAccountOptions}
+                    disabled={!isBankTransfer}
+                    required={isBankTransfer}
                   />
 
                   <FormInput
                     control={form.control}
                     name="bankCode"
-                    label="Mã ngân hàng"
-                    placeholder="eg. mã ngân hàng"
-                    disabled={paymentMethod !== PAYMENT_METHOD.BANK_TRANSFER}
+                    label="Mã giao dịch"
+                    placeholder="eg. mã giao dịch"
+                    disabled={!isBankTransfer}
                   />
 
                   <FormDatetime

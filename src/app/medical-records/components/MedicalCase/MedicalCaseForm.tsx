@@ -284,6 +284,11 @@ function TextArea({
     }
   }, [])
 
+  // Giãn chiều cao khi nạp dữ liệu đã lưu, tránh bị cắt chữ lúc in
+  useEffect(() => {
+    handleInput()
+  }, [value, handleInput])
+
   return (
     <textarea
       ref={ref}
@@ -301,7 +306,8 @@ function TextArea({
 
 /* ========== MAIN COMPONENT ========== */
 export default function MedicalCaseForm() {
-  const { activePatient } = useMedicalRecordContext()
+  const { activePatient, printRequested, setPrintRequested } =
+    useMedicalRecordContext()
 
   const patientDefaults: Partial<MedicalCaseData> = {
     hoTen: activePatient?.name ?? "",
@@ -350,6 +356,18 @@ export default function MedicalCaseForm() {
       cancelled = true
     }
   }, [activePatient?.id])
+
+  // Nút "Xuất BA" ở đầu trang chuyển sang tab này rồi bật cờ in
+  useEffect(() => {
+    if (!printRequested || isLoading) return
+
+    const frame = requestAnimationFrame(() => {
+      window.print()
+      setPrintRequested(false)
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [printRequested, isLoading, setPrintRequested])
 
   const set = useCallback(
     <K extends keyof MedicalCaseData>(key: K, value: MedicalCaseData[K]) => {
@@ -416,7 +434,11 @@ export default function MedicalCaseForm() {
   }
 
   return (
-    <div style={{ maxHeight: "80vh", overflowY: "auto", padding: "12px 0" }}>
+    <div
+      id="medical-case-print"
+      className="mc-print-root"
+      style={{ maxHeight: "80vh", overflowY: "auto", padding: "12px 0" }}
+    >
       <div className="mc-paper">
         {/* ============ HEADER ============ */}
         <div className="mc-header">

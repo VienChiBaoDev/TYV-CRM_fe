@@ -3,7 +3,7 @@ import type { UnpaidPaymentItem } from "@/app/medical-records/interfaces/patient
 
 export interface CreatePatientPaymentPayload {
   paymentMethod: string
-  paymentDetail?: string
+  bankAccountId?: string
   bankCode?: string
   branch: string
   content?: string
@@ -17,7 +17,7 @@ export function mapPatientPaymentFormToCreatePayload(
 ): CreatePatientPaymentPayload {
   return {
     paymentMethod: values.paymentMethod,
-    paymentDetail: values.paymentDetail || undefined,
+    bankAccountId: values.bankAccountId || undefined,
     bankCode: values.bankCode || undefined,
     branch: values.branch,
     content: values.content || undefined,

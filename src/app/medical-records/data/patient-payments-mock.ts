@@ -16,6 +16,7 @@ export const MOCK_PATIENT_PAYMENTS: PatientPayment[] = [
     voucherDate: "18-06-2026",
     processedBy: { initials: "NA" },
     paymentMethod: "Chuyển Khoản - MB Đặng Hữu Phúc",
+    bankAccount: null,
     totalAmount: 300_000,
     details: [
       {
@@ -31,6 +32,7 @@ export const MOCK_PATIENT_PAYMENTS: PatientPayment[] = [
     voucherDate: "15-06-2026",
     processedBy: { initials: "NH" },
     paymentMethod: "Tiền mặt",
+    bankAccount: null,
     totalAmount: 6_000_000,
     details: [
       {
@@ -46,6 +48,7 @@ export const MOCK_PATIENT_PAYMENTS: PatientPayment[] = [
     voucherDate: "10-06-2026",
     processedBy: { initials: "HD" },
     paymentMethod: "Chuyển Khoản - Vietcombank",
+    bankAccount: null,
     totalAmount: 1_200_000,
     details: [
       {

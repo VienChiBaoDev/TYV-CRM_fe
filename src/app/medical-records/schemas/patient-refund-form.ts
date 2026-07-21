@@ -28,7 +28,7 @@ export type PatientRefundFormValues = z.output<typeof patientRefundFormSchema>
 
 export const patientRefundFormDefaultValues: PatientRefundFormInput = {
   paymentMethod: PAYMENT_METHOD.CASH,
-  paymentDetail: "",
+  bankAccountId: "",
   bankCode: "",
   createdAt: "",
   branch: "",

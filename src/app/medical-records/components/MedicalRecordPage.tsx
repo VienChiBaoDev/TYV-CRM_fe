@@ -6,23 +6,13 @@ import PatientProfile from "@/app/medical-records/components/PatientProfile"
 import Timeline from "@/app/medical-records/components/Timeline"
 import VisitDetails from "@/app/medical-records/components/VisitDetails"
 import { VisitFormModal } from "@/app/medical-records/components/VisitFormModal"
-import ExportBAModal from "@/app/medical-records/components/ExportBAModal"
 import PatientPayments from "./Payments/PatientPayments"
 import PatientServices from "./Services/PatientServices"
 import Treatment from "./Treatment/Treatment"
 import MedicalCaseForm from "./MedicalCase/MedicalCaseForm"
 
 export function MedicalRecordPage() {
-  const {
-    activeTab,
-    setActiveTab,
-    activePatient,
-    activeVisit,
-    visitModalMode,
-    showExportModal,
-    setShowExportModal,
-    activeBranch,
-  } = useMedicalRecordContext()
+  const { activeTab, setActiveTab, visitModalMode } = useMedicalRecordContext()
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -79,13 +69,6 @@ export function MedicalRecordPage() {
       </div>
 
       {visitModalMode && <VisitFormModal />}
-      <ExportBAModal
-        showExportModal={showExportModal}
-        setShowExportModal={setShowExportModal}
-        activeBranch={activeBranch}
-        activePatient={activePatient}
-        activeVisit={activeVisit}
-      />
     </div>
   )
 }
