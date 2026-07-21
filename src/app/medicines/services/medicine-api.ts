@@ -22,6 +22,11 @@ export async function fetchMedicines(
   }
 }
 
+export async function fetchMedicineById(id: string): Promise<Medicine> {
+  const { data } = await httpService.get(API_PATHS.medicines.detail(id))
+  return mapMedicineFromApi(data)
+}
+
 export async function createMedicine(
   payload: MedicineFormValues
 ): Promise<Medicine> {

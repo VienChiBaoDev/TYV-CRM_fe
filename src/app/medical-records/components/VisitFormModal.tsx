@@ -1,4 +1,5 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { toast } from "sonner"
 import { Edit, Plus, X } from "lucide-react"
 import type { Visit } from "@/app/medical-records/interfaces/types"
 import {
@@ -39,6 +40,7 @@ import {
 } from "@/app/medical-records/constants/herb-decoction"
 import { applyFormulaToVisit } from "@/app/prescription-formulas/utils/apply-formula-to-visit"
 import { FormulaPickerCombobox } from "@/app/prescription-formulas/components/FormulaPickerCombobox"
+import type { PrescriptionFormula } from "@/app/prescription-formulas/types/prescription-formula"
 
 const MODAL_CONFIG = {
   add: {
@@ -164,6 +166,8 @@ export function VisitFormModal() {
     removeHerbFromVisit,
   } = useMedicalRecordContext()
 
+  const [isApplyingFormula, setIsApplyingFormula] = useState(false)
+
   const branch = toClinicBranchCode(activeBranch)
 
   const { doctorOptions, isLoading: isDoctorsLoading } = useStaffPickerOptions(
@@ -224,6 +228,22 @@ export function VisitFormModal() {
 
   const updateVisit = (patch: Partial<Visit>) => {
     onVisitChange({ ...visit, ...patch })
+  }
+
+  const handleApplyFormula = async (formula: PrescriptionFormula) => {
+    setIsApplyingFormula(true)
+    try {
+      const applied = await applyFormulaToVisit(formula)
+      updateVisit({
+        prescriptionFormula: applied.prescriptionFormula,
+        prescriptionDosage: applied.prescriptionDosage,
+        herbs: applied.herbs,
+      })
+    } catch {
+      toast.error("Không thể áp dụng công thức. Vui lòng thử lại.")
+    } finally {
+      setIsApplyingFormula(false)
+    }
   }
 
   const followUpPlan = {
@@ -451,13 +471,9 @@ export function VisitFormModal() {
               Công thức mẫu
             </span>
             <FormulaPickerCombobox
+              loading={isApplyingFormula}
               onSelect={(formula) => {
-                const applied = applyFormulaToVisit(formula)
-                updateVisit({
-                  prescriptionFormula: applied.prescriptionFormula,
-                  prescriptionDosage: applied.prescriptionDosage,
-                  herbs: applied.herbs,
-                })
+                void handleApplyFormula(formula)
               }}
             />
           </div>

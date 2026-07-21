@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -20,11 +20,13 @@ import type { PrescriptionFormula } from "../types/prescription-formula"
 
 interface FormulaPickerComboboxProps {
   disabled?: boolean
+  loading?: boolean
   onSelect: (formula: PrescriptionFormula) => void
 }
 
 export function FormulaPickerCombobox({
   disabled,
+  loading,
   onSelect,
 }: FormulaPickerComboboxProps) {
   const [open, setOpen] = useState(false)
@@ -52,11 +54,18 @@ export function FormulaPickerCombobox({
           type="button"
           variant="outline"
           size="sm"
-          disabled={disabled}
+          disabled={disabled || loading}
           className="h-8 justify-between text-xs"
         >
-          Chọn công thức đã lưu
-          <ChevronsUpDown className="ml-2 size-3.5 opacity-50" />
+          {loading ? (
+            <>
+              <Loader2 className="mr-1 size-3.5 animate-spin" />
+              Đang áp dụng...
+            </>
+          ) : (
+            "Chọn công thức đã lưu"
+          )}
+          {!loading && <ChevronsUpDown className="ml-2 size-3.5 opacity-50" />}
         </Button>
       </PopoverTrigger>
 
