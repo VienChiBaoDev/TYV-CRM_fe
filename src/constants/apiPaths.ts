@@ -88,6 +88,15 @@ const API_PATHS = {
     update: (id: string) => `/prescription-formula-templates/${id}`,
     delete: (id: string) => `/prescription-formula-templates/${id}`,
   },
+  consumables: {
+    list: "/consumables",
+    options: "/consumables/options",
+    usage: "/consumables/usage",
+    create: "/consumables",
+    update: (id: string) => `/consumables/${id}`,
+    stockIn: (id: string) => `/consumables/${id}/stock-in`,
+    stockAdjust: (id: string) => `/consumables/${id}/stock-adjust`,
+  },
 }
 
 export default API_PATHS

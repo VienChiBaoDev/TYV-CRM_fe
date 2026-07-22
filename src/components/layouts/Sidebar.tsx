@@ -18,6 +18,7 @@ import {
   Settings,
   X,
   PanelLeftClose,
+  Package,
 } from "lucide-react"
 
 import { CLINIC_BRANCHES } from "@/constants/clinic-branches"
@@ -73,6 +74,11 @@ const OPERATION_NAV_ITEMS: NavItem[] = [
     to: urlPaths.treatmentServices,
     label: "Dịch vụ điều trị",
     icon: <Stethoscope className="h-4.5 w-4.5" />,
+  },
+  {
+    to: urlPaths.consumables,
+    label: "Vật tư tiêu hao",
+    icon: <Package className="h-4.5 w-4.5" />,
   },
 ]
 

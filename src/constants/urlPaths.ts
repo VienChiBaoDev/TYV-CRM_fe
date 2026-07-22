@@ -16,4 +16,5 @@ export const urlPaths = {
   treatmentServices: "/treatment-services",
   settings: "/settings",
   staffSchedules: "/staff-schedules",
+  consumables: "/consumables",
 } as const
