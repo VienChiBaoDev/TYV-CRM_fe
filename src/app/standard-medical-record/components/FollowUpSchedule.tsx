@@ -132,6 +132,7 @@ export function FollowUpSchedule() {
         pageIndex={page - 1}
         pageCount={pageCount}
         onPageChange={(nextPageIndex) => setPage(nextPageIndex + 1)}
+        classNameTable="shadow-xl"
       />
 
       {selectedRow && (

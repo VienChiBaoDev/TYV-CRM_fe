@@ -7,6 +7,11 @@ import type {
   TreatmentSessionListApi,
 } from "@/app/medical-records/interfaces/patient-treatment-api"
 
+export interface TreatmentSessionConsumablePayload {
+  consumableId: string
+  quantity: number
+}
+
 export interface UpsertTreatmentSessionPayload {
   sessionNumber: number
   doctorId?: string
@@ -16,6 +21,7 @@ export interface UpsertTreatmentSessionPayload {
   note?: string
   nextContent?: string
   nextTreatmentDate?: string
+  consumables?: TreatmentSessionConsumablePayload[]
 }
 
 export async function fetchTreatmentHistory(

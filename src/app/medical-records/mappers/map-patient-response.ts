@@ -1,4 +1,8 @@
 import type {
+  HerbDecoctionOrder,
+  HerbDecoctionPrep,
+} from "@/app/medical-records/constants/herb-decoction"
+import type {
   Patient,
   TreatmentStatus,
   Visit,
@@ -29,6 +33,8 @@ export interface PatientDetailApiResponse {
     | "INACTIVE"
   readonly visitsCount: number
   readonly treatmentDays: number
+  readonly assignedDoctors: ReadonlyArray<{ id: string; fullName: string }>
+  readonly assignedAssistants: ReadonlyArray<{ id: string; fullName: string }>
   readonly visits: MedicalVisitApiResponse[]
 }
 
@@ -63,6 +69,13 @@ export interface MedicalVisitApiResponse {
     readonly name: string
     readonly weight: string
     readonly sortOrder: number
+    readonly medicineId: string | null
+    readonly unit: string | null
+    readonly quantity: number | null
+    readonly unitPrice: number | null
+    readonly lineTotal: number | null
+    readonly decoctionOrder: HerbDecoctionOrder | null
+    readonly decoctionPrep: HerbDecoctionPrep | null
   }>
   readonly clinicalImages: ReadonlyArray<{
     readonly id: string
@@ -86,11 +99,13 @@ export interface MedicalVisitApiResponse {
   readonly updatedAt: string
 }
 
-const GENDER_LABEL: Record<PatientDetailApiResponse["gender"], Patient["gender"]> =
-  {
-    MALE: "Nam",
-    FEMALE: "Nữ",
-  }
+const GENDER_LABEL: Record<
+  PatientDetailApiResponse["gender"],
+  Patient["gender"]
+> = {
+  MALE: "Nam",
+  FEMALE: "Nữ",
+}
 
 const VISIT_MODE_LABEL: Record<MedicalVisitApiResponse["mode"], Visit["mode"]> =
   {
@@ -156,6 +171,13 @@ function mapVisit(
     herbs: visit.herbs.map((herb) => ({
       name: herb.name,
       weight: herb.weight,
+      medicineId: herb.medicineId ?? undefined,
+      unit: herb.unit ?? undefined,
+      quantity: herb.quantity ?? undefined,
+      unitPrice: herb.unitPrice ?? undefined,
+      lineTotal: herb.lineTotal ?? undefined,
+      decoctionOrder: herb.decoctionOrder ?? undefined,
+      decoctionPrep: herb.decoctionPrep ?? undefined,
     })),
     clinicalImages: visit.clinicalImages.map((image) => ({
       id: image.id,
@@ -201,6 +223,14 @@ export function mapPatientDetailToPatient(
         .slice(-2)
         .map((part) => part[0]?.toUpperCase() ?? "")
         .join(""),
+    assignedDoctors: response.assignedDoctors.map((s) => ({
+      id: s.id,
+      fullName: s.fullName,
+    })),
+    assignedAssistants: response.assignedAssistants.map((s) => ({
+      id: s.id,
+      fullName: s.fullName,
+    })),
     visits: response.visits.map((visit) => mapVisit(visit, treatmentStatus)),
   }
 }

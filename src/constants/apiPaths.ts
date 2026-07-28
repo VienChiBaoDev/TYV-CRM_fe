@@ -86,6 +86,22 @@ const API_PATHS = {
     update: (id: string) => `/staff-shifts/${id}`,
     delete: (id: string) => `/staff-shifts/${id}`,
   },
+  prescriptionFormulaTemplates: {
+    list: "/prescription-formula-templates",
+    create: "/prescription-formula-templates",
+    detail: (id: string) => `/prescription-formula-templates/${id}`,
+    update: (id: string) => `/prescription-formula-templates/${id}`,
+    delete: (id: string) => `/prescription-formula-templates/${id}`,
+  },
+  consumables: {
+    list: "/consumables",
+    options: "/consumables/options",
+    usage: "/consumables/usage",
+    create: "/consumables",
+    update: (id: string) => `/consumables/${id}`,
+    stockIn: (id: string) => `/consumables/${id}/stock-in`,
+    stockAdjust: (id: string) => `/consumables/${id}/stock-adjust`,
+  },
 }
 
 export default API_PATHS

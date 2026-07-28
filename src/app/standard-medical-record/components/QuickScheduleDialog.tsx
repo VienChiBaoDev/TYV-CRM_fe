@@ -100,6 +100,8 @@ export function QuickScheduleDialog({
       payload: {
         scheduledAt: new Date(values.scheduledAt).toISOString(),
         endedAt: new Date(values.endedAt).toISOString(),
+        doctorId: values.doctorId,
+        assistantId: values.assistantId || undefined,
         doctorName: staffNameById(staffOptions, values.doctorId),
         assistantName: staffNameById(staffOptions, values.assistantId),
         note: values.note,

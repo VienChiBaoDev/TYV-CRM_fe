@@ -9,6 +9,7 @@ import { serviceTreatmentSessionsQueryOptions } from "@/app/medical-records/quer
 import {
   treatmentFormDefaultValues,
   treatmentFormSchema,
+  type TreatmentFormInput,
   type TreatmentFormValues,
 } from "@/app/medical-records/schemas/treatment-form"
 import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
@@ -17,18 +18,19 @@ import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQuery } from "@tanstack/react-query"
 import { ClipboardList } from "lucide-react"
-import { useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
-import { useParams } from "react-router-dom"
-import TreatmentActionFormPanel from "./TreatmentActionFormPanel"
-import TreatmentActionSidebar from "./TreatmentActionSidebar"
-import { INFO_TABS, STATUS_FILTER } from "./treatment-action.constants"
-import { useWatch } from "react-hook-form"
+import { consumableOptionsQueryOptions } from "@/app/consumables/queries/consumable-query"
 import {
   useDeleteTreatmentSessionImageMutation,
   useUploadTreatmentSessionImageMutation,
   useUpsertTreatmentSessionMutation,
 } from "@/app/medical-records/hooks/use-patient-treatment-mutations"
+import { useMemo, useState } from "react"
+import { useFieldArray, useForm, useWatch } from "react-hook-form"
+import { useParams } from "react-router-dom"
+import { toast } from "sonner"
+import TreatmentActionFormPanel from "./TreatmentActionFormPanel"
+import TreatmentActionSidebar from "./TreatmentActionSidebar"
+import { INFO_TABS, STATUS_FILTER } from "./treatment-action.constants"
 
 interface TreatmentActionProps {
   onClose: () => void
@@ -59,6 +61,9 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
   const { data: sessionData } = useQuery(
     serviceTreatmentSessionsQueryOptions(patientId, selectedServiceId)
   )
+  const { data: consumableOptions = [] } = useQuery(
+    consumableOptionsQueryOptions()
+  )
   const upsertMutation = useUpsertTreatmentSessionMutation(
     patientId,
     selectedServiceId
@@ -79,9 +84,13 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
     [staffOptions]
   )
 
-  const form = useForm<TreatmentFormValues>({
+  const form = useForm<TreatmentFormInput, unknown, TreatmentFormValues>({
     resolver: zodResolver(treatmentFormSchema),
     defaultValues: treatmentFormDefaultValues,
+  })
+  const consumableFieldArray = useFieldArray({
+    control: form.control,
+    name: "consumables",
   })
   const currentSession = useWatch({
     control: form.control,
@@ -153,16 +162,54 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
         "nextTreatmentDate",
         parseDisplayDatetimeToIsoDate(existing.nextTreatmentDate ?? "")
       )
+      consumableFieldArray.replace([])
     } else {
       form.setValue("treatmentContent", "")
       form.setValue("note", "")
       form.setValue("nextContent", "")
       form.setValue("nextTreatmentDate", "")
+      consumableFieldArray.replace([])
     }
+  }
+
+  const validateConsumables = (values: TreatmentFormValues): boolean => {
+    if (currentSessionData?.hasConsumables) return true
+
+    const draftLines = values.consumables.filter(
+      (line) => line.consumableId || line.quantity > 0
+    )
+    if (draftLines.length === 0) return true
+
+    for (const line of draftLines) {
+      if (!line.consumableId) {
+        toast.error("Vui lòng chọn vật tư cho tất cả các dòng")
+        return false
+      }
+      if (line.quantity <= 0) {
+        toast.error("Số lượng vật tư phải lớn hơn 0")
+        return false
+      }
+      const option = consumableOptions.find((opt) => opt.id === line.consumableId)
+      if (option && line.quantity > option.stockQuantity) {
+        toast.error(
+          `"${option.name}" không đủ tồn (còn ${option.stockQuantity} ${option.unit})`
+        )
+        return false
+      }
+    }
+
+    const ids = draftLines.map((line) => line.consumableId)
+    if (new Set(ids).size !== ids.length) {
+      toast.error("Không được chọn trùng vật tư")
+      return false
+    }
+
+    return true
   }
 
   const onSubmit = async (values: TreatmentFormValues) => {
     if (!selectedServiceId) return
+    if (!validateConsumables(values)) return
     await upsertMutation.mutateAsync(mapTreatmentFormToUpsertPayload(values))
   }
 
@@ -180,7 +227,7 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-xs">
+    <div className="rounded-2xl border border-slate-200/60 bg-white shadow-xs">
       <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-3">
           <button
@@ -246,6 +293,10 @@ export default function TreatmentAction({ onClose }: TreatmentActionProps) {
               imageId,
             })
           }
+          consumableOptions={consumableOptions}
+          consumableFieldArray={consumableFieldArray}
+          savedConsumables={currentSessionData?.consumables ?? []}
+          hasConsumables={currentSessionData?.hasConsumables ?? false}
         />
       </div>
     </div>

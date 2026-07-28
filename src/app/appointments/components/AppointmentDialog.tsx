@@ -49,6 +49,7 @@ export interface AppointmentDialogContext {
   hour?: number
   minute?: number
   appointment?: Appointment
+  defaultDoctorId?: string
   /** BN cố định khi đặt lịch từ hồ sơ */
   fixedPatient?: {
     id: string
@@ -76,8 +77,8 @@ function buildDefaultValues(
       patientId: context.appointment.patientId,
       scheduledAt,
       endedAt: toDatetimeLocalValue(context.appointment.endedAt),
-      doctorId: "",
-      assistantId: "",
+      doctorId: context.appointment.doctorId ?? "",
+      assistantId: context.appointment.assistantId ?? "",
       note: context.appointment.note ?? "",
       status: context.appointment.status,
     }
@@ -96,7 +97,7 @@ function buildDefaultValues(
         scheduledAt,
         DEFAULT_APPOINTMENT_DURATION_MINUTES
       ),
-      doctorId: "",
+      doctorId: context.defaultDoctorId ?? "",
       assistantId: "",
       note: "",
       status: "BOOKED",
@@ -107,7 +108,7 @@ function buildDefaultValues(
     patientId: "",
     scheduledAt: "",
     endedAt: "",
-    doctorId: "",
+    doctorId: context?.defaultDoctorId ?? "",
     assistantId: "",
     note: "",
     status: "BOOKED",
@@ -145,14 +146,17 @@ export function AppointmentDialog({
 
   useEffect(() => {
     if (!open || !isEdit || !appointment || staffOptions.length === 0) return
-    form.setValue(
-      "doctorId",
+
+    const doctorId =
+      appointment.doctorId ||
       findStaffIdByName(staffOptions, appointment.doctorName ?? "")
-    )
-    form.setValue(
-      "assistantId",
+
+    const assistantId =
+      appointment.assistantId ||
       findStaffIdByName(staffOptions, appointment.assistantName ?? "")
-    )
+
+    form.setValue("doctorId", doctorId)
+    form.setValue("assistantId", assistantId)
   }, [open, isEdit, appointment, staffOptions, form])
 
   const isPending =
@@ -213,6 +217,8 @@ export function AppointmentDialog({
       patientId,
       scheduledAt: start.toISOString(),
       endedAt: end.toISOString(),
+      doctorId: values.doctorId,
+      assistantId: values.assistantId || undefined,
       doctorName: staff.doctorName,
       assistantName: staff.assistantName,
       note: values.note?.trim() || undefined,
@@ -240,6 +246,8 @@ export function AppointmentDialog({
           scheduledAt,
           endedAt,
           doctorName: staff.doctorName,
+          doctorId: values.doctorId,
+          assistantId: values.assistantId || undefined,
           assistantName: staff.assistantName,
           note: values.note?.trim() || undefined,
           status: values.status,

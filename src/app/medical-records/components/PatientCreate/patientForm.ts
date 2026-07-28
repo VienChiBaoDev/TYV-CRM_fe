@@ -6,6 +6,8 @@ export interface PatientFormState {
   birthDate: string
   address: string
   source: string
+  assignedDoctorIds: string[]
+  assignedAssistantIds: string[]
 }
 
 export const emptyPatientForm: PatientFormState = {
@@ -15,9 +17,11 @@ export const emptyPatientForm: PatientFormState = {
   birthDate: "",
   address: "",
   source: "Khách Vãng Lai",
+  assignedDoctorIds: [],
+  assignedAssistantIds: [],
 }
 
 export type SetPatientField = <K extends keyof PatientFormState>(
   key: K,
-  value: PatientFormState[K],
+  value: PatientFormState[K]
 ) => void

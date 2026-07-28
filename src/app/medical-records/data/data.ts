@@ -16,6 +16,8 @@ export const initialPatients: Patient[] = [
     metricTreatmentDays: 40,
     metricNextExamination: "11/6",
     avatarInitials: "HT",
+    assignedDoctors: [],
+    assignedAssistants: [],
     visits: [
       {
         id: "1",
@@ -214,6 +216,8 @@ export const initialPatients: Patient[] = [
     metricTreatmentDays: 20,
     metricNextExamination: "15/6",
     avatarInitials: "MA",
+    assignedDoctors: [],
+    assignedAssistants: [],
     visits: [
       {
         id: "1",

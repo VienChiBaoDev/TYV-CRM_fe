@@ -76,16 +76,16 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mt-4">
+    <div className="mt-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-slate-800">Lịch hẹn</h3>
         <p className="text-xs text-slate-500">Thông tin lịch hẹn</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* Cột lịch */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-slate-700">
                 Tháng {viewMonth + 1}
@@ -98,21 +98,21 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
               <button
                 type="button"
                 onClick={goPrev}
-                className="p-1 rounded hover:bg-gray-100 text-slate-600"
+                className="rounded p-1 text-slate-600 hover:bg-gray-100"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={goNext}
-                className="p-1 rounded hover:bg-gray-100 text-slate-600"
+                className="rounded p-1 text-slate-600 hover:bg-gray-100"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-500 mb-1">
+          <div className="mb-1 grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-500">
             {WEEKDAYS.map((d) => (
               <div key={d} className="py-1">
                 {d}
@@ -131,10 +131,10 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
                   type="button"
                   onClick={() => setField("date", iso)}
                   className={cn(
-                    "h-9 w-9 mx-auto rounded-full transition-colors",
+                    "mx-auto h-9 w-9 rounded-full transition-colors",
                     isSelected
-                      ? "bg-emerald-600 text-white font-semibold"
-                      : "text-slate-700 hover:bg-emerald-50",
+                      ? "bg-emerald-600 font-semibold text-white"
+                      : "text-slate-700 hover:bg-emerald-50"
                   )}
                 >
                   {day}
@@ -144,7 +144,7 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
           </div>
 
           {/* Giờ : phút */}
-          <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 flex items-center justify-center gap-3 border-t border-gray-100 pt-4">
             <Input
               className="w-16 text-center text-lg font-semibold"
               value={form.hour}
@@ -155,7 +155,9 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
             <Input
               className="w-16 text-center text-lg font-semibold"
               value={form.minute}
-              onChange={(e) => setField("minute", clampTime(e.target.value, 59))}
+              onChange={(e) =>
+                setField("minute", clampTime(e.target.value, 59))
+              }
               placeholder="MM"
             />
           </div>
@@ -165,7 +167,7 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-gray-700 font-medium text-xs">
+              <Label className="text-xs font-medium text-gray-700">
                 Bác sĩ <span className="text-red-500">*</span>
               </Label>
               <Select
@@ -185,7 +187,9 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-gray-700 font-medium text-xs">Trợ lý</Label>
+              <Label className="text-xs font-medium text-gray-700">
+                Trợ lý
+              </Label>
               <Select
                 value={form.assistantId || undefined}
                 onValueChange={(value) => setField("assistantId", value)}
@@ -205,7 +209,7 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-gray-700 font-medium text-xs">Tư vấn</Label>
+            <Label className="text-xs font-medium text-gray-700">Tư vấn</Label>
             <Input
               placeholder="tư vấn"
               value={form.consultant}
@@ -214,7 +218,7 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-gray-700 font-medium text-xs">
+            <Label className="text-xs font-medium text-gray-700">
               Dịch vụ quan tâm
             </Label>
             <Input
@@ -225,7 +229,9 @@ export function AppointmentForm({ form, setField }: AppointmentFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-gray-700 font-medium text-xs">Nội dung</Label>
+            <Label className="text-xs font-medium text-gray-700">
+              Nội dung
+            </Label>
             <Textarea
               placeholder="eg. nội dung"
               className="min-h-[90px] resize-none"

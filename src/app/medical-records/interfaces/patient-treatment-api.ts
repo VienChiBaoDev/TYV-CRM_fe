@@ -1,4 +1,15 @@
 /**
+ * Interface response cho vật tư tiêu hao buổi điều trị
+ */
+export interface TreatmentSessionConsumableApi {
+  id: string
+  consumableId: string
+  name: string
+  unit: string
+  quantity: number
+}
+
+/**
  * Interface response cho ảnh buổi điều trị
  */
 export interface TreatmentSessionImageApi {
@@ -25,6 +36,8 @@ export interface TreatmentSessionApi {
   performedAt: string
   performedByName: string | null
   images: TreatmentSessionImageApi[]
+  consumables: TreatmentSessionConsumableApi[]
+  hasConsumables: boolean
 }
 
 /**

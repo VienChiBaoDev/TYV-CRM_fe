@@ -79,6 +79,12 @@ export default function PatientCreatePage() {
         address: form.address.trim() || undefined,
         source: form.source || undefined,
         clinicBranch: branch,
+        assignedDoctorIds: form.assignedDoctorIds.length
+          ? form.assignedDoctorIds
+          : undefined,
+        assignedAssistantIds: form.assignedAssistantIds.length
+          ? form.assignedAssistantIds
+          : undefined,
       })
 
       if (createAppt) {
@@ -91,6 +97,8 @@ export default function PatientCreatePage() {
             patientId: created.id,
             scheduledAt: scheduledAt.toISOString(),
             endedAt: endedAt.toISOString(),
+            doctorId: apptForm.doctorId,
+            assistantId: apptForm.assistantId || undefined,
             doctorName: staffNameById(staffOptions, apptForm.doctorId),
             assistantName: staffNameById(staffOptions, apptForm.assistantId),
             note: apptForm.note.trim() || undefined,

@@ -6,11 +6,15 @@ import {
 import { FormTextarea } from "@/components/FieldCustom/FormTextarea"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
+import type { ConsumableOptionApi } from "@/app/consumables/services/consumable-api"
 import type { TreatmentServiceItem } from "@/app/medical-records/mappers/map-patient-service-to-treatment-item"
-import type { TreatmentFormValues } from "@/app/medical-records/schemas/treatment-form"
+import type {
+  TreatmentFormInput,
+  TreatmentFormValues,
+} from "@/app/medical-records/schemas/treatment-form"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
-import type { UseFormReturn } from "react-hook-form"
+import type { UseFieldArrayReturn, UseFormReturn } from "react-hook-form"
 import { useWatch } from "react-hook-form"
 import {
   fieldClassName,
@@ -18,11 +22,15 @@ import {
   labelClassName,
 } from "./treatment-action.constants"
 import { buildSessionSteps } from "./treatment-session-steps"
-import type { TreatmentSessionImageApi } from "../../interfaces/patient-treatment-api"
+import type {
+  TreatmentSessionConsumableApi,
+  TreatmentSessionImageApi,
+} from "../../interfaces/patient-treatment-api"
+import { TreatmentSessionConsumablesZone } from "./TreatmentSessionConsumablesZone"
 import { TreatmentSessionImageZone } from "./TreatmentSessionImageZone"
 
 interface TreatmentActionFormPanelProps {
-  form: UseFormReturn<TreatmentFormValues>
+  form: UseFormReturn<TreatmentFormInput, unknown, TreatmentFormValues>
   infoTab: string
   detailTreatment: TreatmentServiceItem | undefined
   maxAllowedSession: number
@@ -39,6 +47,10 @@ interface TreatmentActionFormPanelProps {
   isImageDeleting: boolean
   onImageUpload: (file: File) => void
   onImageDelete: (imageId: string) => void
+  consumableOptions: ConsumableOptionApi[]
+  consumableFieldArray: UseFieldArrayReturn<TreatmentFormInput, "consumables">
+  savedConsumables: TreatmentSessionConsumableApi[]
+  hasConsumables: boolean
 }
 
 export default function TreatmentActionFormPanel({
@@ -59,6 +71,10 @@ export default function TreatmentActionFormPanel({
   isImageDeleting,
   onImageUpload,
   onImageDelete,
+  consumableOptions,
+  consumableFieldArray,
+  savedConsumables,
+  hasConsumables,
 }: TreatmentActionFormPanelProps) {
   const currentSession = useWatch({
     control: form.control,
@@ -129,7 +145,7 @@ export default function TreatmentActionFormPanel({
             />
 
             {detailTreatment && (
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <h3 className="text-sm font-bold tracking-wide text-slate-800 uppercase">
                     {detailTreatment.name}
@@ -229,6 +245,14 @@ export default function TreatmentActionFormPanel({
                   onDelete={onImageDelete}
                 />
 
+                <TreatmentSessionConsumablesZone
+                  control={form.control}
+                  fieldArray={consumableFieldArray}
+                  options={consumableOptions}
+                  savedItems={savedConsumables}
+                  hasConsumables={hasConsumables}
+                />
+
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-700">
                   <p>
                     <span className="font-bold">Tư vấn</span>{" "}
@@ -263,14 +287,14 @@ export default function TreatmentActionFormPanel({
             onClick={onSaveAndContinue}
             className="bg-emerald-800 text-white hover:bg-primary"
           >
-            Lưu và tiếp tục
+            {isSubmitting ? "Đang lưu..." : "Lưu và tiếp tục"}
           </Button>
           <Button
             type="submit"
             disabled={!detailTreatment || isSubmitting}
             className="bg-emerald-800 text-white hover:bg-primary"
           >
-            Lưu
+            {isSubmitting ? "Đang lưu..." : "Lưu"}
           </Button>
         </div>
       </form>

@@ -6,6 +6,11 @@ export type { ClinicBranchCode }
 
 export type Gender = "MALE" | "FEMALE"
 
+export interface AssignedStaff {
+  id: string
+  fullName: string
+}
+
 export interface CreatePatientPayload {
   fullName: string
   gender: Gender
@@ -16,7 +21,11 @@ export interface CreatePatientPayload {
   source?: string
   clinicBranch?: ClinicBranchCode
   referrerId?: string
+  assignedDoctorIds?: string[]
+  assignedAssistantIds?: string[]
 }
+
+export type UpdatePatientPayload = Partial<CreatePatientPayload>
 
 export interface Patient {
   id: string
@@ -25,16 +34,19 @@ export interface Patient {
   gender: Gender
   phone: string
   birthDate: string | null
+  occupation: string | null
   address: string | null
   source: string | null
   clinicBranch: ClinicBranchCode
   customerStatus: string
   referrer: { id: string; fullName: string } | null
+  assignedDoctors?: AssignedStaff[]
+  assignedAssistants?: AssignedStaff[]
   createdAt: string
 }
 
 export async function createPatient(
-  payload: CreatePatientPayload,
+  payload: CreatePatientPayload
 ): Promise<Patient> {
   const { data } = await httpService.post<Patient>("/patients", payload)
   return data
@@ -51,5 +63,16 @@ export async function getPatients(params?: {
 
 export async function getPatientById(patientId: string): Promise<Patient> {
   const { data } = await httpService.get<Patient>(`/patients/${patientId}`)
+  return data
+}
+
+export async function updatePatient(
+  patientId: string,
+  payload: UpdatePatientPayload
+): Promise<Patient> {
+  const { data } = await httpService.patch<Patient>(
+    `/patients/${patientId}`,
+    payload
+  )
   return data
 }

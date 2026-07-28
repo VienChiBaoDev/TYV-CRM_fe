@@ -13,6 +13,7 @@ export function mapPatientPaymentFromApi(
     voucherDate: api.voucherDate,
     processedBy: { initials: api.processedBy.initials },
     paymentMethod: api.paymentMethod,
+    bankAccount: api.bankAccount ?? null,
     totalAmount: api.totalAmount,
     details: api.details.map((detail) => ({
       amount: detail.amount,

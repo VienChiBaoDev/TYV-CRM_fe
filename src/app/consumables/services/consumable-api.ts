@@ -1,0 +1,95 @@
+import API_PATHS from "@/constants/apiPaths"
+import httpService from "@/services/httpService"
+import type {
+  ConsumableFormValues,
+  StockInFormValues,
+} from "../schemas/consumable-form"
+
+export interface ConsumableApi {
+  id: string
+  name: string
+  unit: string
+  stockQuantity: number
+  note: string | null
+  sessionQuotaText: string | null
+  isActive: boolean
+  sortOrder: number
+}
+
+export interface ConsumableOptionApi {
+  id: string
+  name: string
+  unit: string
+  stockQuantity: number
+  sessionQuotaText: string | null
+}
+
+export interface ConsumableUsageApi {
+  id: string
+  consumableName: string
+  unit: string
+  quantity: number
+  performedAt: string
+  patientName: string
+  patientCode: string
+  serviceName: string
+  sessionNumber: number
+  performedByName: string | null
+}
+
+export async function fetchConsumables(params?: {
+  search?: string
+  isActive?: boolean
+}): Promise<ConsumableApi[]> {
+  const { data } = await httpService.get<ConsumableApi[]>(
+    API_PATHS.consumables.list,
+    { params }
+  )
+  return data
+}
+
+export async function fetchConsumableOptions(): Promise<ConsumableOptionApi[]> {
+  const { data } = await httpService.get<ConsumableOptionApi[]>(
+    API_PATHS.consumables.options
+  )
+  return data
+}
+
+export async function createConsumable(payload: ConsumableFormValues) {
+  const { data } = await httpService.post(API_PATHS.consumables.create, payload)
+  return data
+}
+
+export async function updateConsumable(
+  id: string,
+  payload: Partial<ConsumableFormValues>
+) {
+  const { data } = await httpService.patch(
+    API_PATHS.consumables.update(id),
+    payload
+  )
+  return data
+}
+
+export async function stockInConsumable(
+  id: string,
+  payload: StockInFormValues
+) {
+  const { data } = await httpService.post(
+    API_PATHS.consumables.stockIn(id),
+    payload
+  )
+  return data
+}
+
+export async function fetchConsumableUsage(params?: {
+  from?: string
+  to?: string
+  consumableId?: string
+}): Promise<ConsumableUsageApi[]> {
+  const { data } = await httpService.get<ConsumableUsageApi[]>(
+    API_PATHS.consumables.usage,
+    { params }
+  )
+  return data
+}

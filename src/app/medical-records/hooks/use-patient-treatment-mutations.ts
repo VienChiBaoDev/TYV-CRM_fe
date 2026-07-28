@@ -7,6 +7,7 @@ import {
 } from "@/app/medical-records/services/patient-treatment-api"
 import { patientTreatmentKeys } from "@/app/medical-records/queries/patient-treatment-query"
 import { patientServiceKeys } from "@/app/medical-records/queries/patient-service-query"
+import { consumableKeys } from "@/app/consumables/queries/consumable-query"
 import { getApiErrorMessage } from "@/app/medical-records/mappers/map-visit-request"
 import type { UpsertTreatmentSessionPayload } from "@/app/medical-records/services/patient-treatment-api"
 
@@ -29,6 +30,7 @@ export function useUpsertTreatmentSessionMutation(
       queryClient.invalidateQueries({
         queryKey: patientServiceKeys.list(patientId),
       })
+      queryClient.invalidateQueries({ queryKey: consumableKeys.all })
       toast.success("Lưu buổi điều trị thành công")
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),

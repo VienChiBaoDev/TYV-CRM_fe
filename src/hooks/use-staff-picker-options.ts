@@ -1,7 +1,13 @@
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
+import type { ClinicBranchCode } from "@/constants/clinic-branches"
 import { fetchStaffOptions, type StaffOption } from "@/services/staffService"
 import type { FormSelectOption } from "@/components/FieldCustom/FormSelect"
+
+function matchesBranch(staff: StaffOption, branch?: ClinicBranchCode): boolean {
+  if (!branch) return true
+  return !staff.clinicBranch || staff.clinicBranch === branch
+}
 
 export function findStaffIdByName(
   staffList: StaffOption[],
@@ -18,7 +24,10 @@ export function staffNameById(
   return staffList.find((staff) => staff.id === id)?.fullName
 }
 
-export function useStaffPickerOptions(enabled = true) {
+export function useStaffPickerOptions(
+  enabled = true,
+  branch?: ClinicBranchCode
+) {
   const { data: staffOptions = [], isLoading } = useQuery<StaffOption[]>({
     queryKey: ["staff", "options"],
     queryFn: fetchStaffOptions,
@@ -29,22 +38,24 @@ export function useStaffPickerOptions(enabled = true) {
     () =>
       staffOptions
         .filter((staff: StaffOption) => staff.role === "DOCTOR")
+        .filter((staff) => matchesBranch(staff, branch))
         .map((staff: StaffOption) => ({
           value: staff.id,
           label: staff.fullName,
         })),
-    [staffOptions]
+    [staffOptions, branch]
   )
 
   const assistantOptions = useMemo<FormSelectOption[]>(
     () =>
       staffOptions
         .filter((staff: StaffOption) => staff.role === "ASSISTANT")
+        .filter((staff) => matchesBranch(staff, branch))
         .map((staff: StaffOption) => ({
           value: staff.id,
           label: staff.fullName,
         })),
-    [staffOptions]
+    [staffOptions, branch]
   )
 
   return { staffOptions, doctorOptions, assistantOptions, isLoading }

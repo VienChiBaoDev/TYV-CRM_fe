@@ -25,6 +25,8 @@ export interface CreateAppointmentPayload {
   patientId: string
   scheduledAt: string
   endedAt: string
+  doctorId: string
+  assistantId?: string
   doctorName?: string
   assistantName?: string
   note?: string
@@ -34,6 +36,8 @@ export interface CreateAppointmentPayload {
 export interface UpdateAppointmentPayload {
   scheduledAt?: string
   endedAt?: string
+  doctorId?: string
+  assistantId?: string
   doctorName?: string
   assistantName?: string
   clinicBranch?: ClinicBranchCode
@@ -46,6 +50,8 @@ export interface Appointment {
   patientId: string
   scheduledAt: string
   endedAt: string
+  doctorId: string | null
+  assistantId: string | null
   doctorName: string | null
   assistantName: string | null
   clinicBranch: ClinicBranchCode
@@ -62,6 +68,7 @@ interface FetchAppointmentsParams {
   from: string
   to: string
   status?: AppointmentStatus
+  doctorId?: string
 }
 
 export async function fetchAppointments(

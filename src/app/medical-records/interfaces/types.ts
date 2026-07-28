@@ -1,6 +1,18 @@
+import type {
+  HerbDecoctionOrder,
+  HerbDecoctionPrep,
+} from "@/app/medical-records/constants/herb-decoction"
+
 export interface Herb {
   name: string
   weight: string
+  medicineId?: string
+  unit?: string
+  quantity?: number
+  unitPrice?: number
+  lineTotal?: number
+  decoctionOrder?: HerbDecoctionOrder
+  decoctionPrep?: HerbDecoctionPrep
 }
 
 export type ClinicalImageCategory =
@@ -13,10 +25,7 @@ export interface ClinicalImage {
   sortOrder: number
 }
 
-export type TreatmentStatus =
-  | "Đang điều trị"
-  | "Cần theo dõi"
-  | "Kết thúc đợt"
+export type TreatmentStatus = "Đang điều trị" | "Cần theo dõi" | "Kết thúc đợt"
 
 export interface VisitFollowUpPlan {
   /** ISO date (yyyy-MM-dd) — maps to PatientFollowUp.followUpDate */
@@ -67,5 +76,7 @@ export interface Patient {
   metricTreatmentDays: number
   metricNextExamination: string
   avatarInitials: string
+  assignedDoctors: { id: string; fullName: string }[]
+  assignedAssistants: { id: string; fullName: string }[]
   visits: Visit[]
 }
