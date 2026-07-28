@@ -53,6 +53,8 @@ const EMPTY_PATIENT: Patient = {
   metricTreatmentDays: 0,
   metricNextExamination: "—",
   avatarInitials: "",
+  assignedDoctors: [],
+  assignedAssistants: [],
   visits: [],
 }
 

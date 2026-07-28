@@ -30,5 +30,5 @@ export const defaultAppointmentForm: AppointmentFormState = {
 
 export type SetAppointmentField = <K extends keyof AppointmentFormState>(
   key: K,
-  value: AppointmentFormState[K],
+  value: AppointmentFormState[K]
 ) => void

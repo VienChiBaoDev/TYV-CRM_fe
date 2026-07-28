@@ -1,8 +1,11 @@
-import { AlertCircle, Printer, Plus } from "lucide-react"
+import { useState } from "react"
+import { AlertCircle, Pencil, Printer, Plus } from "lucide-react"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
 import { formatIsoDateToVi } from "@/app/medical-records/constants/visit-form"
 import { MEDICAL_RECORD_TABS } from "@/app/medical-records/constants/tab-values"
 import { Button } from "@/components/ui/button"
+import { useAuthStore } from "@/stores/auth-store"
+import ModalCustomer from "@/app/medical-records/components/MedicalRecordList/ModalCustomer"
 
 export default function PatientProfile() {
   const {
@@ -11,7 +14,18 @@ export default function PatientProfile() {
     setActiveTab,
     setPrintRequested,
     openAddVisitModal,
+    patientId,
+    refetch,
   } = useMedicalRecordContext()
+
+  const currentUser = useAuthStore((state) => state.user)
+  const [editOpen, setEditOpen] = useState(false)
+
+  // Chỉ ADMIN hoặc nhân viên đang phụ trách hồ sơ này mới được sửa.
+  const canEdit =
+    currentUser?.role === "ADMIN" ||
+    activePatient.assignedDoctors.some((s) => s.id === currentUser?.id) ||
+    activePatient.assignedAssistants.some((s) => s.id === currentUser?.id)
 
   /** Chuyển sang tab Bệnh án rồi in — form sẽ tự gọi window.print() khi tải xong */
   const handleExportBA = () => {
@@ -115,6 +129,17 @@ export default function PatientProfile() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+            {canEdit && (
+              <button
+                id="edit-patient-btn"
+                onClick={() => setEditOpen(true)}
+                className="border-slate-250 text-slate-705 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 py-2 text-[11px] font-semibold shadow-2xs transition-colors hover:bg-slate-50 sm:px-3.5 sm:py-1.5 sm:text-xs"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Sửa
+              </button>
+            )}
+
             <button
               id="export-ba-btn"
               onClick={handleExportBA}
@@ -135,6 +160,13 @@ export default function PatientProfile() {
           </div>
         </div>
       </div>
+
+      <ModalCustomer
+        patientId={patientId ?? null}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSaved={() => refetch()}
+      />
     </section>
   )
 }

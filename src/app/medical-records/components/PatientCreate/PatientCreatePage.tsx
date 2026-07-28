@@ -79,6 +79,12 @@ export default function PatientCreatePage() {
         address: form.address.trim() || undefined,
         source: form.source || undefined,
         clinicBranch: branch,
+        assignedDoctorIds: form.assignedDoctorIds.length
+          ? form.assignedDoctorIds
+          : undefined,
+        assignedAssistantIds: form.assignedAssistantIds.length
+          ? form.assignedAssistantIds
+          : undefined,
       })
 
       if (createAppt) {

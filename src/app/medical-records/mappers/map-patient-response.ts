@@ -33,6 +33,8 @@ export interface PatientDetailApiResponse {
     | "INACTIVE"
   readonly visitsCount: number
   readonly treatmentDays: number
+  readonly assignedDoctors: ReadonlyArray<{ id: string; fullName: string }>
+  readonly assignedAssistants: ReadonlyArray<{ id: string; fullName: string }>
   readonly visits: MedicalVisitApiResponse[]
 }
 
@@ -221,6 +223,14 @@ export function mapPatientDetailToPatient(
         .slice(-2)
         .map((part) => part[0]?.toUpperCase() ?? "")
         .join(""),
+    assignedDoctors: response.assignedDoctors.map((s) => ({
+      id: s.id,
+      fullName: s.fullName,
+    })),
+    assignedAssistants: response.assignedAssistants.map((s) => ({
+      id: s.id,
+      fullName: s.fullName,
+    })),
     visits: response.visits.map((visit) => mapVisit(visit, treatmentStatus)),
   }
 }

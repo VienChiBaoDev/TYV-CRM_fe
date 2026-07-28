@@ -1,6 +1,7 @@
 import { MedicalRecordProvider } from "@/app/medical-records/context/medical-record-provider"
 import { MedicalRecordPage } from "@/app/medical-records/components/MedicalRecordPage"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
+import { getApiErrorMessage } from "@/app/medical-records/mappers/map-visit-request"
 
 function MedicalRecordContent() {
   const { isLoading, isError, error, refetch, patientId } =
@@ -26,8 +27,7 @@ function MedicalRecordContent() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
         <p className="text-sm text-red-600">
-          Không tải được hồ sơ bệnh án.{" "}
-          {error instanceof Error ? error.message : "Vui lòng thử lại."}
+          {error ? getApiErrorMessage(error) : "Không tải được hồ sơ bệnh án."}
         </p>
         <button
           type="button"

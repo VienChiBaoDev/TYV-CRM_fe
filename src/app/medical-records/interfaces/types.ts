@@ -25,10 +25,7 @@ export interface ClinicalImage {
   sortOrder: number
 }
 
-export type TreatmentStatus =
-  | "Đang điều trị"
-  | "Cần theo dõi"
-  | "Kết thúc đợt"
+export type TreatmentStatus = "Đang điều trị" | "Cần theo dõi" | "Kết thúc đợt"
 
 export interface VisitFollowUpPlan {
   /** ISO date (yyyy-MM-dd) — maps to PatientFollowUp.followUpDate */
@@ -79,5 +76,7 @@ export interface Patient {
   metricTreatmentDays: number
   metricNextExamination: string
   avatarInitials: string
+  assignedDoctors: { id: string; fullName: string }[]
+  assignedAssistants: { id: string; fullName: string }[]
   visits: Visit[]
 }
