@@ -1,13 +1,21 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
+import { appointmentKeys } from "@/app/appointments/queries/appointment-query"
+import { createAppointment } from "@/app/appointments/services/appointmentService"
+import { useCreatePatientMutation } from "@/app/medical-records/hooks/use-patient-mutations"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { urlPaths } from "@/constants/urlPaths"
 import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
+import {
+  staffNameById,
+  useStaffPickerOptions,
+} from "@/hooks/use-staff-picker-options"
 import { GeneralInfoTab } from "./GeneralInfoTab"
 import { OtherInfoTab } from "./OtherInfoTab"
 import { IdentityCardSection } from "./IdentityCardSection"
@@ -22,12 +30,6 @@ import {
   type AppointmentFormState,
   type SetAppointmentField,
 } from "./appointmentState"
-import { createPatient } from "../../data/patientService"
-import { createAppointment } from "../../../appointments/services/appointmentService"
-import {
-  staffNameById,
-  useStaffPickerOptions,
-} from "@/hooks/use-staff-picker-options"
 
 /** Chuyển dd-mm-yyyy người dùng nhập sang ISO yyyy-mm-dd, trả undefined nếu không hợp lệ. */
 function toIsoDate(input: string): string | undefined {
@@ -39,14 +41,16 @@ function toIsoDate(input: string): string | undefined {
 
 export default function PatientCreatePage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const activeBranch = useClinicStore((state) => state.activeBranch)
+  const createPatientMutation = useCreatePatientMutation()
   const [form, setForm] = useState<PatientFormState>(emptyPatientForm)
-  const [submitting, setSubmitting] = useState(false)
   const [createAppt, setCreateAppt] = useState(false)
   const [apptForm, setApptForm] = useState<AppointmentFormState>(
     defaultAppointmentForm
   )
   const { staffOptions } = useStaffPickerOptions(createAppt)
+  const submitting = createPatientMutation.isPending
 
   const setField: SetPatientField = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -68,10 +72,9 @@ export default function PatientCreatePage() {
       return
     }
 
-    setSubmitting(true)
     try {
       const branch = toClinicBranchCode(activeBranch)
-      const created = await createPatient({
+      const created = await createPatientMutation.mutateAsync({
         fullName: form.fullName.trim(),
         gender: form.gender,
         phone: form.phone.trim(),
@@ -92,18 +95,24 @@ export default function PatientCreatePage() {
           `${apptForm.date}T${apptForm.hour || "00"}:${apptForm.minute || "00"}:00`
         )
         if (apptForm.date && !Number.isNaN(scheduledAt.getTime())) {
-          const endedAt = new Date(scheduledAt.getTime() + 30 * 60 * 1000)
-          await createAppointment({
-            patientId: created.id,
-            scheduledAt: scheduledAt.toISOString(),
-            endedAt: endedAt.toISOString(),
-            doctorId: apptForm.doctorId,
-            assistantId: apptForm.assistantId || undefined,
-            doctorName: staffNameById(staffOptions, apptForm.doctorId),
-            assistantName: staffNameById(staffOptions, apptForm.assistantId),
-            note: apptForm.note.trim() || undefined,
-            clinicBranch: branch,
-          })
+          try {
+            const endedAt = new Date(scheduledAt.getTime() + 30 * 60 * 1000)
+            await createAppointment({
+              patientId: created.id,
+              scheduledAt: scheduledAt.toISOString(),
+              endedAt: endedAt.toISOString(),
+              doctorId: apptForm.doctorId,
+              assistantId: apptForm.assistantId || undefined,
+              doctorName: staffNameById(staffOptions, apptForm.doctorId),
+              assistantName: staffNameById(staffOptions, apptForm.assistantId),
+              note: apptForm.note.trim() || undefined,
+              clinicBranch: branch,
+            })
+            queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+          } catch {
+            toast.error("Lưu lịch hẹn thất bại. Vui lòng thử lại.")
+            return
+          }
         }
       }
 
@@ -114,9 +123,7 @@ export default function PatientCreatePage() {
       )
       navigate(urlPaths.medicalRecordList)
     } catch {
-      toast.error("Lưu hồ sơ thất bại. Vui lòng thử lại.")
-    } finally {
-      setSubmitting(false)
+      // Lỗi tạo hồ sơ đã được toast trong mutation.
     }
   }
 

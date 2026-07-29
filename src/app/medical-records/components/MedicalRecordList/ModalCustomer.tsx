@@ -1,5 +1,5 @@
-import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import { DialogCommon } from "@/components/UiCustom/DialogCommon"
@@ -14,12 +14,9 @@ import {
 } from "@/components/ui/select"
 import { MultiSelect } from "@/components/FieldCustom/MultiSelect"
 import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
-import { getApiErrorMessage } from "@/app/medical-records/mappers/map-visit-request"
-import {
-  getPatientById,
-  updatePatient,
-  type Gender,
-} from "@/app/medical-records/data/patientService"
+import { useUpdatePatientMutation } from "@/app/medical-records/hooks/use-patient-mutations"
+import { patientDetailQueryOptions } from "@/app/medical-records/queries/patient-query"
+import type { Gender } from "@/app/medical-records/services/patient-api"
 
 interface ModalCustomerProps {
   patientId: string | null
@@ -54,12 +51,10 @@ export default function ModalCustomer({
 }: ModalCustomerProps) {
   const { doctorOptions, assistantOptions } = useStaffPickerOptions(open)
   const [form, setForm] = useState<EditForm | null>(null)
-  const [saving, setSaving] = useState(false)
+  const updatePatientMutation = useUpdatePatientMutation(patientId ?? "")
 
-  // Nạp hồ sơ hiện tại khi mở modal để prefill.
   const { data: patient } = useQuery({
-    queryKey: ["patient", patientId],
-    queryFn: () => getPatientById(patientId as string),
+    ...patientDetailQueryOptions(patientId ?? ""),
     enabled: open && Boolean(patientId),
   })
 
@@ -93,9 +88,8 @@ export default function ModalCustomer({
       return
     }
 
-    setSaving(true)
     try {
-      await updatePatient(patientId, {
+      await updatePatientMutation.mutateAsync({
         fullName: form.fullName.trim(),
         gender: form.gender,
         phone: form.phone.trim(),
@@ -105,13 +99,10 @@ export default function ModalCustomer({
         assignedDoctorIds: form.assignedDoctorIds,
         assignedAssistantIds: form.assignedAssistantIds,
       })
-      toast.success("Đã cập nhật hồ sơ khách hàng")
       onOpenChange(false)
       onSaved?.()
-    } catch (error) {
-      toast.error(getApiErrorMessage(error))
-    } finally {
-      setSaving(false)
+    } catch {
+      // Lỗi đã được toast trong mutation.
     }
   }
 
@@ -121,7 +112,7 @@ export default function ModalCustomer({
       onOpenChange={onOpenChange}
       title="Sửa khách hàng"
       onSubmit={handleSubmit}
-      loading={saving}
+      loading={updatePatientMutation.isPending}
     >
       {form ? (
         <div className="grid grid-cols-2 gap-4">

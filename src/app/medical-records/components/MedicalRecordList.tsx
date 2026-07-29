@@ -1,40 +1,50 @@
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { useEffect, useMemo } from "react"
 import { toast } from "sonner"
 
 import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
+import { patientListQueryOptions } from "@/app/medical-records/queries/patient-query"
+import { referrerListQueryOptions } from "@/app/medical-records/queries/referrer-query"
+
 import { ListFilters } from "./List/ListFilters"
 import { PatientTable } from "./List/PatientTable"
-import { getPatients, type Patient } from "../data/patientService"
-import { getReferrers, type Referrer } from "../data/referrerService"
 
 export default function MedicalRecordList() {
   const activeBranch = useClinicStore((state) => state.activeBranch)
   const branch = toClinicBranchCode(activeBranch)
+  const selectedReferrer = "all" as const
 
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [referrers, setReferrers] = useState<Referrer[]>([])
-  const [selectedReferrer] = useState<string>("all")
-  const [loading, setLoading] = useState(true)
-
-  // Nạp danh sách người giới thiệu cho dropdown (1 lần)
-  useEffect(() => {
-    getReferrers()
-      .then(setReferrers)
-      .catch(() => toast.error("Không tải được danh sách người giới thiệu"))
-  }, [])
-
-  // Nạp khách hàng theo chi nhánh + bộ lọc người giới thiệu (server-side)
-  useEffect(() => {
-    setLoading(true)
-    getPatients({
+  const patientFilters = useMemo(
+    () => ({
       branch,
-      referrerId: selectedReferrer === "all" ? undefined : selectedReferrer,
-    })
-      .then(setPatients)
-      .catch(() => toast.error("Không tải được danh sách khách hàng"))
-      .finally(() => setLoading(false))
-  }, [branch, selectedReferrer])
+      referrerId:
+        selectedReferrer === "all" ? undefined : selectedReferrer,
+    }),
+    [branch, selectedReferrer]
+  )
+
+  const {
+    data: patients = [],
+    isLoading: isPatientsLoading,
+    isError: isPatientsError,
+  } = useQuery(patientListQueryOptions(patientFilters))
+
+  const { data: referrers = [], isError: isReferrersError } = useQuery(
+    referrerListQueryOptions()
+  )
+
+  useEffect(() => {
+    if (isPatientsError) {
+      toast.error("Không tải được danh sách khách hàng")
+    }
+  }, [isPatientsError])
+
+  useEffect(() => {
+    if (isReferrersError) {
+      toast.error("Không tải được danh sách người giới thiệu")
+    }
+  }, [isReferrersError])
 
   const selectedReferrerName =
     selectedReferrer === "all"
@@ -43,19 +53,12 @@ export default function MedicalRecordList() {
 
   return (
     <div className="h-full overflow-y-auto bg-slate-50 p-6">
-      <div className="mx-auto max-w-7xl space-y-2">
-        {/* <ListHeader /> */}
-        {/* <SummaryCards /> */}
-
+      <div className="">
         <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-          <ListFilters
-          // referrers={referrers}
-          // selectedReferrer={selectedReferrer}
-          // onReferrerChange={setSelectedReferrer}
-          />
+          <ListFilters />
           <PatientTable
             patients={patients}
-            loading={loading}
+            loading={isPatientsLoading}
             selectedReferrerName={selectedReferrerName}
           />
         </div>
