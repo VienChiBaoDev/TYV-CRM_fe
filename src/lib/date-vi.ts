@@ -172,4 +172,9 @@ export function isoDateToApiDatetime(isoDate: string): string {
   return `${isoDate}T00:00:00.000Z`
 }
 
+/** Form ISO date → ISO8601 datetime for API (end of day) */
+export function isoDateToApiDatetimeEndOfDay(isoDate: string): string {
+  return `${isoDate}T23:59:59.999Z`
+}
+
 export { vi as viLocale }
