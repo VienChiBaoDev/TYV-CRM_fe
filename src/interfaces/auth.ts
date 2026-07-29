@@ -1,17 +1,10 @@
 export type StaffRole = "ADMIN" | "DOCTOR" | "ASSISTANT" | "STAFF"
 
-export type ClinicBranchValue = "HANG_BONG" | "CAU_GIAY"
-
 export const ROLE_LABEL: Record<StaffRole, string> = {
   ADMIN: "Quản trị viên",
   DOCTOR: "Bác sĩ",
   ASSISTANT: "Trợ lý",
   STAFF: "Nhân viên",
-}
-
-export const CLINIC_BRANCH_LABEL: Record<ClinicBranchValue, string> = {
-  HANG_BONG: "Hàng Bông",
-  CAU_GIAY: "Cầu Giấy",
 }
 
 export interface LoginRequest {
@@ -24,7 +17,7 @@ export interface AuthUser {
   email: string
   fullName: string
   role: StaffRole
-  clinicBranch: ClinicBranchValue | null
+  clinicId: string | null
 }
 
 export interface LoginResponse {
@@ -37,7 +30,7 @@ export interface Staff {
   email: string
   fullName: string
   role: StaffRole
-  clinicBranch: ClinicBranchValue | null
+  clinicId: string | null
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -48,7 +41,7 @@ export interface CreateStaffPayload {
   password: string
   fullName: string
   role: StaffRole
-  clinicBranch?: ClinicBranchValue | null
+  clinicId?: string | null
   isActive?: boolean
 }
 
@@ -57,6 +50,6 @@ export interface UpdateStaffPayload {
   password?: string
   fullName?: string
   role?: StaffRole
-  clinicBranch?: ClinicBranchValue | null
+  clinicId?: string | null
   isActive?: boolean
 }

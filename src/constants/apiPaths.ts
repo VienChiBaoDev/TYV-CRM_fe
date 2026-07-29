@@ -103,6 +103,13 @@ const API_PATHS = {
     stockIn: (id: string) => `/consumables/${id}/stock-in`,
     stockAdjust: (id: string) => `/consumables/${id}/stock-adjust`,
   },
+  clinics: {
+    list: "/clinics",
+    options: "/clinics/options",
+    create: "/clinics",
+    update: (id: string) => `/clinics/${id}`,
+    delete: (id: string) => `/clinics/${id}`,
+  },
 }
 
 export default API_PATHS

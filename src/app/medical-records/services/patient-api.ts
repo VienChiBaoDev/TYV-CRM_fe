@@ -1,10 +1,6 @@
 import httpService from "@/services/httpService"
 import API_PATHS from "@/constants/apiPaths"
 
-import type { ClinicBranchCode } from "@/constants/clinic-branches"
-
-export type { ClinicBranchCode }
-
 export type Gender = "MALE" | "FEMALE"
 
 export interface AssignedStaff {
@@ -20,7 +16,7 @@ export interface CreatePatientPayload {
   occupation?: string
   address?: string
   source?: string
-  clinicBranch?: ClinicBranchCode
+  clinicId: string
   referrerId?: string
   assignedDoctorIds?: string[]
   assignedAssistantIds?: string[]
@@ -38,7 +34,7 @@ export interface PatientApi {
   occupation: string | null
   address: string | null
   source: string | null
-  clinicBranch: ClinicBranchCode
+  clinicId: string
   customerStatus: string
   referrer: { id: string; fullName: string } | null
   assignedDoctors?: AssignedStaff[]
@@ -48,7 +44,7 @@ export interface PatientApi {
 
 export interface FetchPatientsParams {
   search?: string
-  branch?: ClinicBranchCode
+  clinicId?: string
   referrerId?: string
 }
 

@@ -1,6 +1,5 @@
 export type {
   AssignedStaff,
-  ClinicBranchCode,
   CreatePatientPayload,
   FetchPatientsParams,
   Gender,

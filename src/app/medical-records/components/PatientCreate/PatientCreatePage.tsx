@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { urlPaths } from "@/constants/urlPaths"
-import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import {
   staffNameById,
@@ -42,7 +41,7 @@ function toIsoDate(input: string): string | undefined {
 export default function PatientCreatePage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const activeBranch = useClinicStore((state) => state.activeBranch)
+  const activeClinicId = useClinicStore((state) => state.activeClinicId)
   const createPatientMutation = useCreatePatientMutation()
   const [form, setForm] = useState<PatientFormState>(emptyPatientForm)
   const [createAppt, setCreateAppt] = useState(false)
@@ -67,13 +66,16 @@ export default function PatientCreatePage() {
       toast.error("Vui lòng nhập số điện thoại")
       return
     }
+    if (!activeClinicId) {
+      toast.error("Vui lòng chọn cơ sở")
+      return
+    }
     if (createAppt && !apptForm.doctorId) {
       toast.error("Vui lòng chọn bác sĩ cho lịch hẹn")
       return
     }
 
     try {
-      const branch = toClinicBranchCode(activeBranch)
       const created = await createPatientMutation.mutateAsync({
         fullName: form.fullName.trim(),
         gender: form.gender,
@@ -81,7 +83,7 @@ export default function PatientCreatePage() {
         birthDate: form.birthDate ? toIsoDate(form.birthDate) : undefined,
         address: form.address.trim() || undefined,
         source: form.source || undefined,
-        clinicBranch: branch,
+        clinicId: activeClinicId,
         assignedDoctorIds: form.assignedDoctorIds.length
           ? form.assignedDoctorIds
           : undefined,
@@ -106,7 +108,7 @@ export default function PatientCreatePage() {
               doctorName: staffNameById(staffOptions, apptForm.doctorId),
               assistantName: staffNameById(staffOptions, apptForm.assistantId),
               note: apptForm.note.trim() || undefined,
-              clinicBranch: branch,
+              clinicId: activeClinicId,
             })
             queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
           } catch {

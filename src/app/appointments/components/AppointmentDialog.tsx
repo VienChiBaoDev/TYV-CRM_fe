@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator"
 import type { Appointment } from "@/app/appointments/services/appointmentService"
-import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
 import {
   DEFAULT_APPOINTMENT_DURATION_MINUTES,
   canCancelAppointment,
@@ -62,7 +61,7 @@ export interface AppointmentDialogContext {
 interface AppointmentDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  branch: ClinicBranchCode
+  clinicId: string | null
   context: AppointmentDialogContext | null
   /** UUID bệnh nhân — ưu tiên hơn context.fixedPatient.id */
   fixedPatientId?: string
@@ -118,7 +117,7 @@ function buildDefaultValues(
 export function AppointmentDialog({
   open,
   onOpenChange,
-  branch,
+  clinicId,
   context,
   fixedPatientId,
 }: AppointmentDialogProps) {
@@ -127,7 +126,7 @@ export function AppointmentDialog({
   const cancelMutation = useCancelAppointmentMutation()
   const checkInMutation = useCheckInAppointmentMutation()
   const { staffOptions, doctorOptions, assistantOptions } =
-    useStaffPickerOptions(open)
+    useStaffPickerOptions(open, clinicId ?? undefined)
 
   const isEdit = context?.mode === "edit"
   const appointment = context?.appointment
@@ -222,7 +221,7 @@ export function AppointmentDialog({
       doctorName: staff.doctorName,
       assistantName: staff.assistantName,
       note: values.note?.trim() || undefined,
-      clinicBranch: branch,
+      clinicId: clinicId ?? undefined,
     })
     onOpenChange(false)
   }
@@ -366,7 +365,7 @@ export function AppointmentDialog({
             <FormPatientSearch
               control={form.control}
               name="patientId"
-              branch={branch}
+              clinicId={clinicId ?? undefined}
               required
             />
           )}

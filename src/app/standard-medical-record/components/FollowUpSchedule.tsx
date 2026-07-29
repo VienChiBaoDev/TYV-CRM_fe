@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/data-table/data-table"
-import { toClinicBranchCode } from "@/lib/clinic-branch"
-import { useClinicStore } from "@/stores/clinic-store"
+import { useActiveClinic } from "@/hooks/use-active-clinic"
 import { FOLLOW_UP_SCHEDULE_STATUS } from "@/constants/common"
 import { upcomingFollowUpsQueryOptions } from "../queries/follow-up-query"
 import type { FollowUpSchedule } from "../interfaces/StandardMedicalRecord"
@@ -18,8 +17,7 @@ import { RescheduleFollowUpDialog } from "./RescheduleFollowUpDialog"
 export const UPCOMING_DAYS_AHEAD = 7
 
 export function FollowUpSchedule() {
-  const activeBranch = useClinicStore((s) => s.activeBranch)
-  const branch = toClinicBranchCode(activeBranch)
+  const { activeClinicId } = useActiveClinic()
   const [page, setPage] = useState(1)
   const [selectedRow, setSelectedRow] = useState<FollowUpSchedule | null>(null)
   const [rescheduleRow, setRescheduleRow] = useState<FollowUpSchedule | null>(
@@ -28,11 +26,11 @@ export function FollowUpSchedule() {
 
   useEffect(() => {
     setPage(1)
-  }, [branch])
+  }, [activeClinicId])
 
   const { data, isLoading } = useQuery(
     upcomingFollowUpsQueryOptions({
-      branch,
+      clinicId: activeClinicId ?? undefined,
       daysAhead: UPCOMING_DAYS_AHEAD,
       page,
       limit: DEFAULT_LIMIT,

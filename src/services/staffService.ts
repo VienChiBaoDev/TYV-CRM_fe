@@ -1,6 +1,5 @@
 import httpService from "@/services/httpService"
 import type {
-  ClinicBranchValue,
   CreateStaffPayload,
   Staff,
   StaffRole,
@@ -16,7 +15,7 @@ export interface StaffOption {
   id: string
   fullName: string
   role: StaffRole
-  clinicBranch: ClinicBranchValue | null
+  clinicId: string | null
 }
 
 export async function fetchStaffOptions(): Promise<StaffOption[]> {

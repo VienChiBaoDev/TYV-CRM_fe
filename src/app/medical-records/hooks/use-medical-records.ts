@@ -63,7 +63,7 @@ type VisitSelectionIntent = { kind: "last" } | { kind: "id"; id: string }
 export function useMedicalRecords() {
   const { patientId } = useParams()
   const queryClient = useQueryClient()
-  const activeBranch = useClinicStore((state) => state.activeBranch)
+  const activeClinicId = useClinicStore((state) => state.activeClinicId)
 
   const {
     data: fetchedPatient,
@@ -381,7 +381,7 @@ export function useMedicalRecords() {
     uploadImageMutation.isPending || deleteImageMutation.isPending
 
   return {
-    activeBranch,
+    activeClinicId,
     searchQuery,
     setSearchQuery,
     filteredPatients,

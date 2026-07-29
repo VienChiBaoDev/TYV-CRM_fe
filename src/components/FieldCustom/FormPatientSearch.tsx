@@ -27,14 +27,13 @@ import { cn } from "@/lib/utils"
 import {
   getPatientById,
   getPatients,
-  type ClinicBranchCode,
   type Patient,
 } from "@/app/medical-records/data/patientService"
 
 interface FormPatientSearchProps<T extends FieldValues> {
   control: Control<T>
   name: FieldPath<T>
-  branch: ClinicBranchCode
+  clinicId?: string
   label?: string
   placeholder?: string
   required?: boolean
@@ -44,7 +43,7 @@ interface FormPatientSearchProps<T extends FieldValues> {
 export function FormPatientSearch<T extends FieldValues>({
   control,
   name,
-  branch,
+  clinicId,
   label = "Bệnh nhân",
   placeholder = "Tìm theo tên, SĐT, mã BN...",
   required,
@@ -61,7 +60,7 @@ export function FormPatientSearch<T extends FieldValues>({
             {required ? <span className="text-destructive">*</span> : null}
           </FormLabel>
           <PatientSearchCombobox
-            branch={branch}
+            clinicId={clinicId}
             value={field.value}
             disabled={disabled}
             placeholder={placeholder}
@@ -75,7 +74,7 @@ export function FormPatientSearch<T extends FieldValues>({
 }
 
 interface PatientSearchComboboxProps {
-  branch: ClinicBranchCode
+  clinicId?: string
   value: string
   disabled?: boolean
   placeholder?: string
@@ -83,7 +82,7 @@ interface PatientSearchComboboxProps {
 }
 
 export function PatientSearchCombobox({
-  branch,
+  clinicId,
   value,
   disabled,
   placeholder = "Chọn bệnh nhân...",
@@ -106,7 +105,7 @@ export function PatientSearchCombobox({
     getPatientById(value)
       .then(setSelectedPatient)
       .catch(() => setSelectedPatient(null))
-  }, [branch, value, selectedPatient?.id])
+  }, [clinicId, value, selectedPatient?.id])
 
   useEffect(() => {
     if (!search.trim()) {
@@ -116,14 +115,14 @@ export function PatientSearchCombobox({
 
     const timer = window.setTimeout(() => {
       setLoading(true)
-      getPatients({ branch, search: search.trim() })
+      getPatients({ clinicId, search: search.trim() })
         .then(setResults)
         .catch(() => setResults([]))
         .finally(() => setLoading(false))
     }, 300)
 
     return () => window.clearTimeout(timer)
-  }, [branch, search])
+  }, [clinicId, search])
 
   const handleSelect = (patient: Patient) => {
     setSelectedPatient(patient)

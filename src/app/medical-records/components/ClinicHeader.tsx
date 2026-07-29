@@ -6,12 +6,10 @@ import {
   type AppointmentDialogContext,
 } from "@/app/appointments/components/AppointmentDialog"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
-import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { Button } from "@/components/ui/button"
 
 export default function ClinicHeader() {
-  const { activePatient, activeBranch, patientId } = useMedicalRecordContext()
-  const branch = toClinicBranchCode(activeBranch)
+  const { activePatient, activeClinicId, patientId } = useMedicalRecordContext()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogContext, setDialogContext] =
     useState<AppointmentDialogContext | null>(null)
@@ -64,7 +62,7 @@ export default function ClinicHeader() {
       <AppointmentDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        branch={branch}
+        clinicId={activeClinicId}
         context={dialogContext}
         fixedPatientId={patientId}
       />

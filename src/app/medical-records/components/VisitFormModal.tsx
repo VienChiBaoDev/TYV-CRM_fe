@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Edit, Plus, X } from "lucide-react"
 import type { Visit } from "@/app/medical-records/interfaces/types"
@@ -12,10 +13,7 @@ import {
 } from "@/app/medical-records/constants/visit-form"
 import type { VisitFollowUpPlan } from "@/app/medical-records/interfaces/types"
 import { useMedicalRecordContext } from "@/app/medical-records/hooks/use-medical-record-context"
-import {
-  CLINIC_BRANCHES,
-  type ClinicBranchLabel,
-} from "@/constants/clinic-branches"
+import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
 import { DatePickerFieldIso } from "@/components/FieldCustom/DatePickerField"
 import {
   Select,
@@ -33,7 +31,6 @@ import {
   hasPricedHerbs,
 } from "@/app/medical-records/utils/herb-pricing"
 import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
-import { toClinicBranchCode } from "@/lib/clinic-branch"
 import {
   HERB_DECOCTION_ORDER_OPTIONS,
   HERB_DECOCTION_PREP_OPTIONS,
@@ -112,11 +109,6 @@ const VISIT_MODE_OPTIONS = [
   { value: "Online", label: "Online (Khám xa)" },
 ] as const
 
-const LOCATION_OPTIONS = CLINIC_BRANCHES.map((branch) => ({
-  value: branch.label,
-  label: `${branch.emoji} ${branch.label}`,
-}))
-
 const REMINDER_OPTIONS = REMINDER_DAYS_OPTIONS.map((days) => ({
   value: String(days),
   label: `${days} ngày trước`,
@@ -127,9 +119,12 @@ const TREATMENT_OPTIONS = TREATMENT_STATUS_OPTIONS.map((status) => ({
   label: status,
 }))
 
-function resolveLocationValue(location: string | undefined): ClinicBranchLabel {
-  const match = CLINIC_BRANCHES.find((branch) => branch.label === location)
-  return match?.label ?? CLINIC_BRANCHES[0].label
+function resolveLocationValue(
+  location: string | undefined,
+  options: readonly { value: string; label: string }[]
+): string {
+  const match = options.find((option) => option.value === location)
+  return match?.value ?? options[0]?.value ?? location ?? ""
 }
 
 function buildSelectOptionsWithCurrent(
@@ -153,7 +148,7 @@ export function VisitFormModal() {
     handleVisitSubmit,
     isSubmittingVisit,
     visitSubmitError,
-    activeBranch,
+    activeClinicId,
     selectedMedicine,
     setSelectedMedicine,
     tempHerbQuantity,
@@ -168,11 +163,19 @@ export function VisitFormModal() {
 
   const [isApplyingFormula, setIsApplyingFormula] = useState(false)
 
-  const branch = toClinicBranchCode(activeBranch)
+  const { data: clinicOptions = [] } = useQuery(clinicOptionsQueryOptions())
+  const locationOptions = useMemo(
+    () =>
+      clinicOptions.map((clinic) => ({
+        value: clinic.name,
+        label: clinic.name,
+      })),
+    [clinicOptions]
+  )
 
   const { doctorOptions, isLoading: isDoctorsLoading } = useStaffPickerOptions(
     !!visitModalMode,
-    branch
+    activeClinicId ?? undefined
   )
 
   const followUpPlanForOptions = {
@@ -334,9 +337,9 @@ export function VisitFormModal() {
             <VisitFormSelect
               id="visit-location"
               label="Địa điểm"
-              value={resolveLocationValue(visit.location)}
+              value={resolveLocationValue(visit.location, locationOptions)}
               onValueChange={(value) => updateVisit({ location: value })}
-              options={LOCATION_OPTIONS}
+              options={locationOptions}
             />
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase">

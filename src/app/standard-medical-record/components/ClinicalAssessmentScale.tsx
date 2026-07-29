@@ -16,8 +16,7 @@ import {
 } from "../schemas/clinical-assessment-scale-form"
 import { FormSelect } from "@/components/FieldCustom/FormSelect"
 import { pendingAssessmentsQueryOptions } from "../queries/follow-up-query"
-import { toClinicBranchCode } from "@/lib/clinic-branch"
-import { useClinicStore } from "@/stores/clinic-store"
+import { useActiveClinic } from "@/hooks/use-active-clinic"
 import { useQuery } from "@tanstack/react-query"
 import { useSubmitAssessmentMutation } from "../hooks/use-follow-up-mutations"
 import { mapFeResultToApi } from "../mappers/map-follow-up-response"
@@ -28,14 +27,13 @@ import { DEFAULT_LIMIT } from "@/types/pagination"
 
 export function ClinicalAssessmentScale() {
   const [open, setOpen] = useState(false)
-  const activeBranch = useClinicStore((s) => s.activeBranch)
+  const { activeClinicId } = useActiveClinic()
   const [activeRowId, setActiveRowId] = useState<string | null>(null)
-  const branch = toClinicBranchCode(activeBranch)
   const [page, setPage] = useState(1)
 
   useEffect(() => {
     setPage(1)
-  }, [branch])
+  }, [activeClinicId])
 
   const form = useForm<ClinicalAssessmentScaleFormValues>({
     resolver: zodResolver(clinicalAssessmentScaleFormSchema),
@@ -44,7 +42,11 @@ export function ClinicalAssessmentScale() {
   })
 
   const { data, isLoading } = useQuery(
-    pendingAssessmentsQueryOptions({ branch, page, limit: DEFAULT_LIMIT })
+    pendingAssessmentsQueryOptions({
+      clinicId: activeClinicId ?? undefined,
+      page,
+      limit: DEFAULT_LIMIT,
+    })
   )
 
   const rows = data?.data ?? []

@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Navigate } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { isAxiosError } from "axios"
-import { Landmark, Loader2, Pencil, Plus, Trash2, UserCog } from "lucide-react"
+import { Building2, Landmark, Loader2, Pencil, Plus, Trash2, UserCog } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BankAccountsSettings from "@/app/settings/BankAccountsSettings"
+import ClinicsSettings from "@/app/settings/ClinicsSettings"
 import {
   Select,
   SelectContent,
@@ -26,14 +27,13 @@ import {
 } from "@/components/ui/select"
 import { urlPaths } from "@/constants/urlPaths"
 import {
-  CLINIC_BRANCH_LABEL,
   ROLE_LABEL,
-  type ClinicBranchValue,
   type CreateStaffPayload,
   type Staff,
   type StaffRole,
   type UpdateStaffPayload,
 } from "@/interfaces/auth"
+import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
 import {
   createStaff,
   deleteStaff,
@@ -43,8 +43,7 @@ import {
 import { useAuthStore } from "@/stores/auth-store"
 
 const ROLES: StaffRole[] = ["ADMIN", "DOCTOR", "ASSISTANT", "STAFF"]
-const BRANCHES: ClinicBranchValue[] = ["HANG_BONG", "CAU_GIAY"]
-const NO_BRANCH = "NONE"
+const NO_CLINIC = "NONE"
 
 const staffKeys = { all: ["staff"] as const }
 
@@ -68,6 +67,13 @@ export default function SettingsPage() {
     queryKey: staffKeys.all,
     queryFn: fetchStaffList,
   })
+
+  const { data: clinicOptions = [] } = useQuery(clinicOptionsQueryOptions())
+
+  const clinicNameById = (clinicId: string | null) => {
+    if (!clinicId) return "—"
+    return clinicOptions.find((clinic) => clinic.id === clinicId)?.name ?? "—"
+  }
 
   const deleteMutation = useMutation({
     mutationFn: deleteStaff,
@@ -108,10 +114,17 @@ export default function SettingsPage() {
           <TabsTrigger value="staff" className="gap-1.5">
             <UserCog className="h-4 w-4" /> Tài khoản nhân sự
           </TabsTrigger>
+          <TabsTrigger value="clinics" className="gap-1.5">
+            <Building2 className="h-4 w-4" /> Cơ sở
+          </TabsTrigger>
           <TabsTrigger value="bank-accounts" className="gap-1.5">
             <Landmark className="h-4 w-4" /> Tài khoản ngân hàng
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="clinics">
+          <ClinicsSettings />
+        </TabsContent>
 
         <TabsContent value="bank-accounts">
           <BankAccountsSettings />
@@ -182,9 +195,7 @@ export default function SettingsPage() {
                         {ROLE_LABEL[staff.role]}
                       </td>
                       <td className="px-4 py-3 text-slate-600">
-                        {staff.clinicBranch
-                          ? CLINIC_BRANCH_LABEL[staff.clinicBranch]
-                          : "—"}
+                        {clinicNameById(staff.clinicId)}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -231,6 +242,7 @@ export default function SettingsPage() {
             open={dialogOpen}
             onOpenChange={setDialogOpen}
             editing={editing}
+            clinicOptions={clinicOptions}
             onSaved={() => {
               setDialogOpen(false)
               queryClient.invalidateQueries({ queryKey: staffKeys.all })
@@ -247,7 +259,7 @@ interface FormState {
   email: string
   password: string
   role: StaffRole
-  clinicBranch: string
+  clinicId: string
   isActive: boolean
 }
 
@@ -257,7 +269,7 @@ function buildInitialForm(editing: Staff | null): FormState {
     email: editing?.email ?? "",
     password: "",
     role: editing?.role ?? "STAFF",
-    clinicBranch: editing?.clinicBranch ?? NO_BRANCH,
+    clinicId: editing?.clinicId ?? NO_CLINIC,
     isActive: editing?.isActive ?? true,
   }
 }
@@ -266,11 +278,13 @@ function StaffFormDialog({
   open,
   onOpenChange,
   editing,
+  clinicOptions,
   onSaved,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   editing: Staff | null
+  clinicOptions: { id: string; name: string }[]
   onSaved: () => void
 }) {
   const isEdit = Boolean(editing)
@@ -284,17 +298,15 @@ function StaffFormDialog({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const branch =
-        form.clinicBranch === NO_BRANCH
-          ? null
-          : (form.clinicBranch as ClinicBranchValue)
+      const clinicId =
+        form.clinicId === NO_CLINIC ? null : form.clinicId
 
       if (isEdit && editing) {
         const payload: UpdateStaffPayload = {
           fullName: form.fullName,
           email: form.email,
           role: form.role,
-          clinicBranch: branch,
+          clinicId,
           isActive: form.isActive,
         }
         if (form.password.trim()) payload.password = form.password
@@ -306,7 +318,7 @@ function StaffFormDialog({
         email: form.email,
         password: form.password,
         role: form.role,
-        clinicBranch: branch,
+        clinicId,
         isActive: form.isActive,
       }
       return createStaff(payload)
@@ -398,19 +410,19 @@ function StaffFormDialog({
             <div className="space-y-1.5">
               <Label>Chi nhánh</Label>
               <Select
-                value={form.clinicBranch}
+                value={form.clinicId}
                 onValueChange={(value) =>
-                  setForm({ ...form, clinicBranch: value })
+                  setForm({ ...form, clinicId: value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NO_BRANCH}>Không</SelectItem>
-                  {BRANCHES.map((branch) => (
-                    <SelectItem key={branch} value={branch}>
-                      {CLINIC_BRANCH_LABEL[branch]}
+                  <SelectItem value={NO_CLINIC}>Không</SelectItem>
+                  {clinicOptions.map((clinic) => (
+                    <SelectItem key={clinic.id} value={clinic.id}>
+                      {clinic.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

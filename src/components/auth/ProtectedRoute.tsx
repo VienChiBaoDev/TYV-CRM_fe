@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { Navigate } from "react-router-dom"
 
 import { urlPaths } from "@/constants/urlPaths"
-import { syncClinicBranchFromUser } from "@/lib/sync-clinic-branch-from-user"
+import { syncClinicFromUser } from "@/lib/sync-clinic-from-user"
 import { useAuthStore } from "@/stores/auth-store"
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -10,7 +10,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user)
 
   useEffect(() => {
-    syncClinicBranchFromUser(user)
+    syncClinicFromUser(user)
   }, [user])
 
   if (!token) {

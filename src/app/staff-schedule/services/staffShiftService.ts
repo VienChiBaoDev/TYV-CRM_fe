@@ -1,6 +1,5 @@
 import httpService from "@/services/httpService"
 import API_PATHS from "@/constants/apiPaths"
-import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
 
 export const STAFF_SHIFT_TYPES = ["WORK", "OFF"] as const
 export type StaffShiftType = (typeof STAFF_SHIFT_TYPES)[number]
@@ -9,13 +8,13 @@ export interface StaffShiftStaff {
   id: string
   fullName: string
   role: string
-  clinicBranch: ClinicBranchCode | null
+  clinicId: string | null
 }
 
 export interface StaffShift {
   id: string
   staffId: string
-  clinicBranch: ClinicBranchCode
+  clinicId: string
   type: StaffShiftType
   startAt: string
   endAt: string
@@ -25,7 +24,7 @@ export interface StaffShift {
 
 export interface CreateStaffShiftPayload {
   staffId: string
-  clinicBranch: ClinicBranchCode
+  clinicId: string
   type: StaffShiftType
   startAt: string
   endAt: string
@@ -38,7 +37,7 @@ export type UpdateStaffShiftPayload = Partial<
 
 interface FetchStaffShiftsParams {
   staffId: string
-  branch?: ClinicBranchCode
+  clinicId?: string
   from: string
   to: string
 }

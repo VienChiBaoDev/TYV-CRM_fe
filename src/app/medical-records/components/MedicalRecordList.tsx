@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query"
 import { useEffect, useMemo } from "react"
 import { toast } from "sonner"
 
-import { toClinicBranchCode } from "@/lib/clinic-branch"
 import { useClinicStore } from "@/stores/clinic-store"
 import { patientListQueryOptions } from "@/app/medical-records/queries/patient-query"
 import { referrerListQueryOptions } from "@/app/medical-records/queries/referrer-query"
@@ -11,17 +10,16 @@ import { ListFilters } from "./List/ListFilters"
 import { PatientTable } from "./List/PatientTable"
 
 export default function MedicalRecordList() {
-  const activeBranch = useClinicStore((state) => state.activeBranch)
-  const branch = toClinicBranchCode(activeBranch)
+  const activeClinicId = useClinicStore((state) => state.activeClinicId)
   const selectedReferrer = "all" as const
 
   const patientFilters = useMemo(
     () => ({
-      branch,
+      clinicId: activeClinicId ?? undefined,
       referrerId:
         selectedReferrer === "all" ? undefined : selectedReferrer,
     }),
-    [branch, selectedReferrer]
+    [activeClinicId, selectedReferrer]
   )
 
   const {

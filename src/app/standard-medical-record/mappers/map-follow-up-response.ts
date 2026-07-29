@@ -19,7 +19,7 @@ export function mapToFollowUpSchedule(
     rescheduleNote: row.rescheduleNote,
     effectiveFollowUpDate: row.effectiveFollowUpDate,
     physicianInCharge: row.physicianInCharge,
-    facility: row.facilityLabel,
+    facility: row.clinicName,
     status: row.scheduleStatusFe,
   }
 }

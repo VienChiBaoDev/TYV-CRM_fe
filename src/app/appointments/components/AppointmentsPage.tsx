@@ -14,8 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { toClinicBranchCode } from "@/lib/clinic-branch"
-import { useClinicStore } from "@/stores/clinic-store"
+import { useActiveClinic } from "@/hooks/use-active-clinic"
 import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
 
 import type { Appointment } from "@/app/appointments/services/appointmentService"
@@ -38,9 +37,7 @@ import {
 const ALL_DOCTORS_VALUE = "all"
 
 export function AppointmentsPage() {
-  const activeBranch = useClinicStore((state) => state.activeBranch)
-
-  const branch = toClinicBranchCode(activeBranch)
+  const { activeClinicId, activeClinic } = useActiveClinic()
 
   const [anchorDate, setAnchorDate] = useState(() => new Date())
   const [doctorId, setDoctorId] = useState("")
@@ -56,9 +53,12 @@ export function AppointmentsPage() {
     () =>
       staffOptions
         .filter((staff) => staff.role === "DOCTOR")
-        .filter((staff) => !staff.clinicBranch || staff.clinicBranch === branch)
+        .filter(
+          (staff) =>
+            !staff.clinicId || staff.clinicId === activeClinicId
+        )
         .map((staff) => ({ value: staff.id, label: staff.fullName })),
-    [staffOptions, branch]
+    [staffOptions, activeClinicId]
   )
 
   const showAllDoctors = !doctorId
@@ -69,7 +69,7 @@ export function AppointmentsPage() {
 
   const { data: appointments = [], isLoading } = useQuery(
     weekAppointmentsQueryOptions({
-      branch,
+      clinicId: activeClinicId ?? undefined,
       from,
       to,
       doctorId: doctorId || undefined,
@@ -129,7 +129,7 @@ export function AppointmentsPage() {
         <WeekNavigator
           anchorDate={anchorDate}
           onAnchorChange={setAnchorDate}
-          activeBranch={activeBranch}
+          activeClinicName={activeClinic?.name ?? "Chưa chọn cơ sở"}
           appointmentCount={appointments.length}
         />
 
@@ -177,7 +177,7 @@ export function AppointmentsPage() {
       <AppointmentDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        branch={branch}
+        clinicId={activeClinicId}
         context={dialogContext}
       />
     </div>

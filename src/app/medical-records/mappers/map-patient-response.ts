@@ -21,7 +21,7 @@ export interface PatientDetailApiResponse {
   readonly phone: string
   readonly address: string | null
   readonly avatarInitials: string | null
-  readonly clinicBranch: "HANG_BONG" | "CAU_GIAY"
+  readonly clinicId: string
   readonly tags: string[]
   readonly dietRestrictions: string[]
   readonly nextFollowUpDate: string | null
@@ -89,7 +89,8 @@ export interface MedicalVisitApiResponse {
     readonly assessmentDate: string
     readonly reminderDaysBefore: number
     readonly physicianInCharge: string
-    readonly facility: "HANG_BONG" | "CAU_GIAY"
+    readonly clinicId: string
+    readonly clinicName: string
     readonly scheduleStatus: string
     readonly assessmentResult: string | null
     readonly assessmentNote: string | null

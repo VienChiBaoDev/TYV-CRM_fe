@@ -1,6 +1,4 @@
 import httpService from "@/services/httpService"
-
-import type { ClinicBranchCode } from "../../medical-records/data/patientService"
 import API_PATHS from "@/constants/apiPaths"
 
 export const APPOINTMENT_STATUSES = [
@@ -30,7 +28,7 @@ export interface CreateAppointmentPayload {
   doctorName?: string
   assistantName?: string
   note?: string
-  clinicBranch?: ClinicBranchCode
+  clinicId?: string
 }
 
 export interface UpdateAppointmentPayload {
@@ -40,7 +38,7 @@ export interface UpdateAppointmentPayload {
   assistantId?: string
   doctorName?: string
   assistantName?: string
-  clinicBranch?: ClinicBranchCode
+  clinicId?: string
   status?: AppointmentStatus
   note?: string
 }
@@ -54,7 +52,7 @@ export interface Appointment {
   assistantId: string | null
   doctorName: string | null
   assistantName: string | null
-  clinicBranch: ClinicBranchCode
+  clinicId: string
   status: AppointmentStatus
   note: string | null
   visitId: string | null
@@ -64,7 +62,7 @@ export interface Appointment {
 }
 
 interface FetchAppointmentsParams {
-  branch?: ClinicBranchCode
+  clinicId?: string
   from: string
   to: string
   status?: AppointmentStatus

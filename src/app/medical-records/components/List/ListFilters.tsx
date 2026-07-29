@@ -1,5 +1,6 @@
 import { Building2, UserPlus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -10,12 +11,14 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { urlPaths } from "@/constants/urlPaths"
+import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
 import { useClinicStore } from "@/stores/clinic-store"
 
 export function ListFilters() {
   const navigate = useNavigate()
-  const activeBranch = useClinicStore((state) => state.activeBranch)
-  const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
+  const activeClinicId = useClinicStore((state) => state.activeClinicId)
+  const setActiveClinicId = useClinicStore((state) => state.setActiveClinicId)
+  const { data: clinicOptions = [] } = useQuery(clinicOptionsQueryOptions())
 
   return (
     <div className="mb-4">
@@ -39,16 +42,21 @@ export function ListFilters() {
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        {/* Bộ lọc chi nhánh */}
         <div className="flex shrink-0 items-center gap-1.5">
           <Building2 className="h-4 w-4 text-emerald-600" />
-          <Select value={activeBranch} onValueChange={setActiveBranch}>
-            <SelectTrigger className="w-[150px] bg-white text-sm">
-              <SelectValue placeholder="Chi nhánh" />
+          <Select
+            value={activeClinicId ?? ""}
+            onValueChange={(value) => setActiveClinicId(value || null)}
+          >
+            <SelectTrigger className="w-[180px] bg-white text-sm">
+              <SelectValue placeholder="Chọn cơ sở" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Hàng Bông">Hàng Bông</SelectItem>
-              <SelectItem value="Cầu Giấy">Cầu Giấy</SelectItem>
+              {clinicOptions.map((clinic) => (
+                <SelectItem key={clinic.id} value={clinic.id}>
+                  {clinic.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

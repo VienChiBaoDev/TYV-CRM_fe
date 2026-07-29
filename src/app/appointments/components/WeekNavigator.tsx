@@ -14,14 +14,14 @@ import { formatWeekTitle, shiftWeek } from "../utils/week-range"
 interface WeekNavigatorProps {
   anchorDate: Date
   onAnchorChange: (date: Date) => void
-  activeBranch: string
+  activeClinicName: string
   appointmentCount: number
 }
 
 export function WeekNavigator({
   anchorDate,
   onAnchorChange,
-  activeBranch,
+  activeClinicName,
   appointmentCount,
 }: WeekNavigatorProps) {
   return (
@@ -65,7 +65,7 @@ export function WeekNavigator({
         <CalendarDays className="size-4 shrink-0" />
 
         <span>
-          Cơ sở: <strong className="text-foreground">{activeBranch}</strong>
+          Cơ sở: <strong className="text-foreground">{activeClinicName}</strong>
         </span>
 
         <Badge variant="outline">
