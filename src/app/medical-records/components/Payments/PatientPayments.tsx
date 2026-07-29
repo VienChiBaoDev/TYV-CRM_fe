@@ -12,6 +12,7 @@ import { formatPrice } from "@/app/treatment-services/utils/format-price"
 import { DataTable } from "@/components/data-table/data-table"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { DEFAULT_LIMIT } from "@/types/pagination"
 
 import { AddPatientPaymentDialog } from "./AddPatientPaymentDialog"
 import { RefundPatientPaymentDialog } from "./RefundPatientPaymentDialog"
@@ -85,10 +86,15 @@ function SplitActionButton({
 export default function PatientPayments() {
   const { patientId = "" } = useParams()
   const { activePatient } = useMedicalRecordContext()
+  const [page, setPage] = useState(1)
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
   const [refundDialogOpen, setRefundDialogOpen] = useState(false)
+  const paymentParams = useMemo(
+    () => ({ page, limit: DEFAULT_LIMIT }),
+    [page]
+  )
   const { data: paymentsData, isLoading: isPaymentsLoading } = useQuery(
-    patientPaymentsQueryOptions(patientId)
+    patientPaymentsQueryOptions(patientId, paymentParams)
   )
   const { data: services = [], isLoading: isServicesLoading } = useQuery({
     ...patientServicesQueryOptions(patientId),
@@ -113,6 +119,8 @@ export default function PatientPayments() {
     refund: 0,
   }
   const payments = paymentsData?.payments ?? []
+  const paymentsMeta = paymentsData?.meta
+  const rowOffset = (page - 1) * DEFAULT_LIMIT
   const unpaidItems = useMemo(
     () => mapPatientServicesToUnpaidItems(services, patientName),
     [services, patientName]
@@ -122,14 +130,22 @@ export default function PatientPayments() {
     () => mapPatientServicesToRefundableItems(refundServices, patientName),
     [refundServices, patientName]
   )
-  const columns = useMemo(() => createPaymentTableColumns(), [])
+  const columns = useMemo(
+    () => createPaymentTableColumns({ rowOffset }),
+    [rowOffset]
+  )
   const handleSavePayment = (
     values: PatientPaymentFormValues,
     selectedItems: { item: UnpaidPaymentItem; collectAmount: number }[]
   ) => {
     createPaymentMutation.mutate(
       { values, selectedItems },
-      { onSuccess: () => setPaymentDialogOpen(false) }
+      {
+        onSuccess: () => {
+          setPaymentDialogOpen(false)
+          setPage(1)
+        },
+      }
     )
   }
   const handleSaveRefund = (
@@ -142,7 +158,12 @@ export default function PatientPayments() {
   ) => {
     createRefundMutation.mutate(
       { values, selectedItems },
-      { onSuccess: () => setRefundDialogOpen(false) }
+      {
+        onSuccess: () => {
+          setRefundDialogOpen(false)
+          setPage(1)
+        },
+      }
     )
   }
 
@@ -209,6 +230,9 @@ export default function PatientPayments() {
           data={payments}
           loading={isPaymentsLoading}
           classNameTable="!p-4 !pt-0"
+          pageIndex={page - 1}
+          pageCount={Math.max(paymentsMeta?.totalPages ?? 0, 1)}
+          onPageChange={(nextPageIndex) => setPage(nextPageIndex + 1)}
         />
       </div>
       <AddPatientPaymentDialog

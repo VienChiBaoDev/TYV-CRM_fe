@@ -27,5 +27,6 @@ export function mapPatientPaymentsListFromApi(api: PatientPaymentsListApi) {
   return {
     summary: api.summary,
     payments: api.payments.map(mapPatientPaymentFromApi),
+    meta: api.meta,
   }
 }
