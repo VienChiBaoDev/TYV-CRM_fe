@@ -1,17 +1,19 @@
 import { useQuery } from "@tanstack/react-query"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
-import { useClinicStore } from "@/stores/clinic-store"
+import { useActiveClinic } from "@/hooks/use-active-clinic"
 import { patientListQueryOptions } from "@/app/medical-records/queries/patient-query"
 import { referrerListQueryOptions } from "@/app/medical-records/queries/referrer-query"
+import ModalCustomer from "@/app/medical-records/components/MedicalRecordList/ModalCustomer"
 
 import { ListFilters } from "./List/ListFilters"
 import { PatientTable } from "./List/PatientTable"
 
 export default function MedicalRecordList() {
-  const activeClinicId = useClinicStore((state) => state.activeClinicId)
+  const { activeClinicId } = useActiveClinic()
   const selectedReferrer = "all" as const
+  const [editingPatientId, setEditingPatientId] = useState<string | null>(null)
 
   const patientFilters = useMemo(
     () => ({
@@ -27,6 +29,8 @@ export default function MedicalRecordList() {
     isLoading: isPatientsLoading,
     isError: isPatientsError,
   } = useQuery(patientListQueryOptions(patientFilters))
+
+  const showPatientsLoading = !activeClinicId || isPatientsLoading
 
   const { data: referrers = [], isError: isReferrersError } = useQuery(
     referrerListQueryOptions()
@@ -56,11 +60,21 @@ export default function MedicalRecordList() {
           <ListFilters />
           <PatientTable
             patients={patients}
-            loading={isPatientsLoading}
+            loading={showPatientsLoading}
             selectedReferrerName={selectedReferrerName}
+            onEditPatient={setEditingPatientId}
           />
         </div>
       </div>
+
+      <ModalCustomer
+        key={editingPatientId ?? "closed"}
+        patientId={editingPatientId}
+        open={editingPatientId !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingPatientId(null)
+        }}
+      />
     </div>
   )
 }

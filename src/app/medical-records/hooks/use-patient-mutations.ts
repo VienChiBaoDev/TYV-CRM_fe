@@ -31,10 +31,12 @@ export function useUpdatePatientMutation(patientId: string) {
   return useMutation({
     mutationFn: (payload: UpdatePatientPayload) =>
       updatePatient(patientId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: patientKeys.all })
+    onSuccess: (updated) => {
+      queryClient.setQueryData(patientKeys.detail(patientId), updated)
       queryClient.invalidateQueries({
-        queryKey: patientKeys.detail(patientId),
+        predicate: (query) =>
+          query.queryKey[0] === patientKeys.all[0] &&
+          query.queryKey[1] === "list",
       })
       queryClient.invalidateQueries({
         queryKey: medicalRecordKeys.detail(patientId),

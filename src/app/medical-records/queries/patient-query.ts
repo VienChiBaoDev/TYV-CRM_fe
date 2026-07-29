@@ -23,6 +23,7 @@ export function patientListQueryOptions(params: FetchPatientsParams) {
   return queryOptions({
     queryKey: patientKeys.list(params),
     queryFn: () => fetchPatients(params),
+    enabled: Boolean(params.clinicId),
     staleTime: 30_000,
   })
 }

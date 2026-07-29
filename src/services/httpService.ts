@@ -1,6 +1,7 @@
 import axios from "axios"
 
-import { getAuthToken, useAuthStore } from "@/stores/auth-store"
+import { resetSession } from "@/lib/reset-session"
+import { getAuthToken } from "@/stores/auth-store"
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -26,7 +27,7 @@ instance.interceptors.response.use(
   function (error) {
     // Token hết hạn / không hợp lệ → đăng xuất và đẩy về trang đăng nhập.
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout()
+      resetSession()
       if (window.location.pathname !== "/login") {
         window.location.assign("/login")
       }

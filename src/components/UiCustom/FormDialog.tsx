@@ -34,7 +34,7 @@ export function FormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn("sm:max-w-[560px]", contentClassName)}
+        className={cn("sm:max-w-[560px] overflow-visible", contentClassName)}
         showCloseButton={showCloseButton}
       >
         <DialogHeader>

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
-import { useQueryClient } from "@tanstack/react-query"
 import {
   LayoutDashboard,
   Calendar,
@@ -24,7 +23,7 @@ import {
 
 import { urlPaths } from "@/constants/urlPaths"
 import { useActiveClinic } from "@/hooks/use-active-clinic"
-import { authKeys } from "@/queries/auth-query"
+import { resetSession } from "@/lib/reset-session"
 import {
   Select,
   SelectContent,
@@ -306,10 +305,8 @@ export function Sidebar({
   onCollapse,
 }: SidebarProps) {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
-  const logout = useAuthStore((state) => state.logout)
   const { activeClinicId, activeClinic, clinicOptions, canSwitchBranch } =
     useActiveClinic()
   const setActiveClinicId = useClinicStore((state) => state.setActiveClinicId)
@@ -326,8 +323,7 @@ export function Sidebar({
   }, [location.pathname, variant, onClose])
 
   function handleLogout() {
-    queryClient.removeQueries({ queryKey: authKeys.all })
-    logout()
+    resetSession()
     navigate(urlPaths.login, { replace: true })
   }
 
