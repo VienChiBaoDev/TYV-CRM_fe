@@ -17,6 +17,8 @@ import {
   type MedicalRecordTab,
 } from "@/app/medical-records/constants/tab-values"
 import {
+  buildVisitFormFromPrevious,
+  findVisitToPrefillFrom,
   getDefaultVisitForm,
   getDefaultFollowUpPlan,
   type VisitFormMode,
@@ -299,7 +301,10 @@ export function useMedicalRecords() {
 
   const openAddVisitModal = () => {
     visitMutation.reset()
-    setVisitForm(getDefaultVisitForm())
+    const source = findVisitToPrefillFrom(activePatient.visits)
+    setVisitForm(
+      source ? buildVisitFormFromPrevious(source) : getDefaultVisitForm()
+    )
     resetHerbDraft()
     setVisitModalMode("add")
   }

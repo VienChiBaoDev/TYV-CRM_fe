@@ -72,3 +72,32 @@ export function getDefaultVisitForm(): Partial<Visit> {
     followUpPlan: getDefaultFollowUpPlan(),
   }
 }
+
+/** Lần khám mới nhất trên timeline (visitNumber cao nhất — BE trả về asc). */
+export function findVisitToPrefillFrom(visits: Visit[]): Visit | null {
+  return visits.at(-1) ?? null
+}
+
+export function buildVisitFormFromPrevious(source: Visit): Partial<Visit> {
+  const defaults = getDefaultVisitForm()
+  return {
+    ...defaults,
+    doctor: source.doctor,
+    mode: source.mode,
+    location: source.location,
+    bloodPressure: source.bloodPressure,
+    pulse: source.pulse,
+    symptoms: source.symptoms,
+    pulseDiagnosis: { ...source.pulseDiagnosis },
+    prescriptionFormula: source.prescriptionFormula,
+    prescriptionDosage: source.prescriptionDosage,
+    herbs: source.herbs.map((herb) => ({ ...herb })),
+    labResults: source.labResults ?? "",
+    followUpPlan: {
+      ...getDefaultFollowUpPlan(),
+      reminderDaysBefore: source.followUpPlan?.reminderDaysBefore ?? 3,
+      treatmentStatus:
+        source.followUpPlan?.treatmentStatus ?? "Đang điều trị",
+    },
+  }
+}
