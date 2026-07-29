@@ -18,8 +18,8 @@ export interface CreatePatientPayload {
   source?: string
   clinicId: string
   referrerId?: string
-  assignedDoctorIds?: string[]
-  assignedAssistantIds?: string[]
+  assignedDoctorIds: string[]
+  assignedAssistantIds: string[]
 }
 
 export type UpdatePatientPayload = Partial<CreatePatientPayload>

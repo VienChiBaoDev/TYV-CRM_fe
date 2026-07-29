@@ -23,6 +23,7 @@ import {
   emptyPatientForm,
   type PatientFormState,
   type SetPatientField,
+  validatePatientAssignments,
 } from "./patientForm"
 import {
   defaultAppointmentForm,
@@ -70,6 +71,14 @@ export default function PatientCreatePage() {
       toast.error("Vui lòng chọn cơ sở")
       return
     }
+    const assignmentError = validatePatientAssignments(
+      form.assignedDoctorIds,
+      form.assignedAssistantIds
+    )
+    if (assignmentError) {
+      toast.error(assignmentError)
+      return
+    }
     if (createAppt && !apptForm.doctorId) {
       toast.error("Vui lòng chọn bác sĩ cho lịch hẹn")
       return
@@ -84,12 +93,8 @@ export default function PatientCreatePage() {
         address: form.address.trim() || undefined,
         source: form.source || undefined,
         clinicId: activeClinicId,
-        assignedDoctorIds: form.assignedDoctorIds.length
-          ? form.assignedDoctorIds
-          : undefined,
-        assignedAssistantIds: form.assignedAssistantIds.length
-          ? form.assignedAssistantIds
-          : undefined,
+        assignedDoctorIds: form.assignedDoctorIds,
+        assignedAssistantIds: form.assignedAssistantIds,
       })
 
       if (createAppt) {

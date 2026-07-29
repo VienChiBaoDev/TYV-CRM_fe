@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { MultiSelect } from "@/components/FieldCustom/MultiSelect"
 import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
+import { validatePatientAssignments } from "@/app/medical-records/components/PatientCreate/patientForm"
 import { useUpdatePatientMutation } from "@/app/medical-records/hooks/use-patient-mutations"
 import { patientDetailQueryOptions } from "@/app/medical-records/queries/patient-query"
 import type { Gender } from "@/app/medical-records/services/patient-api"
@@ -85,6 +86,14 @@ export default function ModalCustomer({
     }
     if (!form.phone.trim()) {
       toast.error("Vui lòng nhập số điện thoại")
+      return
+    }
+    const assignmentError = validatePatientAssignments(
+      form.assignedDoctorIds,
+      form.assignedAssistantIds
+    )
+    if (assignmentError) {
+      toast.error(assignmentError)
       return
     }
 
