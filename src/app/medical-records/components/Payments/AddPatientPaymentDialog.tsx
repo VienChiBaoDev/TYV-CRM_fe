@@ -24,6 +24,7 @@ import { Form } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { useActiveClinic } from "@/hooks/use-active-clinic"
+import { toFormDatetimeValue } from "@/lib/date-vi"
 import { cn } from "@/lib/utils"
 import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
 import {
