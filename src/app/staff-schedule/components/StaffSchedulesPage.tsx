@@ -39,7 +39,9 @@ export function StaffSchedulesPage() {
     () =>
       staffOptions
         .filter(
-          (staff) => !staff.clinicId || staff.clinicId === activeClinicId
+          (staff) =>
+            activeClinicId !== null &&
+            (staff.clinicIds ?? []).includes(activeClinicId)
         )
         .map((staff) => ({ value: staff.id, label: staff.fullName })),
     [staffOptions, activeClinicId]

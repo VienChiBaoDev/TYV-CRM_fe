@@ -55,7 +55,8 @@ export function AppointmentsPage() {
         .filter((staff) => staff.role === "DOCTOR")
         .filter(
           (staff) =>
-            !staff.clinicId || staff.clinicId === activeClinicId
+            activeClinicId !== null &&
+            (staff.clinicIds ?? []).includes(activeClinicId)
         )
         .map((staff) => ({ value: staff.id, label: staff.fullName })),
     [staffOptions, activeClinicId]

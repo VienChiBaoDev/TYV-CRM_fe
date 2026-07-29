@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { isAxiosError } from "axios"
 import { Loader2 } from "lucide-react"
 
@@ -7,12 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { urlPaths } from "@/constants/urlPaths"
+import { syncClinicFromUser } from "@/lib/sync-clinic-from-user"
+import { authKeys } from "@/queries/auth-query"
 import { login } from "@/services/authService"
 import { useAuthStore } from "@/stores/auth-store"
-import { syncClinicFromUser } from "@/lib/sync-clinic-from-user"
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const setAuth = useAuthStore((state) => state.setAuth)
 
   const [email, setEmail] = useState("")
@@ -27,6 +30,7 @@ export default function LoginPage() {
     try {
       const { accessToken, user } = await login({ email, password })
       setAuth(accessToken, user)
+      queryClient.setQueryData(authKeys.me(), user)
       syncClinicFromUser(user)
       navigate(urlPaths.medicalRecordList, { replace: true })
     } catch (err) {

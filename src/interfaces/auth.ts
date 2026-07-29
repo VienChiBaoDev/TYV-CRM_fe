@@ -17,7 +17,8 @@ export interface AuthUser {
   email: string
   fullName: string
   role: StaffRole
-  clinicId: string | null
+  clinicIds: string[]
+  allClinics: boolean
 }
 
 export interface LoginResponse {
@@ -30,7 +31,7 @@ export interface Staff {
   email: string
   fullName: string
   role: StaffRole
-  clinicId: string | null
+  clinicIds: string[]
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -41,7 +42,7 @@ export interface CreateStaffPayload {
   password: string
   fullName: string
   role: StaffRole
-  clinicId?: string | null
+  clinicIds?: string[]
   isActive?: boolean
 }
 
@@ -50,6 +51,6 @@ export interface UpdateStaffPayload {
   password?: string
   fullName?: string
   role?: StaffRole
-  clinicId?: string | null
+  clinicIds?: string[]
   isActive?: boolean
 }

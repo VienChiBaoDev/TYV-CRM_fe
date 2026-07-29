@@ -5,7 +5,9 @@ import type { FormSelectOption } from "@/components/FieldCustom/FormSelect"
 
 function matchesClinic(staff: StaffOption, clinicId?: string): boolean {
   if (!clinicId) return true
-  return !staff.clinicId || staff.clinicId === clinicId
+  const ids = staff.clinicIds ?? []
+  if (ids.length === 0) return false
+  return ids.includes(clinicId)
 }
 
 export function findStaffIdByName(

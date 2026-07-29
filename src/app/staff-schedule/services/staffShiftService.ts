@@ -8,7 +8,7 @@ export interface StaffShiftStaff {
   id: string
   fullName: string
   role: string
-  clinicId: string | null
+  clinicLinks?: { clinicId: string }[]
 }
 
 export interface StaffShift {

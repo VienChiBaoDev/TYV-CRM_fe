@@ -33,7 +33,7 @@ import {
   type StaffRole,
   type UpdateStaffPayload,
 } from "@/interfaces/auth"
-import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
+import { clinicListQueryOptions } from "@/queries/clinic-query"
 import {
   createStaff,
   deleteStaff,
@@ -43,9 +43,19 @@ import {
 import { useAuthStore } from "@/stores/auth-store"
 
 const ROLES: StaffRole[] = ["ADMIN", "DOCTOR", "ASSISTANT", "STAFF"]
-const NO_CLINIC = "NONE"
 
 const staffKeys = { all: ["staff"] as const }
+
+function formatStaffClinics(
+  staff: Staff,
+  clinicOptions: { id: string; name: string }[]
+): string {
+  if (staff.role === "ADMIN") return "Tất cả cơ sở"
+  if (staff.clinicIds?.length === 0) return "—"
+  return (staff.clinicIds ?? [])
+    .map((id) => clinicOptions.find((clinic) => clinic.id === id)?.name ?? id)
+    .join(", ")
+}
 
 function getErrorMessage(err: unknown, fallback: string): string {
   if (isAxiosError(err)) {
@@ -68,12 +78,7 @@ export default function SettingsPage() {
     queryFn: fetchStaffList,
   })
 
-  const { data: clinicOptions = [] } = useQuery(clinicOptionsQueryOptions())
-
-  const clinicNameById = (clinicId: string | null) => {
-    if (!clinicId) return "—"
-    return clinicOptions.find((clinic) => clinic.id === clinicId)?.name ?? "—"
-  }
+  const { data: clinicOptions = [] } = useQuery(clinicListQueryOptions())
 
   const deleteMutation = useMutation({
     mutationFn: deleteStaff,
@@ -195,7 +200,7 @@ export default function SettingsPage() {
                         {ROLE_LABEL[staff.role]}
                       </td>
                       <td className="px-4 py-3 text-slate-600">
-                        {clinicNameById(staff.clinicId)}
+                        {formatStaffClinics(staff, clinicOptions)}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -259,7 +264,7 @@ interface FormState {
   email: string
   password: string
   role: StaffRole
-  clinicId: string
+  clinicIds: string[]
   isActive: boolean
 }
 
@@ -269,7 +274,7 @@ function buildInitialForm(editing: Staff | null): FormState {
     email: editing?.email ?? "",
     password: "",
     role: editing?.role ?? "STAFF",
-    clinicId: editing?.clinicId ?? NO_CLINIC,
+    clinicIds: editing?.clinicIds ?? [],
     isActive: editing?.isActive ?? true,
   }
 }
@@ -298,15 +303,14 @@ function StaffFormDialog({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const clinicId =
-        form.clinicId === NO_CLINIC ? null : form.clinicId
+      const clinicIds = form.role === "ADMIN" ? [] : form.clinicIds
 
       if (isEdit && editing) {
         const payload: UpdateStaffPayload = {
           fullName: form.fullName,
           email: form.email,
           role: form.role,
-          clinicId,
+          clinicIds,
           isActive: form.isActive,
         }
         if (form.password.trim()) payload.password = form.password
@@ -318,7 +322,7 @@ function StaffFormDialog({
         email: form.email,
         password: form.password,
         role: form.role,
-        clinicId,
+        clinicIds,
         isActive: form.isActive,
       }
       return createStaff(payload)
@@ -329,6 +333,17 @@ function StaffFormDialog({
     },
     onError: (err) => toast.error(getErrorMessage(err, "Lưu thất bại")),
   })
+
+  function toggleClinic(clinicId: string) {
+    setForm((prev) => ({
+      ...prev,
+      clinicIds: prev.clinicIds.includes(clinicId)
+        ? prev.clinicIds.filter((id) => id !== clinicId)
+        : [...prev.clinicIds, clinicId],
+    }))
+  }
+
+  const showClinicPicker = form.role !== "ADMIN"
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -385,13 +400,17 @@ function StaffFormDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Vai trò</Label>
               <Select
                 value={form.role}
                 onValueChange={(value) =>
-                  setForm({ ...form, role: value as StaffRole })
+                  setForm({
+                    ...form,
+                    role: value as StaffRole,
+                    clinicIds: value === "ADMIN" ? [] : form.clinicIds,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -407,27 +426,38 @@ function StaffFormDialog({
               </Select>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Chi nhánh</Label>
-              <Select
-                value={form.clinicId}
-                onValueChange={(value) =>
-                  setForm({ ...form, clinicId: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_CLINIC}>Không</SelectItem>
-                  {clinicOptions.map((clinic) => (
-                    <SelectItem key={clinic.id} value={clinic.id}>
-                      {clinic.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {showClinicPicker ? (
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label>Cơ sở được phép</Label>
+                <div className="max-h-36 space-y-2 overflow-y-auto rounded-md border border-gray-200 p-3">
+                  {clinicOptions.length === 0 ? (
+                    <p className="text-sm text-slate-400">Chưa có cơ sở</p>
+                  ) : (
+                    clinicOptions.map((clinic) => (
+                      <label
+                        key={clinic.id}
+                        className="flex items-center gap-2 text-sm text-slate-700"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={form.clinicIds.includes(clinic.id)}
+                          onChange={() => toggleClinic(clinic.id)}
+                          className="h-4 w-4 accent-emerald-600"
+                        />
+                        {clinic.name}
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label>Cơ sở</Label>
+                <p className="rounded-md border border-gray-200 px-3 py-2 text-sm text-slate-500">
+                  Quản trị viên truy cập mọi cơ sở
+                </p>
+              </div>
+            )}
           </div>
 
           <label className="flex items-center gap-2 text-sm text-slate-700">

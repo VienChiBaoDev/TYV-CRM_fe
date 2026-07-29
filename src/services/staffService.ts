@@ -15,7 +15,7 @@ export interface StaffOption {
   id: string
   fullName: string
   role: StaffRole
-  clinicId: string | null
+  clinicIds: string[]
 }
 
 export async function fetchStaffOptions(): Promise<StaffOption[]> {
