@@ -27,8 +27,8 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      const { accessToken, user } = await login({ email, password })
-      setAuth(accessToken, user)
+      const { user } = await login({ email, password })
+      setAuth(user)
       queryClient.setQueryData(authKeys.me(), user)
       syncClinicFromUser(user)
       navigate(urlPaths.medicalRecordList, { replace: true })

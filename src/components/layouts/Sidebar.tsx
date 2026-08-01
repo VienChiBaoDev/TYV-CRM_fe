@@ -322,8 +322,8 @@ export function Sidebar({
     onClose?.()
   }, [location.pathname, variant, onClose])
 
-  function handleLogout() {
-    resetSession()
+  async function handleLogout() {
+    await resetSession()
     navigate(urlPaths.login, { replace: true })
   }
 
