@@ -1,5 +1,6 @@
 import { Building2, UserPlus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -10,23 +11,14 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { urlPaths } from "@/constants/urlPaths"
+import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
 import { useClinicStore } from "@/stores/clinic-store"
 
-// interface ListFiltersProps {
-//   referrers: Referrer[]
-//   selectedReferrer: string
-//   onReferrerChange: (value: string) => void
-// }
-
 export function ListFilters() {
-  //   {
-  //   referrers,
-  //   selectedReferrer,
-  //   onReferrerChange,
-  // }: ListFiltersProps
   const navigate = useNavigate()
-  const activeBranch = useClinicStore((state) => state.activeBranch)
-  const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
+  const activeClinicId = useClinicStore((state) => state.activeClinicId)
+  const setActiveClinicId = useClinicStore((state) => state.setActiveClinicId)
+  const { data: clinicOptions = [] } = useQuery(clinicOptionsQueryOptions())
 
   return (
     <div className="mb-4">
@@ -50,72 +42,24 @@ export function ListFilters() {
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        {/* Date Range Picker (Mock) */}
-        {/* <div className="flex items-center border border-gray-200 rounded-md bg-white text-sm shrink-0">
-          <button className="flex items-center gap-1 px-3 py-1.5 border-r border-gray-200 hover:bg-gray-50 text-slate-700">
-            Hôm nay <ChevronDown className="h-4 w-4" />
-          </button>
-          <div className="px-3 py-1.5 text-slate-600 flex items-center gap-2">
-            <div className="h-4 w-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">
-              i
-            </div>
-            23-06-2026 to 23-06-2026
-          </div>
-        </div> */}
-
-        {/* Bộ lọc chi nhánh */}
         <div className="flex shrink-0 items-center gap-1.5">
           <Building2 className="h-4 w-4 text-emerald-600" />
-          <Select value={activeBranch} onValueChange={setActiveBranch}>
-            <SelectTrigger className="w-[150px] bg-white text-sm">
-              <SelectValue placeholder="Chi nhánh" />
+          <Select
+            value={activeClinicId ?? ""}
+            onValueChange={(value) => setActiveClinicId(value || null)}
+          >
+            <SelectTrigger className="w-[180px] bg-white text-sm">
+              <SelectValue placeholder="Chọn cơ sở" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Hàng Bông">Hàng Bông</SelectItem>
-              <SelectItem value="Cầu Giấy">Cầu Giấy</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Bộ lọc người giới thiệu */}
-        {/* <div className="flex shrink-0 items-center gap-1.5">
-          <Users className="h-4 w-4 text-emerald-600" />
-          <Select value={selectedReferrer} onValueChange={onReferrerChange}>
-            <SelectTrigger className="w-[200px] bg-white text-sm">
-              <SelectValue placeholder="Người giới thiệu" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả người giới thiệu</SelectItem>
-              {referrers.map((referrer) => (
-                <SelectItem key={referrer.id} value={referrer.id}>
-                  {referrer.fullName}
+              {clinicOptions.map((clinic) => (
+                <SelectItem key={clinic.id} value={clinic.id}>
+                  {clinic.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div> */}
-
-        {/* Filter Tabs */}
-        {/* <button className="flex shrink-0 items-center gap-2 rounded-md border border-emerald-500 bg-white px-4 py-1.5 text-sm font-medium text-emerald-600 transition-colors hover:bg-emerald-50">
-          <Calendar className="h-4 w-4" />
-          Lịch hẹn
-        </button>
-        <button className="flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-1.5 text-sm text-slate-600 transition-colors hover:bg-gray-50">
-          <Stethoscope className="h-4 w-4" />
-          Dịch vụ
-        </button>
-        <button className="flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-1.5 text-sm text-slate-600 transition-colors hover:bg-gray-50">
-          <Activity className="h-4 w-4" />
-          Điều trị
-        </button>
-        <button className="flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-1.5 text-sm text-slate-600 transition-colors hover:bg-gray-50">
-          <CreditCard className="h-4 w-4" />
-          Thanh toán
-        </button>
-        <button className="flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-1.5 text-sm text-slate-600 transition-colors hover:bg-gray-50">
-          <FolderOpen className="h-4 w-4" />
-          Hồ sơ
-        </button> */}
+        </div>
       </div>
     </div>
   )

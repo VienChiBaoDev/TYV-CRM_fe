@@ -4,6 +4,7 @@ import type {
   ConsumableFormValues,
   StockInFormValues,
 } from "../schemas/consumable-form"
+import type { PaginatedResponse } from "@/types/pagination"
 
 export interface ConsumableApi {
   id: string
@@ -35,6 +36,17 @@ export interface ConsumableUsageApi {
   serviceName: string
   sessionNumber: number
   performedByName: string | null
+}
+
+export type PaginatedConsumableUsageApi = PaginatedResponse<ConsumableUsageApi>
+
+export interface FetchConsumableUsageParams {
+  page?: number
+  limit?: number
+  search?: string
+  from?: string
+  to?: string
+  consumableId?: string
 }
 
 export async function fetchConsumables(params?: {
@@ -82,12 +94,10 @@ export async function stockInConsumable(
   return data
 }
 
-export async function fetchConsumableUsage(params?: {
-  from?: string
-  to?: string
-  consumableId?: string
-}): Promise<ConsumableUsageApi[]> {
-  const { data } = await httpService.get<ConsumableUsageApi[]>(
+export async function fetchConsumableUsage(
+  params: FetchConsumableUsageParams = {}
+): Promise<PaginatedConsumableUsageApi> {
+  const { data } = await httpService.get<PaginatedConsumableUsageApi>(
     API_PATHS.consumables.usage,
     { params }
   )

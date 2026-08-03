@@ -1,11 +1,7 @@
 const API_PATHS = {
   AUTH: {
     LOGIN: "/auth/login",
-    REGISTER: "/auth/register",
-    FORGOT_PASSWORD: "/auth/forgot-password",
-    RESET_PASSWORD: "/auth/reset-password",
-    VERIFY_EMAIL: "/auth/verify-email",
-    VERIFY_OTP: "/auth/verify-otp",
+    LOGOUT: "/auth/logout",
     ME: "/auth/me",
   },
   followUps: {
@@ -41,6 +37,12 @@ const API_PATHS = {
     create: "/medicines",
     detail: (id: string) => `/medicines/${id}`,
     update: (id: string) => `/medicines/${id}`,
+  },
+  patients: {
+    list: "/patients",
+    create: "/patients",
+    detail: (id: string) => `/patients/${id}`,
+    update: (id: string) => `/patients/${id}`,
   },
   patientServices: {
     list: (patientId: string) => `/patients/${patientId}/services`,
@@ -101,6 +103,13 @@ const API_PATHS = {
     update: (id: string) => `/consumables/${id}`,
     stockIn: (id: string) => `/consumables/${id}/stock-in`,
     stockAdjust: (id: string) => `/consumables/${id}/stock-adjust`,
+  },
+  clinics: {
+    list: "/clinics",
+    options: "/clinics/options",
+    create: "/clinics",
+    update: (id: string) => `/clinics/${id}`,
+    delete: (id: string) => `/clinics/${id}`,
   },
 }
 

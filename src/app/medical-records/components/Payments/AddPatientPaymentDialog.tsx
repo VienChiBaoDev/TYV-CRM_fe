@@ -23,10 +23,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Form } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { CLINIC_BRANCHES } from "@/constants/clinic-branches"
+import { useActiveClinic } from "@/hooks/use-active-clinic"
 import { toFormDatetimeValue } from "@/lib/date-vi"
 import { cn } from "@/lib/utils"
-import { useClinicStore } from "@/stores/clinic-store"
+import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
 import {
   fetchBankAccountOptions,
   formatBankAccountLabel,
@@ -38,11 +38,6 @@ const PAYMENT_METHOD_OPTIONS = [
   { value: PAYMENT_METHOD.CASH, label: "Tiền mặt" },
   { value: PAYMENT_METHOD.BANK_TRANSFER, label: "Chuyển khoản" },
 ]
-
-const BRANCH_OPTIONS = CLINIC_BRANCHES.map((branch) => ({
-  value: branch.label,
-  label: `${branch.emoji} ${branch.label}`,
-}))
 
 interface AddPatientPaymentDialogProps {
   open: boolean
@@ -166,7 +161,16 @@ export function AddPatientPaymentDialog({
   onSave,
   isSubmitting = false,
 }: AddPatientPaymentDialogProps) {
-  const activeBranch = useClinicStore((state) => state.activeBranch)
+  const { activeClinic } = useActiveClinic()
+  const { data: clinicOptions = [] } = useQuery(clinicOptionsQueryOptions())
+  const branchOptions = useMemo(
+    () =>
+      clinicOptions.map((clinic) => ({
+        value: clinic.name,
+        label: clinic.name,
+      })),
+    [clinicOptions]
+  )
   const [selections, setSelections] = useState<Record<string, number>>({})
 
   const form = useForm<
@@ -218,9 +222,9 @@ export function AddPatientPaymentDialog({
     form.reset({
       ...patientPaymentFormDefaultValues,
       createdAt: toFormDatetimeValue(new Date()),
-      branch: activeBranch,
+      branch: activeClinic?.name ?? "",
     })
-  }, [open, form, activeBranch])
+  }, [open, form, activeClinic?.name])
 
   const handleToggleItem = (item: UnpaidPaymentItem, checked: boolean) => {
     setSelections((prev) => {
@@ -477,7 +481,7 @@ export function AddPatientPaymentDialog({
                     control={form.control}
                     name="branch"
                     label="Chi nhánh"
-                    options={BRANCH_OPTIONS}
+                    options={branchOptions}
                   />
 
                   <Separator />

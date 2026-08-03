@@ -1,3 +1,5 @@
+import type { PaginatedMeta } from "@/types/pagination"
+
 export interface PatientPaymentDetailApi {
   readonly amount: number
   readonly serviceCode: string
@@ -36,4 +38,5 @@ export interface PatientPaymentSummaryApi {
 export interface PatientPaymentsListApi {
   readonly summary: PatientPaymentSummaryApi
   readonly payments: PatientPaymentApi[]
+  readonly meta: PaginatedMeta
 }

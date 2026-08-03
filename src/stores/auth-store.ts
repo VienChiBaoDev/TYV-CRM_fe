@@ -4,9 +4,8 @@ import { persist } from "zustand/middleware"
 import type { AuthUser } from "@/interfaces/auth"
 
 interface AuthState {
-  token: string | null
   user: AuthUser | null
-  setAuth: (token: string, user: AuthUser) => void
+  setAuth: (user: AuthUser) => void
   setUser: (user: AuthUser) => void
   logout: () => void
 }
@@ -14,19 +13,14 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      token: null,
       user: null,
-      setAuth: (token, user) => set({ token, user }),
+      setAuth: (user) => set({ user }),
       setUser: (user) => set({ user }),
-      logout: () => set({ token: null, user: null }),
+      logout: () => set({ user: null }),
     }),
     {
       name: "tyv-auth",
+      partialize: (state) => ({ user: state.user }),
     }
   )
 )
-
-/** Đọc token ngoài React (vd: trong axios interceptor). */
-export function getAuthToken(): string | null {
-  return useAuthStore.getState().token
-}

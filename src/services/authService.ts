@@ -10,6 +10,10 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
   return data
 }
 
+export async function logout(): Promise<void> {
+  await httpService.post(API_PATHS.AUTH.LOGOUT)
+}
+
 export async function fetchMe(): Promise<AuthUser> {
   const { data } = await httpService.get<AuthUser>(API_PATHS.AUTH.ME)
   return data

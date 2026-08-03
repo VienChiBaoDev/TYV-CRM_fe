@@ -9,8 +9,6 @@ import { FormTextarea } from "@/components/FieldCustom/FormTextarea"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 
-import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
-
 import {
   DAY_END_HOUR,
   DAY_START_HOUR,
@@ -49,7 +47,7 @@ export interface StaffShiftDialogContext {
 interface StaffShiftDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  branch: ClinicBranchCode
+  clinicId: string | null
   context: StaffShiftDialogContext | null
 }
 
@@ -109,7 +107,7 @@ function buildDefaultValues(
 export function StaffShiftDialog({
   open,
   onOpenChange,
-  branch,
+  clinicId,
   context,
 }: StaffShiftDialogProps) {
   const form = useForm<StaffShiftFormValues>({
@@ -141,15 +139,17 @@ export function StaffShiftDialog({
       note: values.note || undefined,
     }
 
+    if (!clinicId) return
+
     if (isEdit && context.shift) {
       await updateMutation.mutateAsync({
         id: context.shift.id,
-        payload: { ...payload, clinicBranch: branch },
+        payload: { ...payload, clinicId },
       })
     } else {
       await createMutation.mutateAsync({
         staffId: context.staffId,
-        clinicBranch: branch,
+        clinicId,
         ...payload,
       })
     }

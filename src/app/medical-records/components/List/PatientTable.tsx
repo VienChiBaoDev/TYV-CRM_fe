@@ -1,4 +1,4 @@
-import { ArrowDown, Filter, Menu } from "lucide-react"
+import { ArrowDown, Filter, Menu, Pencil } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import { urlPaths } from "@/constants/urlPaths"
@@ -8,12 +8,14 @@ interface PatientTableProps {
   patients: Patient[]
   loading: boolean
   selectedReferrerName: string | null
+  onEditPatient: (patientId: string) => void
 }
 
 export function PatientTable({
   patients,
   loading,
   selectedReferrerName,
+  onEditPatient,
 }: PatientTableProps) {
   const navigate = useNavigate()
 
@@ -67,19 +69,22 @@ export function PatientTable({
                 <Filter className="h-4 w-4 mx-auto text-slate-400" />
               </th>
               <th className="px-4 py-3 border-r border-gray-200">Nguồn</th>
-              <th className="px-4 py-3">Người giới thiệu</th>
+              <th className="px-4 py-3 border-r border-gray-200">
+                Người giới thiệu
+              </th>
+              <th className="px-4 py-3 w-20 text-center">Sửa</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-slate-400">
                   Đang tải...
                 </td>
               </tr>
             ) : patients.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-slate-400">
                   Chưa có khách hàng nào
                 </td>
               </tr>
@@ -115,10 +120,24 @@ export function PatientTable({
                   <td className="px-4 py-4 text-slate-700 border-r border-gray-200">
                     {row.source ?? <span className="text-slate-400">—</span>}
                   </td>
-                  <td className="px-4 py-4 text-slate-700">
+                  <td className="px-4 py-4 text-slate-700 border-r border-gray-200">
                     {row.referrer?.fullName ?? (
                       <span className="text-slate-400">—</span>
                     )}
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <button
+                      type="button"
+                      title="Sửa khách hàng"
+                      aria-label="Sửa khách hàng"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onEditPatient(row.id)
+                      }}
+                      className="inline-flex items-center justify-center rounded-md p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
                   </td>
                 </tr>
               ))

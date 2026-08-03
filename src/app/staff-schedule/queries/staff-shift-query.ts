@@ -3,28 +3,27 @@ import {
   fetchStaffShifts,
   type StaffShift,
 } from "../services/staffShiftService"
-import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
 
 export const staffShiftKeys = {
   all: ["staff-shifts"] as const,
   week: (
     staffId: string,
-    branch: ClinicBranchCode | undefined,
+    clinicId: string | undefined,
     from: string,
     to: string
-  ) => [...staffShiftKeys.all, "week", staffId, branch, from, to] as const,
+  ) => [...staffShiftKeys.all, "week", staffId, clinicId, from, to] as const,
 }
 
 export function weekStaffShiftsQueryOptions(params: {
   staffId: string
-  branch?: ClinicBranchCode
+  clinicId?: string
   from: string
   to: string
 }) {
   return queryOptions({
     queryKey: staffShiftKeys.week(
       params.staffId,
-      params.branch,
+      params.clinicId,
       params.from,
       params.to
     ),

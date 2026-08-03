@@ -4,12 +4,11 @@ import {
   fetchAppointments,
   type Appointment,
 } from "@/app/appointments/services/appointmentService"
-import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
 
 export const appointmentKeys = {
   all: ["appointments"] as const,
   week: (
-    branch: ClinicBranchCode | undefined,
+    clinicId: string | undefined,
     from: string,
     to: string,
     doctorId?: string
@@ -17,7 +16,7 @@ export const appointmentKeys = {
     [
       ...appointmentKeys.all,
       "week",
-      branch,
+      clinicId,
       from,
       to,
       doctorId ?? "all",
@@ -25,14 +24,14 @@ export const appointmentKeys = {
 }
 
 export function weekAppointmentsQueryOptions(params: {
-  branch?: ClinicBranchCode
+  clinicId?: string
   from: string
   to: string
   doctorId?: string
 }) {
   return queryOptions({
     queryKey: appointmentKeys.week(
-      params.branch,
+      params.clinicId,
       params.from,
       params.to,
       params.doctorId

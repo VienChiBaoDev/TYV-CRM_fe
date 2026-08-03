@@ -5,6 +5,11 @@ import { useMemo, useState } from "react"
 import { ConsumableDialog } from "@/app/consumables/components/ConsumableDialog"
 import { StockInDialog } from "@/app/consumables/components/StockInDialog"
 import {
+  ConsumableUsageFiltersBar,
+  type ConsumableUsageFilters,
+} from "@/app/consumables/components/ConsumableUsageFiltersBar"
+import { createConsumableUsageTableColumns } from "@/app/consumables/components/consumable-usage-table-columns"
+import {
   useCreateConsumableMutation,
   useStockInConsumableMutation,
   useUpdateConsumableMutation,
@@ -14,16 +19,40 @@ import {
   consumableUsageQueryOptions,
 } from "@/app/consumables/queries/consumable-query"
 import type { ConsumableFormValues } from "@/app/consumables/schemas/consumable-form"
-import type {
-  ConsumableApi,
-  ConsumableUsageApi,
-} from "@/app/consumables/services/consumable-api"
+import type { ConsumableApi } from "@/app/consumables/services/consumable-api"
+import { DataTable } from "@/components/data-table/data-table"
 import { PageHeader } from "@/components/UiCustom/PageHeader"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MODAL_MODE, type ModalModeType } from "@/constants/common"
-import { formatDatetimeVi } from "@/lib/date-vi"
+import {
+  isoDateToApiDatetime,
+  isoDateToApiDatetimeEndOfDay,
+} from "@/lib/date-vi"
+import { DEFAULT_LIMIT } from "@/types/pagination"
+import type { FetchConsumableUsageParams } from "@/app/consumables/services/consumable-api"
+
+const DEFAULT_USAGE_FILTERS: ConsumableUsageFilters = {
+  search: "",
+  from: "",
+  to: "",
+}
+
+function buildUsageApiFilters(
+  filters: ConsumableUsageFilters,
+  page: number,
+  limit: number
+): FetchConsumableUsageParams {
+  const params: FetchConsumableUsageParams = { page, limit }
+
+  const search = filters.search.trim()
+  if (search) params.search = search
+  if (filters.from) params.from = isoDateToApiDatetime(filters.from)
+  if (filters.to) params.to = isoDateToApiDatetimeEndOfDay(filters.to)
+
+  return params
+}
 
 export function ConsumablesPage() {
   const [search, setSearch] = useState("")
@@ -34,14 +63,32 @@ export function ConsumablesPage() {
   const [stockInTarget, setStockInTarget] = useState<ConsumableApi | null>(
     null
   )
+  const [usagePage, setUsagePage] = useState(1)
+  const [usageDraftFilters, setUsageDraftFilters] =
+    useState<ConsumableUsageFilters>(DEFAULT_USAGE_FILTERS)
+  const [usageAppliedFilters, setUsageAppliedFilters] =
+    useState<ConsumableUsageFilters>(DEFAULT_USAGE_FILTERS)
 
   const listFilters = useMemo(() => ({ search: appliedSearch }), [appliedSearch])
+  const usageFilters = useMemo(
+    () => buildUsageApiFilters(usageAppliedFilters, usagePage, DEFAULT_LIMIT),
+    [usageAppliedFilters, usagePage]
+  )
 
   const { data: consumables = [], isLoading } = useQuery(
     consumableListQueryOptions(listFilters)
   )
-  const { data: usageRows = [], isLoading: isUsageLoading } = useQuery(
-    consumableUsageQueryOptions()
+  const { data: usageData, isLoading: isUsageLoading } = useQuery(
+    consumableUsageQueryOptions(usageFilters)
+  )
+
+  const usageRows = usageData?.data ?? []
+  const usageMeta = usageData?.meta
+  const usageRowOffset = (usagePage - 1) * DEFAULT_LIMIT
+
+  const usageColumns = useMemo(
+    () => createConsumableUsageTableColumns({ rowOffset: usageRowOffset }),
+    [usageRowOffset]
   )
 
   const createMutation = useCreateConsumableMutation()
@@ -84,6 +131,11 @@ export function ConsumablesPage() {
     } catch {
       return false
     }
+  }
+
+  const handleApplyUsageFilters = () => {
+    setUsageAppliedFilters(usageDraftFilters)
+    setUsagePage(1)
   }
 
   return (
@@ -223,73 +275,21 @@ export function ConsumablesPage() {
           </TabsContent>
 
           <TabsContent value="usage" className="min-h-0 flex-1">
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-gray-200 bg-[#f8fbfb] text-xs font-semibold text-slate-700 uppercase">
-                  <tr>
-                    <th className="px-4 py-3">Ngày</th>
-                    <th className="px-4 py-3">Khách hàng</th>
-                    <th className="px-4 py-3">Dịch vụ</th>
-                    <th className="px-4 py-3">Buổi</th>
-                    <th className="px-4 py-3">Vật tư</th>
-                    <th className="px-4 py-3">Số lượng</th>
-                    <th className="px-4 py-3">Người thực hiện</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {isUsageLoading ? (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        className="px-4 py-10 text-center text-slate-400"
-                      >
-                        Đang tải...
-                      </td>
-                    </tr>
-                  ) : usageRows.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        className="px-4 py-10 text-center text-slate-400"
-                      >
-                        Chưa có dữ liệu tiêu hao
-                      </td>
-                    </tr>
-                  ) : (
-                    usageRows.map((row: ConsumableUsageApi) => (
-                      <tr
-                        key={row.id}
-                        className="border-b border-gray-100 hover:bg-gray-50"
-                      >
-                        <td className="px-4 py-3 text-slate-600">
-                          {formatDatetimeVi(row.performedAt)}
-                        </td>
-                        <td className="px-4 py-3 text-slate-700">
-                          <div className="font-medium">{row.patientName}</div>
-                          <div className="text-xs text-slate-400">
-                            {row.patientCode}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {row.serviceName}
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {row.sessionNumber}
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {row.consumableName}
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {row.quantity} {row.unit}
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {row.performedByName ?? "—"}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            <ConsumableUsageFiltersBar
+              filters={usageDraftFilters}
+              onFiltersChange={setUsageDraftFilters}
+              onApply={handleApplyUsageFilters}
+            />
+            <div className="min-h-0 flex-1 overflow-auto">
+              <DataTable
+                columns={usageColumns}
+                data={usageRows}
+                loading={isUsageLoading}
+                classNameTable="border-0 p-0 shadow-none"
+                pageIndex={usagePage - 1}
+                pageCount={Math.max(usageMeta?.totalPages ?? 0, 1)}
+                onPageChange={(nextPageIndex) => setUsagePage(nextPageIndex + 1)}
+              />
             </div>
           </TabsContent>
         </Tabs>

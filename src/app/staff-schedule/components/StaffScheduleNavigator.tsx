@@ -15,14 +15,14 @@ import { formatWeekTitle, shiftWeek } from "@/app/appointments/utils/week-range"
 interface StaffScheduleNavigatorProps {
   anchorDate: Date
   onAnchorChange: (date: Date) => void
-  activeBranch: string
+  activeClinicName: string
   shiftCount: number
 }
 /**Thanh điều hướng lịch làm việc của nhân viên. Header tuần + meta cơ sở*/
 export function StaffScheduleNavigator({
   anchorDate,
   onAnchorChange,
-  activeBranch,
+  activeClinicName,
   shiftCount,
 }: StaffScheduleNavigatorProps) {
   return (
@@ -66,7 +66,7 @@ export function StaffScheduleNavigator({
         <CalendarDays className="size-4 shrink-0" />
 
         <span>
-          Cơ sở: <strong className="text-foreground">{activeBranch}</strong>
+          Cơ sở: <strong className="text-foreground">{activeClinicName}</strong>
         </span>
 
         <Badge variant="outline">

@@ -36,7 +36,7 @@ export function useCreatePatientPaymentMutation(patientId: string) {
         0
       )
       queryClient.invalidateQueries({
-        queryKey: patientPaymentKeys.list(patientId),
+        queryKey: patientPaymentKeys.byPatient(patientId),
         refetchType: "all",
       })
       queryClient.invalidateQueries({
@@ -75,7 +75,7 @@ export function useCreatePatientRefundMutation(patientId: string) {
         0
       )
       queryClient.invalidateQueries({
-        queryKey: patientPaymentKeys.list(patientId),
+        queryKey: patientPaymentKeys.byPatient(patientId),
         refetchType: "all",
       })
       queryClient.invalidateQueries({

@@ -1,5 +1,3 @@
-import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
-
 export interface FollowUpSchedule {
   id: string
   patientId: string
@@ -32,8 +30,8 @@ export interface FollowUpScheduleApiResponse {
   readonly patientCode: string
   readonly followUpDate: string
   readonly physicianInCharge: string
-  readonly facility: ClinicBranchCode
-  readonly facilityLabel: string
+  readonly clinicId: string
+  readonly clinicName: string
   readonly scheduleStatus: "SCHEDULED" | "NOT_SCHEDULED"
   readonly scheduleStatusFe: number
   readonly originatingVisitId: string

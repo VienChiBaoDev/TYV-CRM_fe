@@ -10,8 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { toClinicBranchCode } from "@/lib/clinic-branch"
-import { useClinicStore } from "@/stores/clinic-store"
+import { useActiveClinic } from "@/hooks/use-active-clinic"
 import { useStaffPickerOptions } from "@/hooks/use-staff-picker-options"
 import {
   getWeekRange,
@@ -27,8 +26,7 @@ import {
 } from "./StaffShiftDialog"
 /**Trang lịch làm việc của nhân viên.*/
 export function StaffSchedulesPage() {
-  const activeBranch = useClinicStore((state) => state.activeBranch)
-  const branch = toClinicBranchCode(activeBranch)
+  const { activeClinicId, activeClinic } = useActiveClinic()
   const [anchorDate, setAnchorDate] = useState(() => new Date())
   const [staffId, setStaffId] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -40,16 +38,25 @@ export function StaffSchedulesPage() {
   const staffSelectOptions = useMemo(
     () =>
       staffOptions
-        .filter((staff) => !staff.clinicBranch || staff.clinicBranch === branch)
+        .filter(
+          (staff) =>
+            activeClinicId !== null &&
+            (staff.clinicIds ?? []).includes(activeClinicId)
+        )
         .map((staff) => ({ value: staff.id, label: staff.fullName })),
-    [staffOptions, branch]
+    [staffOptions, activeClinicId]
   )
 
   const { start, end } = getWeekRange(anchorDate)
   const { from, to } = toApiRangeIso(start, end)
 
   const { data: shifts = [], isLoading } = useQuery(
-    weekStaffShiftsQueryOptions({ staffId, branch, from, to })
+    weekStaffShiftsQueryOptions({
+      staffId,
+      clinicId: activeClinicId ?? undefined,
+      from,
+      to,
+    })
   )
 
   const openCreate = (day?: Date, hour?: number, minute?: number) => {
@@ -94,13 +101,9 @@ export function StaffSchedulesPage() {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col gap-3 overflow-hidden bg-background p-3 md:p-4">
       <StaffScheduleNavigator
-        /**Ngày chọn làm mốc để hiển thị lịch làm việc.*/
         anchorDate={anchorDate}
-        /**Hàm callback để thay đổi ngày chọn làm mốc.*/
         onAnchorChange={setAnchorDate}
-        /**Mã cơ sở được chọn.*/
-        activeBranch={activeBranch}
-        /**Số lượng ca làm trong tuần.*/
+        activeClinicName={activeClinic?.name ?? "Chưa chọn cơ sở"}
         shiftCount={shifts.length}
       />
       <div className="flex shrink-0 flex-wrap items-end gap-3">
@@ -141,26 +144,17 @@ export function StaffSchedulesPage() {
         </div>
       ) : (
         <StaffScheduleGrid
-          /**Ngày chọn làm mốc để hiển thị lịch làm việc.*/
           anchorDate={anchorDate}
-          /**Danh sách ca làm trong tuần.*/
           shifts={shifts}
-          /**Trạng thái loading của lịch làm việc.*/
           loading={isLoading}
-          /**Hàm callback để mở dialog thêm/sửa ca làm.*/
           onSlotClick={(day, hour, minute) => openCreate(day, hour, minute)}
-          /**Hàm callback để mở dialog sửa ca làm.*/
           onShiftClick={openEdit}
         />
       )}
       <StaffShiftDialog
-        /**Trạng thái open của dialog.*/
         open={dialogOpen}
-        /**Hàm callback để thay đổi trạng thái open của dialog.*/
         onOpenChange={setDialogOpen}
-        /**Mã cơ sở được chọn.*/
-        branch={branch}
-        /**Context của dialog.*/
+        clinicId={activeClinicId}
         context={dialogContext}
       />
     </div>

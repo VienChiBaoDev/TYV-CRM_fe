@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils"
 
 export interface PaymentTableColumnOptions {
+  rowOffset?: number
   onViewDetail?: (payment: PatientPayment) => void
   onPrint?: (payment: PatientPayment) => void
 }
@@ -24,14 +25,14 @@ export interface PaymentTableColumnOptions {
 export function createPaymentTableColumns(
   options: PaymentTableColumnOptions = {}
 ): ColumnDef<PatientPayment>[] {
-  const { onViewDetail, onPrint } = options
+  const { rowOffset = 0, onViewDetail, onPrint } = options
 
   return [
     {
       id: "index",
       header: "#",
       cell: ({ row }) => (
-        <span className="text-slate-500">{row.index + 1}</span>
+        <span className="text-slate-500">{rowOffset + row.index + 1}</span>
       ),
     },
     {

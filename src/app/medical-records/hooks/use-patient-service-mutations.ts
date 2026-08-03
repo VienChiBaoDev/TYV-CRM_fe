@@ -31,7 +31,7 @@ export function useCreatePatientServiceMutation(patientId: string) {
         refetchType: "all",
       })
       queryClient.invalidateQueries({
-        queryKey: patientPaymentKeys.list(patientId),
+        queryKey: patientPaymentKeys.byPatient(patientId),
         refetchType: "all",
       })
       toast.success("Thêm dịch vụ thành công")
@@ -54,7 +54,7 @@ export function useDeletePatientServiceMutation(patientId: string) {
         refetchType: "all",
       })
       queryClient.invalidateQueries({
-        queryKey: patientPaymentKeys.list(patientId),
+        queryKey: patientPaymentKeys.byPatient(patientId),
         refetchType: "all",
       })
       toast.success("Đã xóa dịch vụ")
@@ -77,7 +77,7 @@ export function useCancelPatientServiceMutation(patientId: string) {
         refetchType: "all",
       })
       queryClient.invalidateQueries({
-        queryKey: patientPaymentKeys.list(patientId),
+        queryKey: patientPaymentKeys.byPatient(patientId),
         refetchType: "all",
       })
       toast.success("Đã hủy dịch vụ")
@@ -110,7 +110,7 @@ export function useUpdatePatientServiceMutation(patientId: string) {
         refetchType: "all",
       })
       queryClient.invalidateQueries({
-        queryKey: patientPaymentKeys.list(patientId),
+        queryKey: patientPaymentKeys.byPatient(patientId),
         refetchType: "all",
       })
       toast.success("Cập nhật dịch vụ thành công")

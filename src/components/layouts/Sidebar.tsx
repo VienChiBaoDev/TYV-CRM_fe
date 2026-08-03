@@ -21,8 +21,9 @@ import {
   Package,
 } from "lucide-react"
 
-import { CLINIC_BRANCHES } from "@/constants/clinic-branches"
 import { urlPaths } from "@/constants/urlPaths"
+import { useActiveClinic } from "@/hooks/use-active-clinic"
+import { resetSession } from "@/lib/reset-session"
 import {
   Select,
   SelectContent,
@@ -30,11 +31,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { getBranchEmoji } from "@/lib/clinic-branch"
 import { ROLE_LABEL } from "@/interfaces/auth"
 import { useAuthStore } from "@/stores/auth-store"
 import { cn } from "@/lib/utils"
-import { useClinicStore, type ClinicBranch } from "@/stores/clinic-store"
+import { useClinicStore } from "@/stores/clinic-store"
 
 interface NavItem {
   to?: string
@@ -307,9 +307,10 @@ export function Sidebar({
   const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
-  const logout = useAuthStore((state) => state.logout)
-  const activeBranch = useClinicStore((state) => state.activeBranch)
-  const setActiveBranch = useClinicStore((state) => state.setActiveBranch)
+  const { activeClinicId, activeClinic, clinicOptions, canSwitchBranch } =
+    useActiveClinic()
+  const setActiveClinicId = useClinicStore((state) => state.setActiveClinicId)
+  const activeClinicName = activeClinic?.name ?? null
   const isAdmin = user?.role === "ADMIN"
 
   const prevPathRef = useRef(location.pathname)
@@ -321,8 +322,8 @@ export function Sidebar({
     onClose?.()
   }, [location.pathname, variant, onClose])
 
-  function handleLogout() {
-    logout()
+  async function handleLogout() {
+    await resetSession()
     navigate(urlPaths.login, { replace: true })
   }
 
@@ -380,20 +381,17 @@ export function Sidebar({
             <p className="px-1 text-[10px] font-bold tracking-wider text-emerald-400 uppercase">
               Cơ sở
             </p>
-            {/* {canSwitchBranch ? ( */}
+            {canSwitchBranch ? (
             <Select
-              value={activeBranch}
-              onValueChange={(value) => setActiveBranch(value as ClinicBranch)}
+              value={activeClinicId ?? ""}
+              onValueChange={(value) => setActiveClinicId(value || null)}
             >
               <SelectTrigger
                 id="branch-select"
                 className="w-full border-[#f8e3a3] bg-sidebar-primary/60 text-sidebar-primary-foreground shadow-none hover:border-[#f8e3a3]/60 hover:bg-sidebar-primary/40 focus-visible:ring-[#f8e3a3]/30 data-[state=open]:border-[#f8e3a3] data-[state=open]:ring-[#f8e3a3]/30 [&_svg]:text-white"
               >
                 <SelectValue placeholder="Chọn cơ sở">
-                  <span className="flex items-center gap-1.5">
-                    <span>{getBranchEmoji(activeBranch)}</span>
-                    {activeBranch}
-                  </span>
+                  {activeClinicName ?? "Chọn cơ sở"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent
@@ -401,28 +399,22 @@ export function Sidebar({
                 sideOffset={4}
                 className="border-[#f8e3a3]/40 bg-sidebar-primary text-sidebar-primary-foreground"
               >
-                {CLINIC_BRANCHES.map((branch) => (
+                {clinicOptions.map((clinic) => (
                   <SelectItem
-                    key={branch.code}
-                    value={branch.label}
+                    key={clinic.id}
+                    value={clinic.id}
                     className="text-sidebar-primary-foreground focus:bg-[#f8e3a3]/60 focus:text-sidebar-primary-foreground data-[state=checked]:bg-[#f8e3a3]/50 data-[state=checked]:text-sidebar-primary-foreground"
                   >
-                    <span>{branch.emoji}</span>
-                    {branch.label}
+                    {clinic.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {/* ) : ( */}
-            {/* <div
-                id="branch-select"
-                className="flex w-full items-center gap-1.5 rounded-md border border-emerald-800/40 bg-primary/60 px-3 py-2 text-sm text-emerald-100"
-              >
-                <span>{getBranchEmoji(activeBranch)}</span>
-                  {activeBranch}
-              </div> */}
-            {/* ) */}
-            {/* )} */}
+            ) : (
+              <p className="rounded-md border border-[#f8e3a3]/40 px-3 py-2 text-sm text-sidebar-primary-foreground">
+                {activeClinicName ?? "Chưa chọn cơ sở"}
+              </p>
+            )}
           </div>
         </div>
       </div>

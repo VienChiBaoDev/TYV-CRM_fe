@@ -1,5 +1,4 @@
 import { queryOptions } from "@tanstack/react-query"
-import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
 import {
   fetchPendingAssessments,
   fetchUpcomingFollowUps,
@@ -13,7 +12,7 @@ import type { PaginatedMeta } from "@/types/pagination"
 import { UPCOMING_DAYS_AHEAD } from "../components/FollowUpSchedule"
 
 export interface FollowUpListQueryParams {
-  branch?: ClinicBranchCode
+  clinicId?: string
   page?: number
   limit?: number
 }
@@ -29,7 +28,7 @@ export const followUpKeys = {
     [
       ...followUpKeys.all,
       "upcoming",
-      params.branch,
+      params.clinicId,
       params.daysAhead ?? UPCOMING_DAYS_AHEAD,
       params.page ?? DEFAULT_PAGE,
       params.limit ?? DEFAULT_LIMIT,
@@ -38,7 +37,7 @@ export const followUpKeys = {
     [
       ...followUpKeys.all,
       "pending-assessment",
-      params.branch,
+      params.clinicId,
       params.page ?? DEFAULT_PAGE,
       params.limit ?? DEFAULT_LIMIT,
     ] as const,

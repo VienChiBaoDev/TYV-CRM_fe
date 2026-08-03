@@ -1,4 +1,3 @@
-import type { ClinicBranchCode } from "@/app/medical-records/data/patientService"
 import httpService from "@/services/httpService"
 import type {
   FollowUpScheduleApiResponse,
@@ -12,7 +11,7 @@ import type { PaginatedResponse } from "@/types/pagination"
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/types/pagination"
 
 interface FollowUpListParams {
-  branch?: ClinicBranchCode
+  clinicId?: string
   page?: number
   limit?: number
 }
@@ -24,7 +23,7 @@ export async function fetchUpcomingFollowUps(
     PaginatedResponse<FollowUpScheduleApiResponse>
   >(API_PATHS.followUps.upcoming, {
     params: {
-      branch: params?.branch,
+      clinicId: params?.clinicId,
       daysAhead: params?.daysAhead,
       page: params?.page ?? DEFAULT_PAGE,
       limit: params?.limit ?? DEFAULT_LIMIT,
@@ -40,7 +39,7 @@ export async function fetchPendingAssessments(
     PaginatedResponse<PendingAssessmentApiResponse>
   >(API_PATHS.followUps.pendingAssessment, {
     params: {
-      branch: params?.branch,
+      clinicId: params?.clinicId,
       page: params?.page ?? DEFAULT_PAGE,
       limit: params?.limit ?? DEFAULT_LIMIT,
     },
