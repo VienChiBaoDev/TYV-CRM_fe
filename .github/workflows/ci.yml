@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint, Typecheck & Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Còn 12 lỗi lint sẵn có (react-hooks v7, shadcn/ui) — chưa chặn CI.
+      # Sau khi fix hết, xóa continue-on-error để lint chặn merge.
+      - name: Lint (non-blocking)
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        env:
+          VITE_API_URL: https://placeholder-api.example.com
+        run: npm run build
+
+      - name: Check dist outputs
+        run: |
+          test -f dist/index.html
+          echo "Build OK — dist/index.html present"
