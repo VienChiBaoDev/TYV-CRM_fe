@@ -20,10 +20,11 @@ export function clinicListQueryOptions() {
   })
 }
 
-export function clinicOptionsQueryOptions() {
+export function clinicOptionsQueryOptions(enabled = true) {
   return queryOptions({
     queryKey: clinicKeys.options(),
     queryFn: fetchClinicOptions,
+    enabled,
     staleTime: 60_000,
   })
 }
