@@ -405,7 +405,7 @@ export function Sidebar({
               </button>
             ) : null}
             <img
-              src="../public/Logo.jpg"
+              src="Logo.jpg"
               alt="Thượng Y Viên"
               className="h-20 w-20 rounded-xl border border-[#f8e3a3] object-cover"
             />
@@ -426,34 +426,34 @@ export function Sidebar({
               Cơ sở
             </p>
             {canSwitchBranch ? (
-            <Select
-              value={activeClinicId ?? ""}
-              onValueChange={(value) => setActiveClinicId(value || null)}
-            >
-              <SelectTrigger
-                id="branch-select"
-                className="w-full border-[#f8e3a3] bg-sidebar-primary/60 text-sidebar-primary-foreground shadow-none hover:border-[#f8e3a3]/60 hover:bg-sidebar-primary/40 focus-visible:ring-[#f8e3a3]/30 data-[state=open]:border-[#f8e3a3] data-[state=open]:ring-[#f8e3a3]/30 [&_svg]:text-white"
+              <Select
+                value={activeClinicId ?? ""}
+                onValueChange={(value) => setActiveClinicId(value || null)}
               >
-                <SelectValue placeholder="Chọn cơ sở">
-                  {activeClinicName ?? "Chọn cơ sở"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent
-                position="popper"
-                sideOffset={4}
-                className="border-[#f8e3a3]/40 bg-sidebar-primary text-sidebar-primary-foreground"
-              >
-                {clinicOptions.map((clinic) => (
-                  <SelectItem
-                    key={clinic.id}
-                    value={clinic.id}
-                    className="text-sidebar-primary-foreground focus:bg-[#f8e3a3]/60 focus:text-sidebar-primary-foreground data-[state=checked]:bg-[#f8e3a3]/50 data-[state=checked]:text-sidebar-primary-foreground"
-                  >
-                    {clinic.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger
+                  id="branch-select"
+                  className="w-full border-[#f8e3a3] bg-sidebar-primary/60 text-sidebar-primary-foreground shadow-none hover:border-[#f8e3a3]/60 hover:bg-sidebar-primary/40 focus-visible:ring-[#f8e3a3]/30 data-[state=open]:border-[#f8e3a3] data-[state=open]:ring-[#f8e3a3]/30 [&_svg]:text-white"
+                >
+                  <SelectValue placeholder="Chọn cơ sở">
+                    {activeClinicName ?? "Chọn cơ sở"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  sideOffset={4}
+                  className="border-[#f8e3a3]/40 bg-sidebar-primary text-sidebar-primary-foreground"
+                >
+                  {clinicOptions.map((clinic) => (
+                    <SelectItem
+                      key={clinic.id}
+                      value={clinic.id}
+                      className="text-sidebar-primary-foreground focus:bg-[#f8e3a3]/60 focus:text-sidebar-primary-foreground data-[state=checked]:bg-[#f8e3a3]/50 data-[state=checked]:text-sidebar-primary-foreground"
+                    >
+                      {clinic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
               <p className="rounded-md border border-[#f8e3a3]/40 px-3 py-2 text-sm text-sidebar-primary-foreground">
                 {activeClinicName ?? "Chưa chọn cơ sở"}
