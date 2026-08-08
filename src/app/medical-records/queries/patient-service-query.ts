@@ -8,14 +8,17 @@ export const patientServiceKeys = {
     [...patientServiceKeys.all, "list", patientId] as const,
 }
 
-export function patientServicesQueryOptions(patientId: string) {
+export function patientServicesQueryOptions(
+  patientId: string,
+  enabled = true
+) {
   return queryOptions({
     queryKey: patientServiceKeys.list(patientId),
     queryFn: async () => {
       const records = await fetchPatientServices(patientId)
       return records.map(mapPatientServiceFromApi)
     },
-    enabled: Boolean(patientId),
+    enabled: Boolean(patientId) && enabled,
     staleTime: 30_000,
   })
 }

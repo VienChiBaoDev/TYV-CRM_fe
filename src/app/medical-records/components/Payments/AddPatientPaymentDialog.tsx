@@ -26,11 +26,9 @@ import { Separator } from "@/components/ui/separator"
 import { useActiveClinic } from "@/hooks/use-active-clinic"
 import { toFormDatetimeValue } from "@/lib/date-vi"
 import { cn } from "@/lib/utils"
+import { bankAccountOptionsQueryOptions } from "@/queries/bank-account-query"
 import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
-import {
-  fetchBankAccountOptions,
-  formatBankAccountLabel,
-} from "@/services/bankAccountService"
+import { formatBankAccountLabel } from "@/services/bankAccountService"
 
 const PRIMARY_BTN = "bg-emerald-600 text-white hover:bg-primary font-semibold"
 
@@ -162,7 +160,9 @@ export function AddPatientPaymentDialog({
   isSubmitting = false,
 }: AddPatientPaymentDialogProps) {
   const { activeClinic } = useActiveClinic()
-  const { data: clinicOptions = [] } = useQuery(clinicOptionsQueryOptions())
+  const { data: clinicOptions = [] } = useQuery(
+    clinicOptionsQueryOptions(open)
+  )
   const branchOptions = useMemo(
     () =>
       clinicOptions.map((clinic) => ({
@@ -185,10 +185,9 @@ export function AddPatientPaymentDialog({
   const paymentMethod = form.watch("paymentMethod")
   const isBankTransfer = paymentMethod === PAYMENT_METHOD.BANK_TRANSFER
 
-  const { data: bankAccounts = [] } = useQuery({
-    queryKey: ["bank-accounts", "options"],
-    queryFn: fetchBankAccountOptions,
-  })
+  const { data: bankAccounts = [] } = useQuery(
+    bankAccountOptionsQueryOptions(open)
+  )
 
   const bankAccountOptions = useMemo(
     () =>

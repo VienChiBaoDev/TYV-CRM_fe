@@ -22,7 +22,9 @@ import {
 } from "lucide-react"
 
 import { urlPaths } from "@/constants/urlPaths"
+import { PERMISSIONS, type PermissionCode } from "@/constants/permissions"
 import { useActiveClinic } from "@/hooks/use-active-clinic"
+import { userHasAnyPermission } from "@/lib/permissions"
 import { resetSession } from "@/lib/reset-session"
 import {
   Select,
@@ -41,6 +43,8 @@ interface NavItem {
   label: string
   icon: React.ReactNode
   isHighlighted?: boolean
+  /** Any of these permissions unlocks the item; omit = always show when logged in. */
+  permissions?: PermissionCode[]
   children?: { label: string; to: string }[]
 }
 
@@ -54,16 +58,19 @@ const OPERATION_NAV_ITEMS: NavItem[] = [
     to: urlPaths.appointments,
     label: "Lịch hẹn",
     icon: <Calendar className="h-4.5 w-4.5" />,
+    permissions: [PERMISSIONS.APPOINTMENTS_READ],
   },
   {
     to: urlPaths.staffSchedules,
     label: "Lịch làm việc",
     icon: <CalendarClock className="h-4.5 w-4.5" />,
+    permissions: [PERMISSIONS.SHIFTS_READ],
   },
   {
     to: urlPaths.medicalRecordList,
     label: "Khách hàng",
     icon: <Users className="h-4.5 w-4.5" />,
+    permissions: [PERMISSIONS.PATIENTS_READ],
   },
   {
     to: urlPaths.standardMedicalRecords,
@@ -74,11 +81,13 @@ const OPERATION_NAV_ITEMS: NavItem[] = [
     to: urlPaths.treatmentServices,
     label: "Dịch vụ điều trị",
     icon: <Stethoscope className="h-4.5 w-4.5" />,
+    permissions: [PERMISSIONS.CATALOG_READ],
   },
   {
     to: urlPaths.consumables,
     label: "Vật tư tiêu hao",
     icon: <Package className="h-4.5 w-4.5" />,
+    permissions: [PERMISSIONS.CONSUMABLES_READ],
   },
 ]
 
@@ -100,11 +109,13 @@ const SALES_NAV_ITEMS: NavItem[] = [
     to: urlPaths.herbsProducts,
     label: "Dược liệu & Sản phẩm",
     icon: <Leaf className="h-4.5 w-4.5" />,
+    permissions: [PERMISSIONS.MEDICINES_READ],
   },
   {
     to: urlPaths.prescriptionFormulas,
     label: "Công thức đơn",
     icon: <FlaskConical className="h-4.5 w-4.5" />,
+    permissions: [PERMISSIONS.FORMULAS_READ],
   },
 ]
 
@@ -113,8 +124,23 @@ const ADMIN_NAV_ITEMS: NavItem[] = [
     to: urlPaths.settings,
     label: "Cài đặt",
     icon: <Settings className="h-4.5 w-4.5" />,
+    permissions: [
+      PERMISSIONS.SETTINGS_STAFF,
+      PERMISSIONS.SETTINGS_CLINICS,
+      PERMISSIONS.SETTINGS_BANKS,
+    ],
   },
 ]
+
+function filterNavItems(
+  items: NavItem[],
+  user: ReturnType<typeof useAuthStore.getState>["user"]
+): NavItem[] {
+  return items.filter((item) => {
+    if (!item.permissions?.length) return true
+    return userHasAnyPermission(user, item.permissions)
+  })
+}
 
 function CollapsibleNavItem({ item }: { item: NavItem }) {
   const location = useLocation()
@@ -215,7 +241,15 @@ interface ScrollFadeState {
   bottom: boolean
 }
 
-function SidebarNavScroll({ isAdmin }: { isAdmin: boolean }) {
+function SidebarNavScroll({
+  showSettings,
+  operationItems,
+  salesItems,
+}: {
+  showSettings: boolean
+  operationItems: NavItem[]
+  salesItems: NavItem[]
+}) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [fade, setFade] = useState<ScrollFadeState>({
     top: false,
@@ -252,7 +286,7 @@ function SidebarNavScroll({ isAdmin }: { isAdmin: boolean }) {
     }
 
     return () => resizeObserver.disconnect()
-  }, [isAdmin, updateScrollFade])
+  }, [showSettings, operationItems, salesItems, updateScrollFade])
 
   return (
     <div className="relative min-h-0 overflow-hidden">
@@ -262,10 +296,14 @@ function SidebarNavScroll({ isAdmin }: { isAdmin: boolean }) {
         className="scrollbar-hide h-full overflow-y-auto overscroll-contain"
       >
         <nav className="space-y-6 px-3 py-2 pt-4 pb-3" id="nav-groups">
-          <NavGroup title="VẬN HÀNH" items={OPERATION_NAV_ITEMS} />
+          {operationItems.length > 0 ? (
+            <NavGroup title="VẬN HÀNH" items={operationItems} />
+          ) : null}
           <NavGroup title="NHÂN SỰ & KPI" items={KPI_NAV_ITEMS} />
-          <NavGroup title="BÁN HÀNG" items={SALES_NAV_ITEMS} />
-          {isAdmin ? (
+          {salesItems.length > 0 ? (
+            <NavGroup title="BÁN HÀNG" items={salesItems} />
+          ) : null}
+          {showSettings ? (
             <NavGroup title="QUẢN TRỊ" items={ADMIN_NAV_ITEMS} />
           ) : null}
         </nav>
@@ -311,7 +349,13 @@ export function Sidebar({
     useActiveClinic()
   const setActiveClinicId = useClinicStore((state) => state.setActiveClinicId)
   const activeClinicName = activeClinic?.name ?? null
-  const isAdmin = user?.role === "ADMIN"
+  const showSettings = userHasAnyPermission(user, [
+    PERMISSIONS.SETTINGS_STAFF,
+    PERMISSIONS.SETTINGS_CLINICS,
+    PERMISSIONS.SETTINGS_BANKS,
+  ])
+  const operationItems = filterNavItems(OPERATION_NAV_ITEMS, user)
+  const salesItems = filterNavItems(SALES_NAV_ITEMS, user)
 
   const prevPathRef = useRef(location.pathname)
 
@@ -361,7 +405,7 @@ export function Sidebar({
               </button>
             ) : null}
             <img
-              src="../public/Logo.jpg"
+              src="Logo.jpg"
               alt="Thượng Y Viên"
               className="h-20 w-20 rounded-xl border border-[#f8e3a3] object-cover"
             />
@@ -382,34 +426,34 @@ export function Sidebar({
               Cơ sở
             </p>
             {canSwitchBranch ? (
-            <Select
-              value={activeClinicId ?? ""}
-              onValueChange={(value) => setActiveClinicId(value || null)}
-            >
-              <SelectTrigger
-                id="branch-select"
-                className="w-full border-[#f8e3a3] bg-sidebar-primary/60 text-sidebar-primary-foreground shadow-none hover:border-[#f8e3a3]/60 hover:bg-sidebar-primary/40 focus-visible:ring-[#f8e3a3]/30 data-[state=open]:border-[#f8e3a3] data-[state=open]:ring-[#f8e3a3]/30 [&_svg]:text-white"
+              <Select
+                value={activeClinicId ?? ""}
+                onValueChange={(value) => setActiveClinicId(value || null)}
               >
-                <SelectValue placeholder="Chọn cơ sở">
-                  {activeClinicName ?? "Chọn cơ sở"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent
-                position="popper"
-                sideOffset={4}
-                className="border-[#f8e3a3]/40 bg-sidebar-primary text-sidebar-primary-foreground"
-              >
-                {clinicOptions.map((clinic) => (
-                  <SelectItem
-                    key={clinic.id}
-                    value={clinic.id}
-                    className="text-sidebar-primary-foreground focus:bg-[#f8e3a3]/60 focus:text-sidebar-primary-foreground data-[state=checked]:bg-[#f8e3a3]/50 data-[state=checked]:text-sidebar-primary-foreground"
-                  >
-                    {clinic.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger
+                  id="branch-select"
+                  className="w-full border-[#f8e3a3] bg-sidebar-primary/60 text-sidebar-primary-foreground shadow-none hover:border-[#f8e3a3]/60 hover:bg-sidebar-primary/40 focus-visible:ring-[#f8e3a3]/30 data-[state=open]:border-[#f8e3a3] data-[state=open]:ring-[#f8e3a3]/30 [&_svg]:text-white"
+                >
+                  <SelectValue placeholder="Chọn cơ sở">
+                    {activeClinicName ?? "Chọn cơ sở"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  sideOffset={4}
+                  className="border-[#f8e3a3]/40 bg-sidebar-primary text-sidebar-primary-foreground"
+                >
+                  {clinicOptions.map((clinic) => (
+                    <SelectItem
+                      key={clinic.id}
+                      value={clinic.id}
+                      className="text-sidebar-primary-foreground focus:bg-[#f8e3a3]/60 focus:text-sidebar-primary-foreground data-[state=checked]:bg-[#f8e3a3]/50 data-[state=checked]:text-sidebar-primary-foreground"
+                    >
+                      {clinic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
               <p className="rounded-md border border-[#f8e3a3]/40 px-3 py-2 text-sm text-sidebar-primary-foreground">
                 {activeClinicName ?? "Chưa chọn cơ sở"}
@@ -419,7 +463,11 @@ export function Sidebar({
         </div>
       </div>
 
-      <SidebarNavScroll isAdmin={isAdmin} />
+      <SidebarNavScroll
+        showSettings={showSettings}
+        operationItems={operationItems}
+        salesItems={salesItems}
+      />
 
       <div className="border-t border-[#f8e3a3]/40 bg-sidebar-primary/40 p-4 text-[11px] text-sidebar-primary-foreground">
         <div className="flex items-center justify-between gap-2">

@@ -96,16 +96,12 @@ export default function PatientPayments() {
   const { data: paymentsData, isLoading: isPaymentsLoading } = useQuery(
     patientPaymentsQueryOptions(patientId, paymentParams)
   )
-  const { data: services = [], isLoading: isServicesLoading } = useQuery({
-    ...patientServicesQueryOptions(patientId),
-    enabled: Boolean(patientId) && paymentDialogOpen,
-  })
+  const { data: services = [], isLoading: isServicesLoading } = useQuery(
+    patientServicesQueryOptions(patientId, paymentDialogOpen)
+  )
 
   const { data: refundServices = [], isLoading: isRefundServicesLoading } =
-    useQuery({
-      ...patientServicesQueryOptions(patientId),
-      enabled: Boolean(patientId) && refundDialogOpen,
-    })
+    useQuery(patientServicesQueryOptions(patientId, refundDialogOpen))
   const createPaymentMutation = useCreatePatientPaymentMutation(patientId)
   const createRefundMutation = useCreatePatientRefundMutation(patientId)
   const patientName = activePatient.name || ""

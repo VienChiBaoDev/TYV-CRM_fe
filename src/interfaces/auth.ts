@@ -19,6 +19,7 @@ export interface AuthUser {
   role: StaffRole
   clinicIds: string[]
   allClinics: boolean
+  permissions: string[]
 }
 
 export interface LoginResponse {
@@ -31,6 +32,7 @@ export interface Staff {
   fullName: string
   role: StaffRole
   clinicIds: string[]
+  permissionCodes: string[]
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -43,6 +45,7 @@ export interface CreateStaffPayload {
   role: StaffRole
   clinicIds?: string[]
   isActive?: boolean
+  permissionCodes?: string[]
 }
 
 export interface UpdateStaffPayload {
@@ -52,4 +55,5 @@ export interface UpdateStaffPayload {
   role?: StaffRole
   clinicIds?: string[]
   isActive?: boolean
+  permissionCodes?: string[]
 }
