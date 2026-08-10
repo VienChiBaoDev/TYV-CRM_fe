@@ -7,6 +7,7 @@ import {
   mapFormValuesToApiPayload,
   mapMedicineFromApi,
 } from "../mappers/map-medicine"
+import type { MedicineImportApiResponse } from "../types/medicine-import"
 
 export async function fetchMedicines(
   params: FetchMedicinesParams
@@ -46,4 +47,19 @@ export async function updateMedicine(
     mapFormValuesToApiPayload(payload)
   )
   return mapMedicineFromApi(data)
+}
+
+export async function deleteMedicine(id: string): Promise<void> {
+  await httpService.delete(API_PATHS.medicines.delete(id))
+}
+export async function importMedicines(
+  items: MedicineFormValues[]
+): Promise<MedicineImportApiResponse> {
+  const { data } = await httpService.post<MedicineImportApiResponse>(
+    API_PATHS.medicines.import,
+    {
+      items: items.map(mapFormValuesToApiPayload),
+    }
+  )
+  return data
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { Plus } from "lucide-react"
+import { FileUp, Plus } from "lucide-react"
 import { useMemo, useState } from "react"
 
 import { PageHeader } from "@/components/UiCustom/PageHeader"
@@ -10,6 +10,7 @@ import { DEFAULT_LIMIT } from "@/types/pagination"
 
 import {
   useCreateMedicineMutation,
+  useDeleteMedicineMutation,
   useUpdateMedicineMutation,
 } from "../hooks/use-medicine-mutations"
 import { medicineListQueryOptions } from "../queries/medicine-query"
@@ -22,6 +23,8 @@ import type {
 import { MedicineDialog } from "./MedicineDialog"
 import { MedicineFiltersBar } from "./MedicineFiltersBar"
 import { createMedicineTableColumns } from "./medicine-table-columns"
+import { MedicineImportDialog } from "./MedicineImportDialog"
+import { ConfirmDialog } from "@/components/UiCustom/DialogConfirm"
 
 const DEFAULT_FILTERS: MedicineFilters = {
   search: "",
@@ -54,6 +57,10 @@ export function MedicinesPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<ModalModeType>(MODAL_MODE.ADD)
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
+  const [medicineToDelete, setMedicineToDelete] = useState<Medicine | null>(
+    null
+  )
 
   const apiFilters = useMemo(
     () => buildApiFilters(appliedFilters, page, DEFAULT_LIMIT),
@@ -67,6 +74,7 @@ export function MedicinesPage() {
 
   const createMutation = useCreateMedicineMutation()
   const updateMutation = useUpdateMedicineMutation()
+  const deleteMutation = useDeleteMedicineMutation()
 
   const rowOffset = (page - 1) * DEFAULT_LIMIT
 
@@ -79,6 +87,7 @@ export function MedicinesPage() {
           setEditingMedicine(medicine)
           setDialogOpen(true)
         },
+        onDeleteMedicine: setMedicineToDelete,
       }),
     [rowOffset]
   )
@@ -121,10 +130,20 @@ export function MedicinesPage() {
           title="Quản lý kho thuốc"
           description="Danh sách thuốc dùng khi kê đơn trong lượt khám"
           actions={
-            <Button type="button" onClick={openAddDialog}>
-              <Plus className="h-4 w-4" />
-              Thêm thuốc
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setImportOpen(true)}
+              >
+                <FileUp className="h-4 w-4" />
+                Import Excel
+              </Button>
+              <Button type="button" onClick={openAddDialog}>
+                <Plus className="h-4 w-4" />
+                Thêm thuốc
+              </Button>
+            </div>
           }
         />
 
@@ -153,6 +172,28 @@ export function MedicinesPage() {
         mode={dialogMode}
         medicine={editingMedicine}
         onSave={handleSave}
+      />
+
+      <MedicineImportDialog open={importOpen} onOpenChange={setImportOpen} />
+
+      <ConfirmDialog
+        open={medicineToDelete != null}
+        onOpenChange={(open) => {
+          if (!open) setMedicineToDelete(null)
+        }}
+        title="Xóa thuốc"
+        message={
+          medicineToDelete
+            ? `Bạn có chắc muốn xóa "${medicineToDelete.name}"? Đơn thuốc cũ vẫn giữ nguyên, chỉ gỡ liên kết danh mục.`
+            : ""
+        }
+        onConfirm={() => {
+          if (!medicineToDelete) return
+          deleteMutation.mutate(medicineToDelete.id, {
+            onSuccess: () => setMedicineToDelete(null),
+          })
+        }}
+        loading={deleteMutation.isPending}
       />
     </div>
   )

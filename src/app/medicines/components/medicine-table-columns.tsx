@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import { Pencil } from "lucide-react"
+import { Pencil, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { formatPrice } from "@/app/treatment-services/utils/format-price"
@@ -9,11 +9,13 @@ import type { Medicine } from "../types/medicine"
 interface MedicineTableColumnsOptions {
   rowOffset: number
   onEditMedicine: (medicine: Medicine) => void
+  onDeleteMedicine: (medicine: Medicine) => void
 }
 
 export function createMedicineTableColumns({
   rowOffset,
   onEditMedicine,
+  onDeleteMedicine,
 }: MedicineTableColumnsOptions): ColumnDef<Medicine>[] {
   return [
     {
@@ -56,15 +58,28 @@ export function createMedicineTableColumns({
       id: "actions",
       header: "Xử lý",
       cell: ({ row }) => (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => onEditMedicine(row.original)}
-          className="text-slate-500 hover:text-slate-800"
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Sửa thuốc"
+            onClick={() => onEditMedicine(row.original)}
+            className="text-slate-500 hover:text-slate-800"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Xóa thuốc"
+            className="text-red-600 hover:text-red-700"
+            onClick={() => onDeleteMedicine(row.original)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       ),
     },
   ]
