@@ -35,8 +35,10 @@ const API_PATHS = {
   medicines: {
     list: "/medicines",
     create: "/medicines",
+    import: "/medicines/import",
     detail: (id: string) => `/medicines/${id}`,
     update: (id: string) => `/medicines/${id}`,
+    delete: (id: string) => `/medicines/${id}`,
   },
   patients: {
     list: "/patients",
