@@ -2,10 +2,10 @@
 
 Tài liệu kỹ thuật cho developer làm việc với hệ thống CRM phòng khám Đông Y.
 
-| Repo | Path | Vai trò |
-|------|------|---------|
-| Frontend | `TYV-CRM_fe` | Vite + React 19 SPA |
-| Backend | `TYV-CRM_be` | NestJS 11 + Prisma + PostgreSQL |
+| Repo     | Path         | Vai trò                         |
+| -------- | ------------ | ------------------------------- |
+| Frontend | `TYV-CRM_fe` | Vite + React 19 SPA             |
+| Backend  | `TYV-CRM_be` | NestJS 11 + Prisma + PostgreSQL |
 
 Tài liệu người dùng cuối: [`HUONG-DAN-SU-DUNG.md`](./HUONG-DAN-SU-DUNG.md).
 
@@ -18,18 +18,17 @@ Tài liệu người dùng cuối: [`HUONG-DAN-SU-DUNG.md`](./HUONG-DAN-SU-DUNG.
 3. [Chạy local](#3-chạy-local)
 4. [Biến môi trường](#4-biến-môi-trường)
 5. [Auth & session (cookie JWT)](#5-auth--session-cookie-jwt)
-6. [Phân quyền (permissions)](#6-phân-quyền-permissions)
-7. [Backend — NestJS](#7-backend--nestjs)
-8. [Frontend — React](#8-frontend--react)
-9. [API map FE ↔ BE](#9-api-map-fe--be)
-10. [Database (Prisma)](#10-database-prisma)
-11. [Clinic scope](#11-clinic-scope)
-12. [Quy ước code](#12-quy-ước-code)
-13. [Thêm tính năng mới (checklist)](#13-thêm-tính-năng-mới-checklist)
-14. [Testing](#14-testing)
-15. [Deploy](#15-deploy)
-16. [Debug thường gặp](#16-debug-thường-gặp)
-17. [Drift cần biết](#17-drift-cần-biết)
+6. [Backend — NestJS](#6-backend--nestjs)
+7. [Frontend — React](#7-frontend--react)
+8. [API map FE ↔ BE](#8-api-map-fe--be)
+9. [Database (Prisma)](#9-database-prisma)
+10. [Phân quyền & scope cơ sở](#10-phân-quyền--scope-cơ-sở)
+11. [Quy ước code](#11-quy-ước-code)
+12. [Thêm tính năng mới (checklist)](#12-thêm-tính-năng-mới-checklist)
+13. [Testing](#13-testing)
+14. [Deploy](#14-deploy)
+15. [Debug thường gặp](#15-debug-thường-gặp)
+16. [Drift cần biết](#16-drift-cần-biết)
 
 ---
 
@@ -39,12 +38,10 @@ Tài liệu người dùng cuối: [`HUONG-DAN-SU-DUNG.md`](./HUONG-DAN-SU-DUNG.
 ┌─────────────────────┐         cookie httpOnly          ┌──────────────────────┐
 │  TYV-CRM_fe         │  ────── access_token ──────────► │  TYV-CRM_be          │
 │  Vite :5173         │     credentials: include         │  NestJS :3003        │
-│  React 19           │ ◄──── JSON { user } ──────────── │  JwtAuthGuard        │
-│  TanStack Query     │                                  │  PermissionsGuard    │
-│  Zustand            │                                  │  Prisma → Postgres   │
-│  permissions catalog│                                  │  StaffPermission     │
-└─────────────────────┘                                  │  Supabase Storage    │
-                                                         └──────────────────────┘
+│  React 19           │ ◄──── JSON (no token in body) ── │  JwtAuthGuard global │
+│  TanStack Query     │                                  │  Prisma → Postgres   │
+│  Zustand (user/clinic)                                 │  Supabase Storage    │
+└─────────────────────┘                                  └──────────────────────┘
 ```
 
 **Luồng nghiệp vụ chính**
@@ -55,23 +52,21 @@ Patient → MedicalVisit / MedicalCase
        → PatientPayment
 Appointment / StaffShift / FollowUp (clinic-scoped)
 Catalog: ServiceGroup, CatalogService, Medicine, Formula, Consumable
-Admin: Staff (+ permissionCodes), Clinic, BankAccount
+Admin: Staff, Clinic, BankAccount
 ```
 
 Không có API prefix (`/api`). CORS `credentials: true`. FE và BE khác origin (dev và Cloud Run).
-
-**Phân quyền:** catalog cố định `permissionCode` (vd. `patients:read`). ADMIN bypass; role khác lưu `StaffPermission` (hoặc seed mặc định theo role). FE ẩn menu; BE enforce bằng `@RequirePermissions`.
 
 ---
 
 ## 2. Yêu cầu môi trường
 
-| Tool | Gợi ý |
-|------|--------|
-| Node.js | 20+ (Docker BE dùng `node:20-alpine`) |
-| Package manager | `pnpm` hoặc `npm` (cả hai repo có lockfile) |
-| PostgreSQL | 16 (local qua `docker-compose` BE) hoặc Supabase |
-| Browser | Chromium-based để debug cookie |
+| Tool            | Gợi ý                                            |
+| --------------- | ------------------------------------------------ |
+| Node.js         | 20+ (Docker BE dùng `node:20-alpine`)            |
+| Package manager | `pnpm` hoặc `npm` (cả hai repo có lockfile)      |
+| PostgreSQL      | 16 (local qua `docker-compose` BE) hoặc Supabase |
+| Browser         | Chromium-based để debug cookie                   |
 
 ---
 
@@ -81,53 +76,70 @@ Không có API prefix (`/api`). CORS `credentials: true`. FE và BE khác origin
 
 ```bash
 cd TYV-CRM_be
-docker compose up -d          # Postgres local (tuỳ chọn)
-pnpm install                  # postinstall → prisma generate
-# Tạo .env (không có .env.example) — xem mục 4
-npx prisma migrate dev        # LUÔN migrate, KHÔNG db push trên DB dùng chung
-pnpm run seed:staff           # admin/doctor/assistant/staff @tyv.vn / 123456
-pnpm run start:dev            # → http://localhost:3003
+
+# Postgres local (tuỳ chọn)
+docker compose up -d
+
+# Cài deps (postinstall chạy prisma generate)
+pnpm install   # hoặc npm ci
+
+# .env — xem mục 4
+cp .env   # tự tạo nếu chưa có (không có .env.example)
+
+# Migrate — LUÔN dùng migrate, KHÔNG db push trên DB dùng chung
+npx prisma migrate dev
+
+# Seed nhân sự demo (admin/doctor/assistant/staff @tyv.vn / 123456)
+pnpm run seed:staff
+
+# Dev server
+pnpm run start:dev
+# → http://localhost:3003
 ```
 
-| Script | Lệnh |
-|--------|------|
-| `start:dev` | `nest start --watch` |
-| `build` | `prisma generate && nest build` |
-| `start:prod` | `node dist/main` |
-| `prisma:migrate` | `prisma migrate dev` |
-| `prisma:studio` | Prisma Studio |
-| `seed:staff` | Seed nhân sự demo |
-| `test` | Jest unit |
-| `lint` / `format` | ESLint / Prettier |
+**Scripts quan trọng**
+
+| Script                       | Lệnh                            |
+| ---------------------------- | ------------------------------- |
+| `start:dev`                  | `nest start --watch`            |
+| `build`                      | `prisma generate && nest build` |
+| `start:prod`                 | `node dist/main`                |
+| `prisma:migrate`             | `prisma migrate dev`            |
+| `prisma:studio`              | Prisma Studio                   |
+| `prisma:seed` / `seed:staff` | Seed data                       |
+| `test`                       | Jest unit                       |
+| `lint` / `format`            | ESLint / Prettier               |
 
 ### 3.2. Frontend (`TYV-CRM_fe`)
 
 ```bash
 cd TYV-CRM_fe
 pnpm install
-# .env.development: VITE_API_URL=http://localhost:3003
-pnpm dev                      # → http://localhost:5173
+
+# .env.development đã có sẵn mẫu:
+# VITE_API_URL=http://localhost:3003
+
+pnpm dev
+# → http://localhost:5173
 ```
 
-| Script | Lệnh |
-|--------|------|
-| `dev` | `vite` |
-| `build` | `tsc -b && vite build` |
-| `typecheck` | `tsc --noEmit` |
-| `lint` | `eslint .` |
-| `format` | `prettier --write "**/*.{ts,tsx}"` |
-| `preview` | `vite preview` |
-
-> FE **không** có script `test`.
+| Script      | Lệnh                               |
+| ----------- | ---------------------------------- |
+| `dev`       | `vite`                             |
+| `build`     | `tsc -b && vite build`             |
+| `typecheck` | `tsc --noEmit`                     |
+| `lint`      | `eslint .`                         |
+| `format`    | `prettier --write "**/*.{ts,tsx}"` |
+| `preview`   | `vite preview`                     |
 
 ### 3.3. Tài khoản demo (sau `seed:staff`)
 
-| Email | Password | Role |
-|-------|----------|------|
-| `admin@tyv.vn` | `123456` | ADMIN |
-| `doctor@tyv.vn` | `123456` | DOCTOR |
+| Email              | Password | Role      |
+| ------------------ | -------- | --------- |
+| `admin@tyv.vn`     | `123456` | ADMIN     |
+| `doctor@tyv.vn`    | `123456` | DOCTOR    |
 | `assistant@tyv.vn` | `123456` | ASSISTANT |
-| `staff@tyv.vn` | `123456` | STAFF |
+| `staff@tyv.vn`     | `123456` | STAFF     |
 
 ---
 
@@ -135,58 +147,59 @@ pnpm dev                      # → http://localhost:5173
 
 ### Backend
 
-| Key | Bắt buộc | Mô tả |
-|-----|----------|--------|
-| `DATABASE_URL` | Có | Prisma connection (pooler OK) |
-| `DIRECT_URL` | Có | Direct URL cho migrate / transaction |
-| `JWT_SECRET` | Có (prod) | Fallback code: `dev-secret-change-me` |
-| `JWT_EXPIRES_IN` | Không | Mặc định `7d` |
-| `PORT` | Không | Mặc định `3003` (Docker `8080`) |
-| `NODE_ENV` | Không | Cookie `secure` / `sameSite` |
-| `CORS_ORIGIN` | Prod | Comma-separated; dev mặc định `localhost:5173` + `127.0.0.1:5173` |
-| `SUPABASE_URL` | Ảnh lâm sàng | Storage |
-| `SUPABASE_SERVICE_ROLE_KEY` | Ảnh lâm sàng | Service role |
-| `SUPABASE_CLINICAL_BUCKET` | Không | Mặc định `clinical-images` |
+| Key                         | Bắt buộc     | Mô tả                                                             |
+| --------------------------- | ------------ | ----------------------------------------------------------------- |
+| `DATABASE_URL`              | Có           | Prisma connection (pooler OK)                                     |
+| `DIRECT_URL`                | Có           | Direct URL cho migrate / transaction                              |
+| `JWT_SECRET`                | Có (prod)    | Fallback code: `dev-secret-change-me`                             |
+| `JWT_EXPIRES_IN`            | Không        | Mặc định `7d`                                                     |
+| `PORT`                      | Không        | Mặc định `3003` (Docker `8080`)                                   |
+| `NODE_ENV`                  | Không        | Ảnh hưởng cookie `secure` / `sameSite`                            |
+| `CORS_ORIGIN`               | Prod         | Comma-separated; dev mặc định `localhost:5173` + `127.0.0.1:5173` |
+| `SUPABASE_URL`              | Ảnh lâm sàng | Storage                                                           |
+| `SUPABASE_SERVICE_ROLE_KEY` | Ảnh lâm sàng | Service role                                                      |
+| `SUPABASE_CLINICAL_BUCKET`  | Không        | Mặc định `clinical-images`                                        |
+
+`ConfigModule` load `.env` từ root project BE.
 
 ### Frontend
 
-| Key | Mô tả |
-|-----|--------|
+| Key            | Mô tả                                    |
+| -------------- | ---------------------------------------- |
 | `VITE_API_URL` | Base URL axios (`http://localhost:3003`) |
 
-Chỉ biến `VITE_*` được inject vào client. Dùng trong `httpService.ts` và `reset-session.ts`.
+Chỉ biến `VITE_*` được inject vào client.
 
 ---
 
 ## 5. Auth & session (cookie JWT)
 
-### 5.1. Cơ chế (nguồn sự thật = code)
+### 5.1. Cơ chế hiện tại (nguồn sự thật = code)
 
-| | Chi tiết |
-|---|----------|
-| Cookie name | `access_token` (`AUTH_COOKIE_NAME`) |
-| Cookie flags | `httpOnly: true`; prod: `secure + sameSite=none`; dev: `sameSite=lax` |
-| Max age | 7 ngày |
-| Login HTTP body | `{ user }` — **không** trả token JSON |
-| Token location | **Chỉ cookie** — `JwtAuthGuard` đọc `request.cookies.access_token` |
-| FE axios | `withCredentials: true` — **không** gắn `Authorization` |
-| Persist FE | Zustand `tyv-auth` chỉ lưu `{ user }` |
+|                | Chi tiết                                                              |
+| -------------- | --------------------------------------------------------------------- |
+| Cookie name    | `access_token` (`AUTH_COOKIE_NAME`)                                   |
+| Cookie flags   | `httpOnly: true`; prod: `secure + sameSite=none`; dev: `sameSite=lax` |
+| Max age        | 7 ngày                                                                |
+| Login body     | `{ user }` — **không** trả token JSON                                 |
+| Token location | **Chỉ cookie** — `JwtAuthGuard` đọc `request.cookies.access_token`    |
+| FE axios       | `withCredentials: true` — **không** gắn `Authorization` header        |
+| Persist FE     | Zustand `tyv-auth` chỉ lưu `{ user }`, không lưu token                |
 
 **File BE**
 
-- `src/auth/auth-cookie.ts`
+- `src/auth/auth-cookie.ts` — cookie options
 - `src/auth/auth.controller.ts` — `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
-- `src/auth/auth.service.ts` — login nội bộ `{ accessToken, user }`; controller chỉ set cookie + trả `user`
-- `src/auth/jwt-auth.guard.ts`
-- Global: `JwtAuthGuard` → `RolesGuard` (legacy) → `PermissionsGuard`
+- `src/auth/jwt-auth.guard.ts` — verify JWT từ cookie
+- `src/auth/roles.guard.ts` + `@Roles()` / `@Public()` / `@CurrentUser()`
 
 **File FE**
 
-- `src/services/httpService.ts` — 401 → `resetSession()` → `/login`
+- `src/services/httpService.ts` — axios instance + 401 → `resetSession()`
 - `src/services/authService.ts` — `login`, `logout`, `fetchMe`
 - `src/stores/auth-store.ts` — `useAuthStore`
-- `src/lib/reset-session.ts`
-- `src/components/auth/ProtectedRoute.tsx`
+- `src/lib/reset-session.ts` — clear query + auth + clinic + POST logout
+- `src/components/auth/ProtectedRoute.tsx` — `meQueryOptions` trước khi render layout
 - `src/queries/auth-query.ts` — `authKeys`, `meQueryOptions` (`staleTime` 5 phút)
 
 ### 5.2. Luồng login
@@ -194,13 +207,13 @@ Chỉ biến `VITE_*` được inject vào client. Dùng trong `httpService.ts` 
 ```
 LoginPage
   → POST /auth/login { email, password }  (credentials include)
-  → BE set cookie access_token, return { user }  // kèm permissions
+  → BE set cookie access_token, return { user }
   → setAuth(user) + setQueryData(authKeys.me(), user)
   → syncClinicFromUser(user)
   → navigate /medical-record
 ```
 
-### 5.3. Bảo vệ route & 401
+### 5.3. Luồng bảo vệ route & 401
 
 ```
 ProtectedRoute: GET /auth/me
@@ -211,342 +224,308 @@ Axios 401 → resetSession() → window.location /login
 Sidebar logout → await resetSession() → navigate /login
 ```
 
-`GET /auth/me` reload user (gồm permissions) và **re-issue cookie**.
+### 5.4. JWT payload
 
-### 5.4. JWT & AuthUser
+Signed: `{ sub, email, role, fullName }`.
 
-**JWT payload signed:** `{ sub, email, role, fullName, permissions }`
-
-**`AuthUser` trả client:**
+`AuthUser` trả về client:
 
 ```ts
 {
   id, email, fullName, role,
   clinicIds: string[],
-  allClinics: boolean,      // true nếu ADMIN
-  permissions: string[]     // PermissionCode[]
+  allClinics: boolean  // true nếu ADMIN
 }
 ```
 
-FE type: `src/interfaces/auth.ts` (`AuthUser.permissions`).
-
 ---
 
-## 6. Phân quyền (permissions)
+## 6. Backend — NestJS
 
-### 6.1. Catalog cố định
+### 6.1. Entry & global setup (`src/main.ts`)
 
-Cùng bộ code FE + BE (giữ sync thủ công):
-
-| FE | BE |
-|----|-----|
-| `src/constants/permissions.ts` | `src/auth/permissions.ts` |
-
-**Codes:**
-
-```
-patients:read | patients:write | visits:write
-appointments:read | appointments:write
-services:read | services:write
-payments:read | payments:write
-treatment:write | followups:write
-catalog:read | catalog:write
-medicines:read | medicines:write
-formulas:read | formulas:write
-consumables:read | consumables:write
-shifts:read | shifts:write
-referrers:write
-settings:staff | settings:clinics | settings:banks
-```
-
-FE thêm: `PERMISSION_GROUPS` (nhãn UI Settings), `ROLE_DEFAULT_PERMISSIONS`, `getRoleDefaultPermissions`, `ALL_PERMISSION_CODES`.
-
-### 6.2. Lưu trữ & resolve (BE)
-
-- Model Prisma: `StaffPermission` — PK `(staffId, permissionCode)`
-- `PermissionsService.getForStaff(staffId, role)`:
-  - **ADMIN** → luôn `ALL_PERMISSION_CODES` (không phụ thuộc DB)
-  - Role khác → đọc `staff_permissions`; nếu rỗng → seed defaults theo role rồi cache in-process
-- Staff create/update nhận `permissionCodes`; list/detail map ra `permissionCodes`
-
-### 6.3. Enforce trên API
-
-| Guard | Decorator | Hiện trạng |
-|-------|-----------|------------|
-| `JwtAuthGuard` | `@Public()` để bỏ qua | Global — bắt buộc login |
-| `RolesGuard` | `@Roles(StaffRole.…)` | Global nhưng **không còn controller nào dùng** — legacy |
-| `PermissionsGuard` | `@RequirePermissions(...codes)` | Global — **primary**. Không decorator = pass. ADMIN bypass. Non-admin cần **đủ tất cả** codes trong decorator |
-
-Files: `permissions.decorator.ts`, `permissions.guard.ts`, `permissions.service.ts`.
-
-### 6.4. Defaults theo role
-
-| Role | Mặc định (tóm tắt) |
-|------|---------------------|
-| ADMIN | All codes |
-| DOCTOR / ASSISTANT | Ops R/W (patients, visits, appointments, services, treatment, followups…) + catalog/medicines/formulas/consumables/shifts **read**; **không** payments write, consumables write, settings |
-| STAFF | Patients + appointments + services + **payments write** + followups + consumables write + referrers write; **không** visits/treatment write, catalog write, settings |
-
-Chi tiết: `ROLE_DEFAULT_PERMISSIONS` ở cả hai repo.
-
-### 6.5. Enforce trên FE
-
-| Chỗ | Cách |
-|-----|------|
-| Sidebar | `filterNavItems` → `userHasAnyPermission(user, item.permissions)`. Không khai báo `permissions` = luôn hiện (Dashboard, Bệnh án chuẩn, KPI coming soon) |
-| Settings page | Cần bất kỳ `settings:*`; từng tab gate `settings:staff` / `clinics` / `banks`. Không có → redirect danh sách khách hàng |
-| Staff form | `StaffPermissionsField` — checklist theo `PERMISSION_GROUPS`; ADMIN khóa full; nút reset defaults |
-| Helpers | `src/lib/permissions.ts`: `userHasPermission`, `userHasAnyPermission`, `useCan`, `useCanAny` — **ADMIN luôn true**. `useCan`/`useCanAny` hiện ít/không được dùng ở feature pages |
-
-> Hầu hết nút trong trang vận hành **chưa** gate theo permission từng action — chủ yếu sidebar + Settings + BE API.
-
----
-
-## 7. Backend — NestJS
-
-### 7.1. Entry (`src/main.ts`)
-
-- `helmet` (CORP `cross-origin`, CSP off), `compression`, `cookie-parser`
+- `helmet` (CORP `cross-origin`, CSP off)
+- `compression`, `cookie-parser`
 - Static `/uploads/`
-- `ValidationPipe`: `whitelist`, `transform`, `forbidNonWhitelisted: false`
+- `ValidationPipe`: `whitelist`, `transform`, `forbidNonWhitelisted: false`, implicit conversion
 - `AllExceptionsFilter` → `{ statusCode, message, error }`
 - CORS `credentials: true`
 - Listen `PORT || 3003`
 
-### 7.2. AppModule
+### 6.2. AppModule — modules
 
-**Imports:** Config, Schedule, Throttler, Cache, Prisma, Supabase, Auth, Patient, MedicalVisit, MedicalCase, PatientFollowUp, ServiceCatalog, Referrer, Appointment, Staff, Medicine, PatientService, PatientPayment, PatientTreatment, StaffShift, PrescriptionFormulaTemplate, BankAccount, Clinic, Consumable
+Đăng ký trong `src/app.module.ts`:
 
-**Global guards:** `JwtAuthGuard`, `RolesGuard`, `PermissionsGuard`
+`ConfigModule`, `ScheduleModule`, `ThrottlerModule`, `CacheModule`, `PrismaModule`, `SupabaseModule`, `AuthModule`, `PatientModule`, `MedicalVisitModule`, `MedicalCaseModule`, `PatientFollowUpModule`, `ServiceCatalogModule`, `ReferrerModule`, `AppointmentModule`, `StaffModule`, `MedicineModule`, `PatientServiceModule`, `PatientPaymentModule`, `PatientTreatmentModule`, `StaffShiftModule`, `PrescriptionFormulaTemplateModule`, `BankAccountModule`, `ClinicModule`, `ConsumableModule`
 
-> `ThrottlerModule` có đăng ký nhưng **chưa** gắn `ThrottlerGuard` global.
+**Global guards:** `JwtAuthGuard`, `RolesGuard` (`APP_GUARD`).
 
-### 7.3. Cấu trúc module domain
+> `ThrottlerModule` được import nhưng **chưa** gắn `ThrottlerGuard` global.
+
+### 6.3. Cấu trúc module domain
 
 ```
 src/<domain>/
   <domain>.module.ts
   <domain>.controller.ts
   <domain>.service.ts
-  dto/
-  mappers/             # optional
-  <domain>.rules.ts    # optional + *.spec.ts
+  dto/                 # create / update / query
+  mappers/             # pure map Prisma → response
+  <domain>.rules.ts    # optional — pure business rules (+ *.spec.ts)
 ```
 
-- Controller mỏng; service chứa logic; `PrismaModule` `@Global()`
-- Multi-step: `prisma.$transaction`
+**Quy tắc**
+
+- Controller mỏng — không business logic
+- Service chứa logic; inject `PrismaService` (`PrismaModule` `@Global()`)
+- Multi-step write: `prisma.$transaction`
 - Không trả `passwordHash`
-- UUID: `@Param('id', ParseUUIDPipe)`
-- Endpoint nhạy cảm: `@RequirePermissions(...)`
+- UUID path: `@Param('id', ParseUUIDPipe)`
+- Exception: `NotFoundException`, `BadRequestException`, `ForbiddenException`, …
 
-### 7.4. Controllers & routes (tóm tắt)
+### 6.4. Controllers & routes (tóm tắt)
 
-Không global prefix.
+Không có global prefix.
 
-| Base | Ghi chú |
-|------|---------|
-| `GET /` | Public hello |
-| `/auth` | login, logout (public), me |
-| `/patients` | CRUD + `GET :id/medical-record` |
-| `/patients/:patientId/medical-case` | GET, PUT |
-| `/patients/:patientId/visits` | CRUD + clinical images |
-| `/patients/:patientId/services` | CRUD / cancel |
-| `/patients/:patientId/payments` | list, create, refunds |
-| `/patients/:patientId/.../treatment-sessions` | sessions + images |
-| `/follow-ups` | upcoming, pending-assessment, schedule/assessment/reschedule |
-| `/appointments` | CRUD + check-in |
-| `/referrers` | CRUD |
-| `/catalog-services`, `/service-groups` | danh mục |
-| `/medicines` | CRUD + **`POST /medicines/import`** (JSON batch) |
-| `/prescription-formula-templates` | CRUD |
-| `/staff` | settings:staff; `GET options` mở hơn |
-| `/staff-shifts` | shifts permissions |
-| `/clinics` | settings:clinics; `GET options` rộng hơn |
-| `/bank-accounts` | settings:banks |
-| `/consumables` | list/usage/options; write/stock theo permissions |
+| Base                                          | Ghi chú chính                                                        |
+| --------------------------------------------- | -------------------------------------------------------------------- |
+| `GET /`                                       | Public hello                                                         |
+| `/auth`                                       | login, logout (public), me                                           |
+| `/patients`                                   | CRUD + `GET :id/medical-record`                                      |
+| `/patients/:patientId/medical-case`           | GET, PUT                                                             |
+| `/patients/:patientId/visits`                 | CRUD + clinical images                                               |
+| `/patients/:patientId/services`               | CRUD / cancel                                                        |
+| `/patients/:patientId/payments`               | list, create, refunds                                                |
+| `/patients/:patientId/.../treatment-sessions` | sessions + images                                                    |
+| `/follow-ups`                                 | upcoming, pending-assessment, schedule/assessment/reschedule         |
+| `/appointments`                               | CRUD + check-in                                                      |
+| `/referrers`                                  | CRUD                                                                 |
+| `/catalog-services`, `/service-groups`        | danh mục dịch vụ                                                     |
+| `/medicines`                                  | CRUD                                                                 |
+| `/prescription-formula-templates`             | CRUD                                                                 |
+| `/staff`                                      | class `@Roles(ADMIN)`; `GET options` mở rộng role                    |
+| `/staff-shifts`                               | `@Roles(ADMIN)`                                                      |
+| `/clinics`                                    | ADMIN; `GET options` mọi staff                                       |
+| `/bank-accounts`                              | tương tự clinics                                                     |
+| `/consumables`                                | list/usage/options; create/update/adjust ADMIN; stock-in ADMIN+STAFF |
 
-### 7.5. Medicine import
+### 6.5. Response & pagination
 
-- **FE** parse Excel bằng `xlsx` → mảng items
-- **BE** `POST /medicines/import` nhận `{ items: CreateMedicineDto[] }` (1–1000), tạo từng dòng / skip trùng
-- Response dạng `{ created, skipped, errors }`
-- DTO: `import-medicines.dto.ts`; logic + unit test: `medicine.service` / `medicine.service.spec.ts`
-- `xlsx` trên BE chỉ là devDependency — **không** parse file trên server
+- Success: trả data trực tiếp (không wrapper global)
+- List phân trang: `{ data, meta }` qua `buildPaginatedMeta` / `paginateArray`
+- Query: `PaginationQueryDto` — `page`/`limit`, default 1/20, max 100 (`src/common/dto/pagination-query.dto.ts`)
 
-### 7.6. Response & pagination
+### 6.6. Storage
 
-- Success: data trực tiếp
-- List phân trang: `{ data, meta }` — `PaginationQueryDto` (page/limit, default 1/20, max 100)
-- Storage ảnh lâm sàng: `SupabaseStorageService`
+- Local static: `uploads/`
+- Clinical images: `SupabaseStorageService` (`src/supabase/`)
 
 ---
 
-## 8. Frontend — React
+## 7. Frontend — React
 
-### 8.1. Stack
+### 7.1. Stack
 
-| Layer | Lib |
-|-------|-----|
-| Bundler | Vite 8 |
-| UI | React 19, Tailwind 4, shadcn/ui, lucide |
-| Router | react-router-dom 6 |
-| Server state | TanStack Query 5 |
-| Client state | Zustand 5 |
-| Forms | RHF + Zod 4 |
-| Table | TanStack Table 8 |
-| HTTP | axios (`withCredentials`) |
-| Excel | `xlsx` (medicines import) |
-| Toast | sonner |
+| Layer        | Lib                                                  |
+| ------------ | ---------------------------------------------------- |
+| Bundler      | Vite 8                                               |
+| UI           | React 19, Tailwind 4, shadcn/ui (radix-nova), lucide |
+| Router       | react-router-dom 6 (`createBrowserRouter`)           |
+| Server state | TanStack Query 5                                     |
+| Client state | Zustand 5                                            |
+| Forms        | react-hook-form + Zod 4 + `@hookform/resolvers`      |
+| Table        | TanStack Table 8                                     |
+| HTTP         | axios                                                |
+| Toast        | sonner                                               |
 
-Alias: `@/*` → `src/*`.
+Path alias: `@/*` → `src/*` (`tsconfig` + `vite.config`).
 
-### 8.2. Cây thư mục
+### 7.2. Cây thư mục
 
 ```
 src/
   main.tsx, App.tsx, index.css
   router/routes.tsx
-  app/<feature>/
-  components/     ui/, FieldCustom/, UiCustom/, layouts/, data-table/, auth/
-  constants/      apiPaths, urlPaths, permissions, common
-  services/       httpService, auth, clinic, staff, bank
-  stores/         auth-store, clinic-store
-  queries/        auth-query, clinic-query
-  lib/            query-client, reset-session, permissions, sync-clinic, utils
-  interfaces/
-```
-
-**Feature folders:** `appointments/`, `auth/`, `consumables/`, `medical-records/`, `medicines/`, `prescription-formulas/`, `settings/`, `staff-schedule/`, `standard-medical-record/`, `treatment-services/`
-
-### 8.3. Feature module pattern
-
-```
-src/app/<feature>/
+  app/<feature>/          # feature modules
   components/
-  hooks/          use-*-mutations.ts
-  queries/        *Keys + *QueryOptions
-  schemas/        Zod
-  services/       axios — không React
-  mappers/        optional
-  utils/          optional (vd. parse-medicine-excel.ts)
-  types/
+    ui/                   # shadcn
+    FieldCustom/          # FormInput, FormSelect, FormDate, ...
+    UiCustom/             # PageHeader, FormDialog, DialogConfirm, ...
+    layouts/              # MainLayout, Sidebar
+    data-table/
+    auth/ProtectedRoute.tsx
+    pages/ComingSoonPage.tsx
+  constants/              # apiPaths, urlPaths, common
+  services/               # httpService, auth, clinic, staff, bank
+  stores/                 # auth-store, clinic-store
+  queries/                # auth-query, clinic-query (cross-feature)
+  lib/                    # query-client, reset-session, utils, sync-clinic
+  interfaces/, hooks/, utils/, types/
 ```
+
+### 7.3. Feature module pattern
+
+Ví dụ `appointments/`:
+
+```
+src/app/appointments/
+  components/     AppointmentsPage, AppointmentDialog, WeeklyCalendar…
+  constants/
+  hooks/          use-appointment-mutations.ts
+  queries/        appointment-query.ts   # *Keys + *QueryOptions
+  schemas/        appointment-form.ts    # Zod
+  services/       appointmentService.ts  # axios calls — không React
+  utils/
+```
+
+Feature lớn hơn (`medical-records/`): thêm `mappers/`, `context/`, `interfaces/`, nhiều query/mutation files.
 
 **Quy tắc**
 
-- Route path chỉ từ `urlPaths`
-- API path chỉ từ `API_PATHS`
-- Server data → Query; client UI → Zustand
-- Mutation: invalidate keys + toast
-- Menu mới: khai báo `permissions` trên Sidebar item nếu cần ẩn theo quyền
+- Route path chỉ lấy từ `urlPaths` — không hardcode string
+- API path chỉ lấy từ `API_PATHS`
+- Server data → TanStack Query; client UI state → Zustand
+- Không gọi axios trong component — chỉ trong `services/`
+- Mutation hook: invalidate keys + `toast.success` / `toast.error`
 
-### 8.4. Routing
+### 7.4. Routing
 
-Public: `/login`.
+File: `src/router/routes.tsx`.
 
-Protected (`ProtectedRoute` + `MainLayout`):
+```
+/login                     LoginPage (public)
+ProtectedRoute → MainLayout
+  /                        → redirect /medical-record
+  /medical-record          danh sách
+  /medical-record/create   tạo hồ sơ
+  /medical-record/:id      hồ sơ bệnh án
+  /appointments
+  /staff-schedules
+  /standard-medical-records
+  /treatment-services
+  /consumables
+  /herbs-products
+  /prescription-formulas
+  /settings                (UI gate ADMIN trong page/Sidebar)
+  /dashboard, /revenue-kpi, /commission-payroll  → ComingSoonPage
+  /patients                alias MedicalRecords
+  /referrers               stub
+```
 
-| Path | Component |
-|------|-----------|
-| `/` | redirect → `/medical-record` |
-| `/medical-record` | MedicalRecordList |
-| `/medical-record/create` | PatientCreatePage |
-| `/medical-record/:patientId` | MedicalRecords |
-| `/patients` | MedicalRecords (legacy alias) |
-| `/appointments` | AppointmentsPage |
-| `/staff-schedules` | StaffSchedulesPage |
-| `/standard-medical-records` | StandardMedicalRecord |
-| `/treatment-services` | TreatmentServices |
-| `/consumables` | ConsumablesPage |
-| `/herbs-products` | MedicinesPage |
-| `/prescription-formulas` | PrescriptionFormulasPage |
-| `/settings` | SettingsPage (permission gate) |
-| `/dashboard`, `/revenue-kpi`, `/commission-payroll` | ComingSoonPage |
-| `/referrers` | stub — **không** có trên Sidebar |
+### 7.5. TanStack Query
 
-### 8.5. TanStack Query
+Client: `src/lib/query-client.ts`
 
-`src/lib/query-client.ts`: `staleTime: 0`, `gcTime: 5min`, `refetchOnWindowFocus: false`, `retry: 1`; mutations `retry: 0`.
+- Default: `staleTime: 0`, `gcTime: 5min`, `refetchOnWindowFocus: false`, `retry: 1`
+- Mutations: `retry: 0`
 
-Pattern: `*Keys` factory + `*QueryOptions()` → `queryOptions({ queryKey, queryFn, staleTime?, enabled? })`.
+Pattern:
 
-Cross-feature: check-in appointment invalidate `appointmentKeys` + `medicalRecordKeys.detail(patientId)`.
+```ts
+export const appointmentKeys = {
+  all: ["appointments"] as const,
+  week: (branch, from, to) =>
+    [...appointmentKeys.all, "week", branch, from, to] as const,
+}
 
-### 8.6. Zustand
+export function weekAppointmentsQueryOptions(params) {
+  return queryOptions({
+    queryKey: appointmentKeys.week(...),
+    queryFn: () => fetchAppointments(params),
+    staleTime: 30_000,
+  })
+}
+```
 
-| Store | Persist | Mục đích |
-|-------|---------|----------|
-| `useAuthStore` | `tyv-auth` (`user` gồm permissions) | Session |
-| `useClinicStore` | Không | `activeClinicId` |
-| `useStore` | — | Demo counter (legacy) |
+Cross-feature invalidation ví dụ: check-in appointment → invalidate `appointmentKeys` + `medicalRecordKeys.detail(patientId)`.
 
-Clinic: `useActiveClinic()`, `syncClinicFromUser()`, `getUserClinicIds` / `userHasAllClinics`.
+### 7.6. Zustand
 
-### 8.7. Forms
+| Store            | Persist             | Mục đích              |
+| ---------------- | ------------------- | --------------------- |
+| `useAuthStore`   | `tyv-auth` (`user`) | Session user          |
+| `useClinicStore` | Không               | `activeClinicId`      |
+| `useStore`       | —                   | Demo counter (legacy) |
 
-Schema Zod → `zodResolver` → FieldCustom (`FormInput`, `FormSelect`, `FormDate`, `FormPatientSearch`…) → `FormDialog`. Export `*FormSchema`, `*FormInput` / `*FormValues`, defaultValues. `z.coerce.number()` cho số.
+Clinic helpers:
 
-### 8.8. Medicines Excel import (FE)
+- `useActiveClinic()` — options + validate active id + `canSwitchBranch`
+- `syncClinicFromUser(user)` — non-admin → `clinicIds[0]`
+- `getUserClinicIds` / `userHasAllClinics` — `src/lib/auth-user-clinics.ts`
 
-| File | Vai trò |
-|------|---------|
-| `MedicineImportDialog.tsx` | UI upload / preview |
-| `utils/parse-medicine-excel.ts` | `parseMedicineExcel`, `downloadMedicineImportTemplate` (`xlsx`) |
-| `types/medicine-import.ts` | Parse + API response types |
-| `medicine-api.ts` | `importMedicines` → `POST /medicines/import` |
-| `use-medicine-mutations.ts` | `useImportMedicinesMutation` |
+### 7.7. Forms
 
-Flow: chọn file → parse client → POST JSON `{ items }` → toast kết quả created/skipped/errors.
+1. Schema Zod trong `schemas/`
+2. Export: `*FormSchema`, `*FormInput` (`z.input`), `*FormValues` (`z.output`), `*FormDefaultValues`
+3. `useForm({ resolver: zodResolver(...), defaultValues })`
+4. Field wrappers: `FormInput`, `FormSelect`, `FormDate`, `FormDatetime`, `FormPatientSearch`, …
+5. Dialog: `FormDialog` / pattern `open` + `onOpenChange`
+6. `z.coerce.number()` cho input số; disable submit khi `isSubmitting`
+
+### 7.8. Shared UI đáng nhớ
+
+| Component                      | Dùng cho                |
+| ------------------------------ | ----------------------- |
+| `DataTable` + pagination       | Danh sách phân trang    |
+| `FormDialog` / `DialogConfirm` | Form / xác nhận xoá     |
+| `PageHeader`                   | Tiêu đề trang           |
+| `AppointmentStatusBadge`       | Badge trạng thái lịch   |
+| `ComingSoonPage`               | Dashboard / KPI / lương |
 
 ---
 
-## 9. API map FE ↔ BE
+## 8. API map FE ↔ BE
 
-Nguồn FE: `src/constants/apiPaths.ts`. Base: `VITE_API_URL`.
+Nguồn FE: `src/constants/apiPaths.ts`. Base URL: `VITE_API_URL`.
 
-| FE key | HTTP path |
-|--------|-----------|
-| `AUTH.*` | `/auth/login`, `/auth/logout`, `/auth/me` |
-| `patients.*` | `/patients`, `/patients/:id` |
-| medical-record / visits / case | `/patients/:id/medical-record`, `.../visits`, `.../medical-case` |
-| `patientServices.*` | `/patients/:id/services`… |
-| `patientPayments.*` | `/patients/:id/payments`, `.../refunds` |
-| `patientTreatment.*` | `.../treatment-sessions`, images |
-| `followUps.*` | `/follow-ups/...` |
-| `appointments.*` | `/appointments`, `.../check-in` |
-| `serviceCatalog.*` | `/service-groups`, `/catalog-services` |
-| `medicines.*` | `/medicines`, **`/medicines/import`** |
-| `prescriptionFormulaTemplates.*` | `/prescription-formula-templates` |
-| `staffShifts.*` | `/staff-shifts` |
-| `consumables.*` | `/consumables`, usage, stock-in, stock-adjust |
-| `clinics.*` | `/clinics`, `/clinics/options` |
+| FE key                           | HTTP path                                     |
+| -------------------------------- | --------------------------------------------- |
+| `AUTH.LOGIN/LOGOUT/ME`           | `/auth/login`, `/auth/logout`, `/auth/me`     |
+| `patients.*`                     | `/patients`, `/patients/:id`                  |
+| medical record (service riêng)   | `/patients/:id/medical-record`                |
+| visits                           | `/patients/:id/visits`…                       |
+| medical case                     | `/patients/:id/medical-case`                  |
+| `patientServices.*`              | `/patients/:id/services`…                     |
+| `patientPayments.*`              | `/patients/:id/payments`, `.../refunds`       |
+| `patientTreatment.*`             | `.../treatment-sessions`, images              |
+| `followUps.*`                    | `/follow-ups/...`                             |
+| `appointments.*`                 | `/appointments`, `.../check-in`               |
+| `serviceCatalog.groups/services` | `/service-groups`, `/catalog-services`        |
+| `medicines.*`                    | `/medicines`                                  |
+| `prescriptionFormulaTemplates.*` | `/prescription-formula-templates`             |
+| `staffShifts.*`                  | `/staff-shifts`                               |
+| `consumables.*`                  | `/consumables`, usage, stock-in, stock-adjust |
+| `clinics.*`                      | `/clinics`, `/clinics/options`                |
 
-Staff / bank: `src/services/` → `/staff`, `/bank-accounts`.
+Staff / bank accounts gọi qua `src/services/` (settings) — paths `/staff`, `/bank-accounts`.
 
-Thêm endpoint: cập nhật **cùng lúc** controller + `@RequirePermissions` + `API_PATHS` + service FE (+ catalog permission nếu quyền mới).
+Khi thêm endpoint: cập nhật **cùng lúc** controller BE + `API_PATHS` + service FE.
 
 ---
 
-## 10. Database (Prisma)
+## 9. Database (Prisma)
 
-### 10.1. Schema
+### 9.1. Schema
 
-`TYV-CRM_be/prisma/schema.prisma` — PostgreSQL, UUID, snake_case `@map`.
+File: `TYV-CRM_be/prisma/schema.prisma`
 
-### 10.2. Model chính
+- PostgreSQL, UUID `@default(uuid())`
+- Snake_case DB qua `@map` / `@@map`
+- Enums trong schema → import `@prisma/client`
+
+### 9.2. Model chính
 
 ```
 Staff ──< StaffClinic >── Clinic
-Staff ──< StaffPermission >   # permissionCode VarChar(64)
 Staff ── StaffShift
-Patient (clinicId, referrer?, assignedDoctors/Assistants)
+Patient (clinicId, referrer?, assignedDoctors/Assistants M2M)
   ├── MedicalCase (1:1)
   ├── MedicalVisit → VisitHerb, VisitClinicalImage
   ├── PatientFollowUp
   ├── Appointment
   └── PatientServiceRecord
         ├── PatientTreatmentSession → images, TreatmentSessionConsumable
-        └── PatientPayment / lines
+        └── (payments link qua PatientPayment / lines)
 
 Referrer, BankAccount
 ServiceGroup → CatalogService
@@ -555,97 +534,109 @@ PrescriptionFormulaTemplate → PrescriptionFormulaHerb
 Consumable
 ```
 
-**Enum role:** `StaffRole` = `ADMIN | DOCTOR | ASSISTANT | STAFF`  
-**Permission:** không phải Prisma enum — string catalog trong code.
+**Enum role:** `StaffRole` = `ADMIN | DOCTOR | ASSISTANT | STAFF`
 
-### 10.3. Migrate
+### 9.3. Migrate — bắt buộc
 
 ```bash
 npx prisma migrate dev --name <ten_mo_ta>
 ```
 
-**Không** `prisma db push` trên DB dùng chung. Commit `prisma/migrations/`.
+- **Không** dùng `prisma db push` trên DB dùng chung (Supabase) — gây drift, đồng đội `migrate` lỗi.
+- Commit kèm thư mục `prisma/migrations/`.
 
 ---
 
-## 11. Clinic scope
+## 10. Phân quyền & scope cơ sở
 
-- Patient / appointment / follow-up / shift gắn `clinicId`
-- ADMIN: `allClinics` / unrestricted (`clinic-access.ts`)
-- Non-admin: `StaffClinic` + (patient list) filter theo assignment bác sĩ/trợ lý
-- FE: hầu hết query nhận `clinicId` từ `useActiveClinic()` / `useClinicStore`
-- Đổi cơ sở → query key đổi → refetch
+### 10.1. Layers
 
-Helpers BE: `assertClinicAccess`, `resolveAllowedClinicIds`, `assertPatientAccess`.
+1. **JWT global** — mọi route trừ `@Public()`
+2. **`@Roles(StaffRole.…)`** — chỉ khi decorator có mặt; không có decorator = mọi role đã login
+3. **ADMIN-only controllers:** staff (trừ options), clinics, bank-accounts, staff-shifts
+4. **Resource helpers** (`src/auth/clinic-access.ts`, patient access):
+   - ADMIN → full clinics (`allClinics` / unrestricted)
+   - Khác → `StaffClinic` + (với patient) assignment bác sĩ/trợ lý
+
+### 10.2. FE enforcement
+
+- Menu **Cài đặt** + page Settings: chỉ `user.role === "ADMIN"`
+- Non-admin vào `/settings` → redirect danh sách khách hàng
+- Đổi cơ sở: Sidebar khi `canSwitchBranch` (ADMIN hoặc >1 clinic)
+- Hầu hết trang vận hành **không** gate theo role trên FE — dựa BE
+
+### 10.3. Clinic filter trên FE
+
+Hầu hết list query nhận `clinicId` từ `useActiveClinic()` / `useClinicStore`. Đổi cơ sở → query key đổi → refetch.
 
 ---
 
-## 12. Quy ước code
+## 11. Quy ước code
 
 ### Backend (`.cursor/rules/backend.mdc`)
 
 - TS only, no `any`; kebab-case files; Prisma enums / `as const`
 - Thin controller / fat service / pure mapper
-- DTO class-validator; lỗi user-facing tiếng Việt OK
+- DTO class-validator; user-facing errors tiếng Việt OK
 - Migrate only — never `db push` shared DB
-- Endpoint mới: `@RequirePermissions` khi cần hạn chế
-
-> Phần Auth trong rule vẫn có đoạn Bearer cũ — **ưu tiên code cookie + PermissionsGuard** (xem mục 17).
 
 ### Frontend (`.cursor/rules/frontend.mdc`)
 
 - Named exports; PascalCase components; kebab-case utils
-- Feature dưới `src/app/<feature>/`
-- `urlPaths` + `API_PATHS` + `PERMISSIONS`
-- English code; Vietnamese labels/toasts
-
-> Rule còn nhắc Bearer/`getAuthToken` — **code hiện tại cookie-only**.
+- Feature layout dưới `src/app/<feature>/`
+- `urlPaths` + `API_PATHS`; Query key factories; Zod+RHF FieldCustom
+- English code/comments; Vietnamese labels/toasts
 
 ### Chung (ponytail)
 
-- Ít abstraction; fix gốc dùng chung; không dependency thừa
+- Ít file / ít abstraction nhất đủ dùng
+- Fix gốc dùng chung, không patch từng caller
+- Không thêm dependency nếu stdlib / lib sẵn có đủ
 
 ---
 
-## 13. Thêm tính năng mới (checklist)
+## 12. Thêm tính năng mới (checklist)
 
 ### Backend
 
-1. Schema (nếu cần) → `migrate dev --name ...` → commit migrations
-2. Module: dto → service → controller → `AppModule`
-3. `@RequirePermissions(...)` (+ clinic/patient assert nếu cần)
-4. Nếu quyền **mới**: thêm code vào `src/auth/permissions.ts` **và** FE `constants/permissions.ts` (+ `PERMISSION_GROUPS` / role defaults)
-5. Mapper / unit test cho logic không tầm thường
-6. Message lỗi tiếng Việt cho toast FE
+1. Schema Prisma (nếu cần) → `migrate dev --name ...` → commit migrations
+2. Module: `dto/` → `service` → `controller` → đăng ký `*.module.ts` trong `AppModule`
+3. `@Roles` / clinic-patient assert khi cần
+4. Mapper nếu response phức tạp
+5. Unit test rules/service nếu logic không tầm thường
+6. Message lỗi tiếng Việt rõ cho FE toast
 
 ### Frontend
 
-1. `apiPaths` (+ `urlPaths` nếu trang mới)
-2. `services/` → `queries/` → `hooks/use-*-mutations.ts`
-3. `schemas/` nếu form; `components/`
-4. `routes.tsx` + Sidebar item (`permissions: [...]` nếu cần ẩn)
-5. Settings chỉ khi có `settings:*`
-6. `pnpm typecheck` && `pnpm lint`
+1. Thêm path vào `apiPaths.ts` (+ `urlPaths` nếu trang mới)
+2. `services/` gọi API
+3. `queries/` — keys + `queryOptions`
+4. `hooks/use-*-mutations.ts` — invalidate + toast
+5. `schemas/` Zod nếu có form
+6. `components/` page + dialog
+7. Đăng ký route trong `routes.tsx`
+8. Thêm item Sidebar nếu cần (gate ADMIN nếu quản trị)
+9. `pnpm typecheck` + `pnpm lint`
 
-### Sanity
+### End-to-end sanity
 
-- Cookie login (Network: `Set-Cookie`, request có `Cookie`)
-- User `/me` có `permissions` đúng role
-- Non-permission user: menu ẩn + API 403
-- Đổi cơ sở → data đúng
-- 401 → login sạch
+- Login cookie (Network tab: `Set-Cookie`, request có `Cookie`)
+- Đổi cơ sở → data đổi đúng
+- Role non-admin không vào Settings
+- 401 → về login sạch (không stale query)
 
 ---
 
-## 14. Testing
+## 13. Testing
 
 ### Backend
 
-| Item | Status |
-|------|--------|
-| Unit | `appointment-overlap.rules.spec.ts`, `staff-shift.rules.spec.ts`, `medicine.service.spec.ts` (importMany) |
-| E2E | Script `test:e2e` trỏ `test/jest-e2e.json` — **file thiếu**; không có `*.e2e-spec.ts` |
-| Helpers `test/helpers/` | Một phần legacy (Bearer / HRM roles) — **không** khớp cookie + StaffRole hiện tại |
+- Jest: `*.spec.ts` — hiện có:
+  - `src/appointment/appointment-overlap.rules.spec.ts`
+  - `src/staff-shift/staff-shift.rules.spec.ts`
+- Helpers: `test/helpers/` (một phần legacy naming)
+- `test:e2e` trỏ `test/jest-e2e.json` — **file hiện không có**; e2e chưa setup đầy đủ
+- Rule yêu cầu unit mỗi public service method + e2e mỗi endpoint — coverage thực tế còn mỏng
 
 ```bash
 pnpm test
@@ -655,82 +646,86 @@ pnpm test:cov
 
 ### Frontend
 
-Chưa có Vitest/Jest/Playwright. Rely `typecheck` + `lint` + manual QA.
+- **Chưa có** Vitest/Jest/Playwright trong `package.json`
+- Rely `typecheck` + `lint` + manual QA
 
 ---
 
-## 15. Deploy
+## 14. Deploy
 
 ### Backend
 
-- `Dockerfile`: multi-stage Node 20 → `PORT=8080`, `node dist/main.js`
-- Prod cookie: `secure` + `sameSite=none` → cần HTTPS + `CORS_ORIGIN` đúng FE
-- Migrate trong deploy — không `db push`
+- `Dockerfile`: multi-stage Node 20 Alpine → `PORT=8080`, `node dist/main.js` (Cloud Run–style)
+- Prod cookie: `secure` + `sameSite=none` → FE/BE HTTPS khác origin OK nếu CORS đúng
+- Set `CORS_ORIGIN` = origin FE thật
+- `.dockerignore` loại `.env`, test, scripts, md…
 
 ### Frontend
 
-- `pnpm build` — `VITE_API_URL` bake-in lúc build
-- Host static; cookie cross-origin cần CORS credentials + cookie flags prod
+- Build: `pnpm build` → static assets
+- Runtime cần `VITE_API_URL` trỏ API prod **lúc build** (Vite bake-in)
+- Host static (Cloud Run / CDN / tương đương) cùng origin policy với cookie CORS
 
-### DB / Storage
+### DB
 
-- Supabase Postgres + bucket ảnh lâm sàng
-
----
-
-## 16. Debug thường gặp
-
-| Triệu chứng | Cách xử lý |
-|-------------|------------|
-| Login OK, request sau 401 | `withCredentials` / CORS credentials / `CORS_ORIGIN` |
-| Cookie không set cross-origin | Prod thiếu `secure+sameSite=none` hoặc FE không HTTPS |
-| Menu thiếu mục | User thiếu permission; check `/me` → `permissions` |
-| API 403 dù thấy UI | FE chưa gate nút; BE `@RequirePermissions` — cấp quyền hoặc sửa decorator |
-| Settings redirect | Thiếu mọi `settings:*` |
-| List trống sau đổi cơ sở | `activeClinicId` / `useActiveClinic` |
-| Import thuốc lỗi | FE parse Excel; BE chỉ nhận JSON — xem `errors` trong response |
-| Prisma conflict | Ai đó `db push` → đồng bộ lại theo migrations |
-| Ảnh lâm sàng fail | Thiếu `SUPABASE_*` |
-
-**DevTools:** Application → Cookies → `access_token`; Network → `Cookie` header; login body chỉ `{ user }` (có `permissions`).
+- Supabase Postgres + Storage bucket ảnh lâm sàng
+- Migrate chạy trong CI/CD hoặc bước deploy — không `db push`
 
 ---
 
-## 17. Drift cần biết
+## 15. Debug thường gặp
 
-Ưu tiên **code**, không phải rule/README cũ:
+| Triệu chứng                    | Nguyên nhân / cách xử lý                                               |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| Login OK nhưng request sau 401 | Thiếu `withCredentials` / CORS không `credentials` / `CORS_ORIGIN` sai |
+| Cookie không set cross-origin  | Prod thiếu `secure+sameSite=none` hoặc FE không HTTPS                  |
+| List trống sau đổi cơ sở       | `activeClinicId` không khớp data; check `useActiveClinic`              |
+| CORS blocked                   | Thêm origin FE vào `CORS_ORIGIN`                                       |
+| Prisma migrate conflict        | Đồng đội dùng `db push` → reset theo migrations, tránh push            |
+| Ảnh lâm sàng fail              | Thiếu `SUPABASE_*` env                                                 |
+| Settings 404/redirect          | User không phải ADMIN                                                  |
+| Types lệch sau pull schema     | `pnpm prisma generate` ở BE; FE type từ mapper/interface               |
 
-| Nguồn cũ nói | Code thực tế |
-|--------------|--------------|
-| Bearer `Authorization` | Cookie `access_token` only |
-| Login `{ accessToken, user }` | Cookie + body `{ user }` |
-| JWT có `clinicBranch` | `{ sub, email, role, fullName, permissions }` |
-| Chỉ `RolesGuard` | `PermissionsGuard` + `@RequirePermissions` là chính; Roles legacy |
-| Settings = ADMIN only | Bất kỳ `settings:*`; ADMIN bypass permissions |
-| ThrottlerGuard global | Module có, guard chưa gắn |
-| FE `getAuthToken` | Không còn token trong store |
-| Package “talent management” | Legacy naming |
-| `test/helpers` Bearer/HRM | Stale vs cookie + StaffRole |
-| BE parse Excel import | FE parse `xlsx` → BE JSON batch |
+**DevTools checklist**
 
-Khi sửa Cursor rules, cập nhật Auth + Permissions trước.
+1. Application → Cookies → `access_token` (HttpOnly)
+2. Network → request có `Cookie: access_token=...`
+3. Response login: body chỉ `{ user }`, header `Set-Cookie`
 
 ---
 
-## Phụ lục A — Domain folder map
+## 16. Drift cần biết
 
-| Nghiệp vụ UI | FE `src/app/...` | BE `src/...` |
-|--------------|------------------|--------------|
-| Khách hàng / BA | `medical-records/` | `patient/`, `medical-visit/`, `medical-case/` |
-| Lịch hẹn | `appointments/` | `appointment/` |
-| Lịch làm việc | `staff-schedule/` | `staff-shift/` |
-| Bệnh án chuẩn | `standard-medical-record/` | `patient-follow-up/` |
-| Dịch vụ ĐT | `treatment-services/` | `service-catalog/` |
-| Vật tư | `consumables/` | `consumable/` |
-| Thuốc (+ Excel) | `medicines/` | `medicine/` |
-| Công thức | `prescription-formulas/` | `prescription-formula-template/` |
-| Cài đặt / quyền | `settings/` | `staff/`, `clinic/`, `bank-account/`, `auth/permissions*` |
-| Auth | `auth/` + `services/authService` | `auth/` |
+Một số chỗ **rule / README cũ** không khớp code hiện tại — ưu tiên code:
+
+| Nguồn cũ nói                     | Code thực tế                                |
+| -------------------------------- | ------------------------------------------- |
+| Bearer `Authorization`           | Cookie `access_token` only                  |
+| Login `{ accessToken, user }`    | Cookie + `{ user }`                         |
+| JWT có `clinicBranch`            | `{ sub, email, role, fullName }`            |
+| bcrypt cost ≥ 12                 | `hash(..., 10)` trong staff service         |
+| ThrottlerGuard global            | Module có, guard chưa gắn                   |
+| FE rule nhắc `getAuthToken`      | Không còn token trong store                 |
+| Package name “talent management” | Legacy naming trong `package.json` / README |
+
+Khi sửa auth docs hoặc rule Cursor, cập nhật theo cookie flow.
+
+---
+
+## Phụ lục A — Domain folder map nhanh
+
+| Nghiệp vụ UI    | FE `src/app/...`                 | BE `src/...`                                  |
+| --------------- | -------------------------------- | --------------------------------------------- |
+| Khách hàng / BA | `medical-records/`               | `patient/`, `medical-visit/`, `medical-case/` |
+| Lịch hẹn        | `appointments/`                  | `appointment/`                                |
+| Lịch làm việc   | `staff-schedule/`                | `staff-shift/`                                |
+| Bệnh án chuẩn   | `standard-medical-record/`       | `patient-follow-up/`                          |
+| Dịch vụ ĐT      | `treatment-services/`            | `service-catalog/`                            |
+| Vật tư          | `consumables/`                   | `consumable/`                                 |
+| Thuốc           | `medicines/`                     | `medicine/`                                   |
+| Công thức       | `prescription-formulas/`         | `prescription-formula-template/`              |
+| Cài đặt         | `settings/`                      | `staff/`, `clinic/`, `bank-account/`          |
+| Auth            | `auth/` + `services/authService` | `auth/`                                       |
 
 ---
 
@@ -751,4 +746,4 @@ pnpm test
 
 ---
 
-*Đã cập nhật theo codebase hiện tại (cookie JWT + StaffPermission + PermissionsGuard + medicines import). Khi auth/API/permission đổi, ưu tiên sửa mục 5–6 và 9.*
+_Tài liệu phản ánh codebase tại thời điểm viết. Khi auth/API đổi, cập nhật mục 5–8 trước._

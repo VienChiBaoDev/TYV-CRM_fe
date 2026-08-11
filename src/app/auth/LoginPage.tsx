@@ -106,12 +106,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-[11px] leading-relaxed text-slate-400">
-          Tài khoản demo: admin@tyv.vn / doctor@tyv.vn / assistant@tyv.vn /
-          staff@tyv.vn
-          <br />
-          Mật khẩu chung: <span className="font-mono">123456</span>
-        </p>
+
       </div>
     </div>
   )

@@ -11,4 +11,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    // Same-origin /api → BE (giống CRM SPĐ) để Safari nhận cookie SameSite=Lax.
+    proxy: {
+      "/api": {
+        target: "http://localhost:3003",
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api/, ""),
+      },
+    },
+  },
 })

@@ -212,7 +212,7 @@ export function useMedicalRecords() {
       if (patientId && activeVisit?.id) {
         queryClient.setQueryData<Patient>(
           medicalRecordKeys.detail(patientId),
-          (current) => {
+          (current: Patient | undefined) => {
             if (!current) return current
 
             return {
@@ -263,7 +263,7 @@ export function useMedicalRecords() {
       if (patientId && activeVisit?.id) {
         queryClient.setQueryData<Patient>(
           medicalRecordKeys.detail(patientId),
-          (current) => {
+          (current: Patient | undefined) => {
             if (!current) return current
 
             return {
