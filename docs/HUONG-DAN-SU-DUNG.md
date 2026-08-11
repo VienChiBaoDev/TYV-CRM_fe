@@ -16,8 +16,8 @@ Hệ thống quản trị phòng khám Đông Y: khách hàng, hồ sơ bệnh �
 8. [Vật tư tiêu hao](#8-vật-tư-tiêu-hao)
 9. [Dược liệu & sản phẩm](#9-dược-liệu--sản-phẩm)
 10. [Công thức đơn](#10-công-thức-đơn)
-11. [Cài đặt (Quản trị viên)](#11-cài-đặt-quản-trị-viên)
-12. [Vai trò người dùng](#12-vai-trò-người-dùng)
+11. [Cài đặt](#11-cài-đặt)
+12. [Vai trò & quyền](#12-vai-trò--quyền)
 13. [Các mục đang phát triển](#13-các-mục-đang-phát-triển)
 14. [Thuật ngữ thường dùng](#14-thuật-ngữ-thường-dùng)
 
@@ -27,12 +27,12 @@ Hệ thống quản trị phòng khám Đông Y: khách hàng, hồ sơ bệnh �
 
 ### Đăng nhập
 
-1. Mở trang web → màn hình **Đăng nhập**.
+1. Mở trang web → màn hình **Đăng nhập** (logo **Thượng Y Viên**, slogan **Nhân • Tâm • Trí**).
 2. Nhập **Email** và **Mật khẩu**.
 3. Bấm **Đăng nhập**.
 4. Sau khi thành công, hệ thống đưa bạn vào **Danh sách khách hàng**.
 
-> Nếu sai thông tin hoặc hết phiên, bạn sẽ được đưa về trang đăng nhập.
+> Nếu sai thông tin hoặc hết phiên đăng nhập, bạn sẽ được đưa về trang đăng nhập.
 
 ### Đăng xuất
 
@@ -44,27 +44,36 @@ Hệ thống quản trị phòng khám Đông Y: khách hàng, hồ sơ bệnh �
 
 ### Thanh menu bên trái (Sidebar)
 
-Menu chia theo nhóm:
+Menu chia theo nhóm. Một số mục chỉ hiện khi tài khoản của bạn có quyền tương ứng:
 
-| Nhóm              | Mục menu                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------ |
-| **Vận hành**      | Dashboard, Lịch hẹn, Lịch làm việc, Khách hàng, Bệnh án chuẩn, Dịch vụ điều trị, Vật tư tiêu hao |
-| **Nhân sự & KPI** | Doanh thu & KPI, Hoa hồng & Lương                                                                |
-| **Bán hàng**      | Dược liệu & Sản phẩm, Công thức đơn                                                              |
-| **Quản trị**      | Cài đặt _(chỉ Quản trị viên)_                                                                    |
+| Nhóm | Mục menu | Ghi chú |
+|------|----------|---------|
+| **Vận hành** | Dashboard | Đang phát triển |
+| | Lịch hẹn | Cần quyền xem lịch hẹn |
+| | Lịch làm việc | Cần quyền xem ca làm |
+| | Khách hàng | Cần quyền xem khách hàng |
+| | Bệnh án chuẩn | Luôn hiện (nếu đã đăng nhập) |
+| | Dịch vụ điều trị | Cần quyền xem danh mục |
+| | Vật tư tiêu hao | Cần quyền xem vật tư |
+| **Nhân sự & KPI** | Doanh thu & KPI | Đang phát triển |
+| | Hoa hồng & Lương | Đang phát triển |
+| **Bán hàng** | Dược liệu & Sản phẩm | Cần quyền xem thuốc |
+| | Công thức đơn | Cần quyền xem công thức |
+| **Quản trị** | Cài đặt | Chỉ hiện khi có quyền cài đặt (nhân sự / cơ sở / ngân hàng) |
+
+Cuối sidebar hiển thị **tên người dùng**, dòng **Vai trò:** (Quản trị viên / Bác sĩ / Trợ lý / Nhân viên) và nút **Đăng xuất**.
 
 ### Chọn cơ sở (chi nhánh)
 
 Ở sidebar có ô **Cơ sở**:
 
-- **Quản trị viên**: chọn bất kỳ cơ sở nào (hoặc tất cả nếu được hỗ trợ).
-- Nhân viên khác: chỉ thấy cơ sở được gán; nếu có nhiều cơ sở thì có thể đổi.
+- Nếu được phép đổi chi nhánh (quản trị viên hoặc được gán nhiều cơ sở): chọn từ danh sách (**Chọn cơ sở**).
+- Nếu chỉ có một cơ sở: hiển thị tên cố định.
+- Nếu chưa chọn: **Chưa chọn cơ sở**.
 
-> Hầu hết danh sách (khách hàng, lịch hẹn…) theo **cơ sở đang chọn**. Hãy kiểm tra cơ sở trước khi thao tác.
+> Hầu hết danh sách và lịch theo **cơ sở đang chọn**. Hãy kiểm tra đúng cơ sở trước khi thao tác.
 
-### Thông tin tài khoản
-
-Sidebar hiển thị tên người dùng và vai trò (Quản trị viên / Bác sĩ / Trợ lý / Nhân viên).
+Trang **Danh sách khách hàng** cũng có bộ lọc **Cơ sở** riêng.
 
 ---
 
@@ -76,69 +85,87 @@ Sidebar hiển thị tên người dùng và vai trò (Quản trị viên / Bác
 
 **Menu:** Vận hành → **Khách hàng**
 
-Bạn có thể:
-
-- Xem bảng: Khách hàng, SĐT, Nguồn, Người giới thiệu
-- Lọc theo **cơ sở**
+- Tiêu đề: **Danh sách khách hàng**
+- Cột: **#**, **Khách Hàng**, **Số điện thoại**, **Nguồn**, **Người giới thiệu**, **Sửa**
 - Bấm **Tạo mới hồ sơ** để thêm khách
-- Bấm một dòng để mở **hồ sơ bệnh án**
-- Bấm **Sửa** để chỉnh thông tin khách (tên, giới tính, SĐT, ngày sinh, địa chỉ, nguồn, bác sĩ / trợ lý phụ trách)
+- Bấm một dòng → mở **hồ sơ bệnh án**
+- Bấm biểu tượng **Sửa** → hộp thoại **Sửa khách hàng** (tên, giới tính, SĐT, ngày sinh, địa chỉ, nguồn, bác sĩ / trợ lý phụ trách…)
+- Dòng đếm: **Số lượng : N**
 
 ### 3.2. Tạo hồ sơ mới
 
 1. Bấm **Tạo mới hồ sơ**.
-2. Điền tab **Thông tin chung**:
-   - Giới tính (Nam / Nữ), họ tên, SĐT, ngày sinh, địa chỉ
-   - **Nguồn**: Khách vãng lai, BN giới thiệu, Facebook, Zalo…
-   - Gán **bác sĩ** / **trợ lý**
-3. (Tuỳ chọn) Tạo luôn **lịch hẹn** kèm hồ sơ.
-4. Tab **Khách**: thông tin bổ sung (CMND/CC, thỏa thuận…) nếu có.
-5. Bấm **Lưu**.
+2. Trang **Hồ sơ khách hàng** — tab **Thông tin chung**:
+   - Giới tính **Nam** / **Nữ**, **Họ và tên**, **Ngày sinh**, **Số điện thoại**, địa chỉ
+   - **Chi nhánh**, **Nguồn** (ví dụ: Khách Vãng Lai, BN Giới Thiệu, Facebook, Zalo…)
+   - **Chọn bác sĩ phụ trách**, **Chọn trợ lý phụ trách**
+   - Tùy chọn đánh dấu **Tạo lịch hẹn** để tạo luôn cuộc hẹn
+3. Tab **Khác**: thông tin bổ sung (nếu có).
+4. Có thể đánh dấu **Thỏa thuận khách hàng**.
+5. Bấm **Lưu** (hoặc **Đóng** để hủy).
 
 ### 3.3. Hồ sơ bệnh án
 
-Mở từ danh sách khách hàng. Trang gồm thông tin tổng quan và các tab chức năng.
+Mở từ danh sách khách hàng. Tiêu đề **Hồ sơ bệnh án**.
 
 **Phần đầu trang**
 
-- Mã hồ sơ, thông tin nhân khẩu, thẻ/kiêng kỵ
-- Chỉ số: Lần khám, Ngày điều trị, Tái khám
+- Thông tin khách, thẻ/kiêng kỵ (nếu có)
+- Chỉ số: **Lần khám**, **Ngày đ.trị**, **Tái khám**
 - **Đặt lịch** — tạo lịch hẹn cho khách
 - **Thêm lần khám** — thêm buổi khám mới
 - **Xuất BA** — in / xuất bệnh án
 
+**Các tab:** **Lần khám** | **Dịch vụ** | **Thanh toán** | **Điều trị** | **Bệnh án**
+
 #### Tab Lần khám
 
-- Xem timeline các lần khám
-- Xem/sửa: sinh hiệu (HA, mạch), triệu chứng, mạch chẩn, đơn thuốc & dược liệu, ảnh lâm sàng
-- Trạng thái lần khám: Khám đầu, Tái khám, Online, Cần TD, Kế hoạch
-- Chế độ: Online / Trực tiếp
-- Cách sắc thuốc: Sắc trước / thường / sau; Sắc sẵn / Không sắc
-- Lưu công thức đơn khi kê đơn; tải lên / xóa ảnh lâm sàng
+- Xem timeline các lần khám với trạng thái: **Khám đầu**, **Tái khám**, **Online**, **Cần TD**, **Kế hoạch**
+- Badge hoàn tất: **● Hoàn tất** / **Chưa kiểm tra**
+- Bấm **Sửa** để chỉnh lần khám; hoặc **Thêm lần khám** → hộp thoại **Thêm lượt khám mới** → **Lưu phiếu khám**
+- Khi sửa: **Cập nhật thông tin lần khám** → **Lưu cập nhật**
+
+Nội dung phiếu khám thường gồm:
+
+- **Tiêu đề lần khám**, **Ngày khám**, **Bác sĩ khám**
+- **Hình thức**: **Trực tiếp** / **Online (Khám xa)**; **Địa điểm**
+- Sinh hiệu: huyết áp, **Mạch (nhịp tim)**
+- **Trạng thái tiến trình**, **Mạch chẩn**, triệu chứng
+- **Công thức mẫu**, **Kê đơn**, **Liều lượng uống**, **Thêm vị**
+- **Lưu công thức** (lưu lại bộ vị để dùng sau)
+- Ảnh: **Thiết chẩn (Lưỡi / Mắt / Da dị ứng)**, **Xét nghiệm / Kết quả**, **Ảnh lâm sàng khác**
+- **Lịch tái khám**, **Nhắc nhở tự động**
+- **Trạng thái điều trị**: **Đang điều trị** / **Cần theo dõi** / **Kết thúc đợt**
 
 #### Tab Dịch vụ
 
-- Thêm / sửa / hủy dịch vụ gắn với khách
-- Theo dõi tiến độ buổi điều trị (thanh tiến trình)
-- Giá, VAT, giảm giá
+- Bấm **Thêm mới** để gắn dịch vụ / sản phẩm cho khách
+- Cột: **Dịch Vụ**, **Thành Tiền**, **Tư Vấn**, **Nội Dung Ghi Chú**, **Chốt Dịch Vụ**, **Xử Lý**
+- Menu xử lý: **Xem chi tiết**, **Sửa dịch vụ**, **Hủy dịch vụ**, **Xóa dịch vụ**
+- Dịch vụ đã hủy hiển thị badge **Đã hủy**
+- Theo dõi tiến độ buổi điều trị trên từng gói (khi có)
 
 #### Tab Thanh toán
 
-- Xem tổng hợp: Tổng tiền, Đã thanh toán, Còn lại, Tiền cọc, Sản phẩm, Dịch vụ, Hoàn trả
-- Thêm **thanh toán** hoặc **hoàn tiền**
+- Tóm tắt: **Tổng tiền**, **Thanh toán**, **Còn lại**, **Tiền Cọc**, **Sản Phẩm**, **Dịch Vụ**, **Hoàn trả**
+- Thao tác: **Thanh toán** (thu tiền) hoặc **Hoàn tiền**
 - Hình thức: **Tiền mặt** / **Chuyển khoản**
+- Bảng phiếu: mã **TT** (thanh toán) / **HT** (hoàn trả), hình thức, tổng tiền, chi tiết
 
 #### Tab Điều trị
 
-- Xem lịch sử điều trị
-- Bấm **Điều trị** để ghi buổi: chọn dịch vụ đã thanh toán, điền form buổi, vật tư tiêu hao, ảnh, nhân viên thực hiện
-- Lọc: Đang điều trị / Hoàn thành
+- Tiêu đề danh sách: **Danh sách điều trị**
+- Bấm **Điều trị** để ghi buổi: chọn dịch vụ, bác sĩ, hỗ trợ chuyên môn, nội dung, vật tư tiêu hao, ảnh điều trị
+- Cột: **Thời gian**, **Dịch vụ**, **Buổi**, **Nội dung**, **Trạng thái** (**Hoàn thành** / **Đang điều trị**)
+- Bộ lọc thao tác: **Đang điều trị** / **Điều trị xong**
+- Nút lưu: **Lưu và tiếp tục** hoặc **Lưu**
+- Trường hữu ích: **Ngày điều trị kế tiếp**, **Nội dung kế tiếp**, **Ghi chú**, **Tải ảnh điều trị**
 
 #### Tab Bệnh án
 
-- Form bệnh án chính thức (YHCT + YHHD)
-- **Lưu**, **In**, làm mới form
-- Dùng khi **Xuất BA**
+- Form bệnh án chính thức (thông tin YHCT / YHHD, kết quả…)
+- **Lưu bệnh án**, **Đặt lại**
+- Dùng kèm **Xuất BA** để in
 
 ---
 
@@ -148,14 +175,17 @@ Mở từ danh sách khách hàng. Trang gồm thông tin tổng quan và các t
 
 ### Xem lịch
 
-- Lịch theo **tuần**; chuyển tuần bằng nút điều hướng
-- Lọc theo **bác sĩ**
+- Lịch theo **tuần**; điều hướng **Tuần trước** / **Hôm nay** / **Tuần sau**
+- Lọc **Bác sĩ** (hoặc **Tất cả bác sĩ**)
+- Khung giờ làm việc trên lưới (thường 07:00–18:00)
+- Badge số lượng: **N lịch trong tuần**
 
 ### Tạo / sửa lịch
 
-1. Bấm ô trống trên lịch hoặc nút tạo lịch.
-2. Chọn: khách hàng, bác sĩ, trợ lý, thời gian, ghi chú, trạng thái.
-3. Lưu.
+1. Bấm **Đặt lịch mới** hoặc bấm ô trống trên lịch.
+2. Hộp thoại **Đặt lịch hẹn mới** / **Chi tiết lịch hẹn**:
+   - Khách hàng, **Thời gian hẹn**, **Bác sĩ**, **Trợ lý**, **Ghi chú**, **Trạng thái**
+3. Bấm **Đặt lịch** hoặc **Cập nhật**.
 
 ### Tiếp nhận & hủy
 
@@ -164,14 +194,14 @@ Mở từ danh sách khách hàng. Trang gồm thông tin tổng quan và các t
 
 ### Trạng thái lịch hẹn
 
-| Trạng thái | Ý nghĩa      |
-| ---------- | ------------ |
-| Đã đặt     | Mới tạo      |
-| Xác nhận   | Đã xác nhận  |
-| Đã đến     | Đã tiếp nhận |
-| Hoàn tất   | Xong buổi    |
-| Không đến  | Vắng mặt     |
-| Đã hủy     | Đã hủy       |
+| Trạng thái | Ý nghĩa |
+|-----------|---------|
+| Đã đặt | Mới tạo |
+| Xác nhận | Đã xác nhận |
+| Đã đến | Đã tiếp nhận |
+| Hoàn tất | Xong buổi |
+| Không đến | Vắng mặt |
+| Đã hủy | Đã hủy |
 
 Từ thẻ lịch hẹn có thể mở nhanh hồ sơ bệnh án của khách.
 
@@ -181,10 +211,11 @@ Từ thẻ lịch hẹn có thể mở nhanh hồ sơ bệnh án của khách.
 
 **Menu:** Vận hành → **Lịch làm việc**
 
-1. Chọn **nhân viên**.
+1. Chọn **Nhân viên** (chưa chọn sẽ hiện: **Chọn nhân viên để xem lịch làm việc**).
 2. Xem lưới lịch theo tuần.
-3. Tạo / sửa ca: loại **Ca làm** hoặc **Nghỉ**.
-4. **Nghỉ hôm nay** — đánh dấu OFF nhanh trong ngày.
+3. **Thêm ca** → hộp thoại **Thêm ca làm** / **Sửa ca làm**: loại **Ca làm** hoặc **Nghỉ** → **Tạo ca** / **Lưu**.
+4. **Nghỉ hôm nay** — đánh dấu nghỉ nhanh trong ngày.
+5. Có thể **Xóa ca** khi sửa.
 
 ---
 
@@ -192,16 +223,21 @@ Từ thẻ lịch hẹn có thể mở nhanh hồ sơ bệnh án của khách.
 
 **Menu:** Vận hành → **Bệnh án chuẩn**
 
-### Bệnh nhân sắp đến hạn tái khám (7 ngày)
+### Bệnh nhân sắp đến hạn tái khám (7 ngày tới)
 
 - Danh sách khách cần tái khám trong 7 ngày tới
 - **Đặt nhanh** hoặc **Đổi lịch**
-- Trạng thái: Đã đặt lịch / Chưa đặt lịch
+- Trạng thái: **Đã đặt lịch** / **Chưa đặt lịch**
 
-### Đánh giá lâm sàng
+### Đánh giá lâm sàng gần nhất (Hỏi thăm)
 
 - Danh sách chờ đánh giá
-- Gửi kết quả: Tiến triển tốt, Bình thường, Cần hội chẩn, Hủy lịch (+ ghi chú)
+- Bấm **Hỏi thăm** → chọn kết quả:
+  - **Tiến triển tốt**
+  - **Bình thường**
+  - **Cần hội chẩn**
+  - **Hủy lịch**
+- Có thể kèm ghi chú
 
 ---
 
@@ -211,11 +247,16 @@ Từ thẻ lịch hẹn có thể mở nhanh hồ sơ bệnh án của khách.
 
 Quản lý **danh mục** dịch vụ / sản phẩm dùng khi bán và gắn vào hồ sơ khách.
 
-Bạn có thể:
+**Cột nhóm (trái)**
 
-- Quản lý **nhóm dịch vụ** (thêm / sửa nhóm) ở cột bên trái
-- Tìm kiếm, lọc theo trạng thái (Hoạt động / Ngưng), đơn vị, loại (Dịch vụ / Sản phẩm)
-- Thêm / sửa mục và giá
+- **Nhóm dịch vụ** — **Thêm mới** / sửa nhóm
+
+**Danh sách dịch vụ**
+
+- Tiêu đề **Dịch vụ** — **Thêm mới**
+- Lọc: **Tình trạng**, **Đơn vị**, **Loại** (**Dịch vụ** / **Sản phẩm**)
+- Trạng thái: **Hoạt động** / **Ngừng hoạt động** (trong form: **Đang sử dụng** / **Ngừng hoạt động**)
+- Hộp thoại: **Thêm/Sửa nhóm dịch vụ**, **Thêm/Sửa dịch vụ / sản phẩm** (kèm giá)
 
 ---
 
@@ -225,14 +266,16 @@ Bạn có thể:
 
 ### Tab Danh mục
 
-- Tìm kiếm, thêm / sửa vật tư
-- **Nhập kho**
-- Trạng thái, định mức cho 1 buổi điều trị
+- **Tìm**, **Thêm vật tư**, **Sửa**
+- **Nhập kho** để tăng tồn
+- Trạng thái: **Đang dùng** / **Ngừng dùng**
+- Có thể cấu hình định mức dùng cho 1 buổi điều trị
 
 ### Tab Lịch sử tiêu hao
 
-- Xem lịch sử dùng vật tư
-- Lọc theo từ khóa, khoảng ngày; phân trang
+- Xem lịch sử dùng vật tư khi ghi điều trị
+- Cột: **Ngày**, **Khách hàng**, **Dịch vụ**, **Buổi**, **Vật tư**, **Số lượng**, **Người thực hiện**
+- Lọc / phân trang theo nhu cầu
 
 ---
 
@@ -240,10 +283,14 @@ Bạn có thể:
 
 **Menu:** Bán hàng → **Dược liệu & Sản phẩm**
 
-Trang **Quản lý kho thuốc**:
+Trang hiển thị tiêu đề **Quản lý kho thuốc**:
 
-- Tìm kiếm, lọc đơn vị, phân trang
-- Thêm / sửa thuốc – dược liệu dùng khi kê đơn trong lần khám
+- **Tìm**, lọc đơn vị
+- **Thêm thuốc** / sửa / **Xóa thuốc**
+- **Import Excel** — nhập hàng loạt từ file Excel
+- Cột: **Tên thuốc**, **Đơn vị**, **Giá / đơn vị**, **Loại thuốc**, **Xử Lý**
+
+Thuốc trong danh mục được chọn khi **kê đơn** ở lần khám.
 
 ---
 
@@ -251,46 +298,64 @@ Trang **Quản lý kho thuốc**:
 
 **Menu:** Bán hàng → **Công thức đơn**
 
-- Tìm kiếm công thức
-- Thêm / xem / sửa / xóa công thức (thành phần dược liệu)
-- Dùng lại khi kê đơn trong hồ sơ bệnh án
+- Tiêu đề: **Công thức đơn thuốc**
+- **Thêm công thức** — thêm / xem / sửa / xóa
+- Thành phần là các vị dược liệu đã có trong kho thuốc
+- Trong lần khám có thể **Lưu công thức** từ đơn đang kê để dùng lại sau
+
+> Công thức dùng để tái sử dụng khi kê đơn; không lưu giá trên công thức.
 
 ---
 
-## 11. Cài đặt (Quản trị viên)
+## 11. Cài đặt
 
-**Menu:** Quản trị → **Cài đặt** — chỉ tài khoản **ADMIN**.
+**Menu:** Quản trị → **Cài đặt**
 
-Người dùng khác không thấy menu này; nếu mở URL trực tiếp sẽ bị chuyển về danh sách khách hàng.
+Chỉ hiện và vào được khi tài khoản có ít nhất một quyền cài đặt (**nhân sự**, **cơ sở**, hoặc **tài khoản ngân hàng**). Thường dành cho **Quản trị viên**; các vai trò khác mặc định không có quyền này.
+
+Các tab cũng lọc theo quyền cụ thể:
 
 ### Tab Tài khoản nhân sự
 
-- Thêm / sửa nhân viên
-- Gán vai trò, cơ sở
-- Bật / tắt hoạt động
+- **Thêm tài khoản** / **Sửa** / **Xóa**
+- Cột: **Họ tên**, **Email**, **Vai trò**, **Quyền**, **Chi nhánh**, **Trạng thái** (**Hoạt động** / **Đã khóa**)
+- Gán **vai trò** và chỉnh **quyền** chi tiết theo nhóm
+- **Reset theo {vai trò}** — đưa quyền về mặc định của vai trò đó
 
 ### Tab Cơ sở
 
-- Thêm / sửa chi nhánh phòng khám
-- Bật / tắt hoạt động
+- Thêm / sửa / xóa chi nhánh phòng khám
+- Trạng thái: **Đang dùng** / **Ngừng dùng**
 
 ### Tab Tài khoản ngân hàng
 
-- Thêm / sửa tài khoản ngân hàng (dùng cho chuyển khoản / hoàn tiền)
-- Bật / tắt hoạt động
+- Thêm / sửa / xóa tài khoản ngân hàng (dùng khi thanh toán / hoàn tiền chuyển khoản)
+- Trạng thái: **Đang dùng** / **Ngừng dùng**
 
 ---
 
-## 12. Vai trò người dùng
+## 12. Vai trò & quyền
 
-| Vai trò           | Mô tả ngắn                                                |
-| ----------------- | --------------------------------------------------------- |
-| **Quản trị viên** | Toàn quyền vận hành + **Cài đặt**; đổi mọi cơ sở          |
-| **Bác sĩ**        | Làm việc vận hành (khám, lịch, điều trị…); cơ sở được gán |
-| **Trợ lý**        | Hỗ trợ vận hành; cơ sở được gán                           |
-| **Nhân viên**     | Vận hành theo phân quyền cơ sở                            |
+### Vai trò trên giao diện
 
-> Trên giao diện, hầu hết màn hình vận hành mở được cho mọi role đã đăng nhập. **Cài đặt** chỉ dành cho Quản trị viên.
+| Vai trò | Nhãn sidebar |
+|---------|--------------|
+| ADMIN | Quản trị viên |
+| DOCTOR | Bác sĩ |
+| ASSISTANT | Trợ lý |
+| STAFF | Nhân viên |
+
+Quyền thực tế do **danh sách quyền** trên tài khoản quyết định (có thể chỉnh trong Cài đặt). Menu chỉ hiện mục bạn được xem.
+
+### Quyền mặc định theo vai trò (tham khảo)
+
+| Vai trò | Thường làm được |
+|---------|-----------------|
+| **Quản trị viên** | Toàn bộ chức năng + Cài đặt |
+| **Bác sĩ / Trợ lý** | Khách hàng, lần khám, lịch hẹn, dịch vụ trên hồ sơ, điều trị, bệnh án chuẩn; xem danh mục / thuốc / công thức / vật tư / lịch làm việc. **Không** mặc định: thu/chi tiền, sửa vật tư kho, cài đặt |
+| **Nhân viên** | Khách hàng, lịch hẹn, dịch vụ trên hồ sơ, **thanh toán**, bệnh án chuẩn, vật tư (gồm nhập/ghi nhận liên quan). **Không** mặc định: sửa lần khám / điều trị, sửa danh mục thuốc–công thức–dịch vụ, cài đặt |
+
+> Quản trị viên có thể cấp thêm / thu hẹp quyền từng người trong **Cài đặt → Tài khoản nhân sự**. Nếu không thấy một mục menu, hãy hỏi quản trị viên kiểm tra quyền.
 
 ---
 
@@ -298,37 +363,42 @@ Người dùng khác không thấy menu này; nếu mở URL trực tiếp sẽ 
 
 Các trang sau hiện là **Coming soon** (chưa dùng được):
 
-- Dashboard
-- Doanh thu & KPI
-- Hoa hồng & Lương
+| Menu | Nội dung |
+|------|----------|
+| Dashboard | Chức năng Dashboard |
+| Doanh thu & KPI | Doanh Thu & KPI |
+| Hoa hồng & Lương | Hoa Hồng & Lương |
 
-Khi mở, hệ thống hiển thị thông báo đang phát triển và có thể dẫn về danh sách khách hàng.
+Khi mở, hệ thống thông báo đang phát triển và có nút quay lại danh sách khách hàng.
 
 ---
 
 ## 14. Thuật ngữ thường dùng
 
-| Thuật ngữ                         | Giải thích                                            |
-| --------------------------------- | ----------------------------------------------------- |
-| Khách hàng / Bệnh nhân            | Người đến khám / điều trị                             |
-| Hồ sơ bệnh án                     | Toàn bộ thông tin khám, dịch vụ, thanh toán, điều trị |
-| Cơ sở / Chi nhánh                 | Phòng khám đang làm việc                              |
-| Lần khám                          | Một buổi khám / tái khám                              |
-| Lịch hẹn                          | Cuộc hẹn theo lịch                                    |
-| Tiếp nhận                         | Check-in khi khách đến                                |
-| Người giới thiệu                  | Người giới thiệu khách                                |
-| Nguồn khách hàng                  | Nơi khách biết đến phòng khám                         |
-| Dịch vụ / Sản phẩm                | Mục trong danh mục bán / điều trị                     |
-| Buổi điều trị                     | Một session trong gói dịch vụ                         |
-| Đơn thuốc / Dược liệu             | Thuốc kê trong lần khám                               |
-| Công thức đơn                     | Bộ vị thuốc dùng lại                                  |
-| Sắc (trước / thường / sau)        | Thứ tự sắc thuốc                                      |
-| Thanh toán / Tiền cọc / Hoàn tiền | Ghi nhận tiền vào / cọc / trả lại                     |
-| Vật tư tiêu hao                   | Vật tư dùng trong điều trị                            |
-| Xuất BA                           | In / xuất bệnh án                                     |
-| Tái khám                          | Lịch khám lại                                         |
-| Mạch chẩn / Tứ chẩn / YHCT / YHHD | Chẩn đoán Đông y / kết hợp YHHĐ                       |
-| Ca làm / Nghỉ                     | Lịch làm việc nhân sự                                 |
+| Thuật ngữ | Giải thích |
+|-----------|------------|
+| Khách hàng / Bệnh nhân | Người đến khám / điều trị |
+| Hồ sơ bệnh án | Toàn bộ thông tin khám, dịch vụ, thanh toán, điều trị |
+| Cơ sở / Chi nhánh | Phòng khám đang làm việc |
+| Lần khám | Một buổi khám / tái khám |
+| Lịch hẹn | Cuộc hẹn theo lịch |
+| Tiếp nhận | Check-in khi khách đến |
+| Người giới thiệu | Người giới thiệu khách |
+| Nguồn khách hàng | Nơi khách biết đến phòng khám |
+| Dịch vụ / Sản phẩm | Mục trong danh mục bán / điều trị |
+| Buổi điều trị | Một session trong gói dịch vụ |
+| Đơn thuốc / Dược liệu | Thuốc kê trong lần khám |
+| Công thức đơn | Bộ vị thuốc dùng lại |
+| Thanh toán / Tiền cọc / Hoàn tiền | Ghi nhận tiền vào / cọc / trả lại |
+| TT / HT | Phiếu thanh toán / phiếu hoàn trả |
+| Tiền mặt / Chuyển khoản | Hình thức thu–chi |
+| Vật tư tiêu hao / Nhập kho | Vật tư dùng trong điều trị / tăng tồn |
+| Xuất BA | In / xuất bệnh án |
+| Tái khám / Đặt nhanh / Đổi lịch | Lịch khám lại và thao tác trên Bệnh án chuẩn |
+| Hỏi thăm | Đánh giá lâm sàng gần nhất |
+| Mạch chẩn / Thiết chẩn / YHCT / YHHD | Chẩn đoán Đông y / kết hợp YHHĐ |
+| Ca làm / Nghỉ | Lịch làm việc nhân sự |
+| Quyền | Phân quyền chi tiết trên tài khoản (ngoài vai trò) |
 
 ---
 
@@ -338,13 +408,13 @@ Khi mở, hệ thống hiển thị thông báo đang phát triển và có th�
 Đăng nhập → Chọn đúng Cơ sở
     → Xem Lịch hẹn → Tiếp nhận khách
     → Mở Hồ sơ bệnh án
-        → Thêm / sửa Lần khám (kê đơn nếu cần)
-        → Gắn Dịch vụ → Thanh toán
-        → Ghi Điều trị + vật tư
-    → Cập nhật Bệnh án chuẩn (tái khám / đánh giá)
+        → Thêm / sửa Lần khám (kê đơn, lưu công thức nếu cần)
+        → Gắn Dịch vụ → Thanh toán (nếu có quyền)
+        → Ghi Điều trị + vật tư + ảnh
+    → Cập nhật Bệnh án chuẩn (tái khám / Hỏi thăm)
 Đăng xuất khi hết ca
 ```
 
 ---
 
-_Tài liệu dành cho người dùng cuối hệ thống Thượng Y Viên CRM. Cập nhật theo phiên bản giao diện hiện tại._
+*Tài liệu dành cho người dùng cuối hệ thống Thượng Y Viên CRM. Đã cập nhật theo giao diện và phân quyền hiện tại.*
