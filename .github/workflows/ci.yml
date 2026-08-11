@@ -40,7 +40,7 @@ jobs:
 
       - name: Build
         env:
-          VITE_API_URL: https://placeholder-api.example.com
+          VITE_API_URL: /api
         run: npm run build
 
       - name: Check dist outputs

@@ -3,6 +3,7 @@ const API_PATHS = {
     LOGIN: "/auth/login",
     LOGOUT: "/auth/logout",
     ME: "/auth/me",
+    REFRESH: "/auth/refresh",
   },
   followUps: {
     upcoming: "/follow-ups/upcoming",
