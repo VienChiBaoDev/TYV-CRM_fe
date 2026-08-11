@@ -1,6 +1,7 @@
-import httpService from "@/services/httpService"
 import API_PATHS from "@/constants/apiPaths"
 import type { AuthUser, LoginRequest, LoginResponse } from "@/interfaces/auth"
+import { postLogout } from "@/lib/post-logout"
+import httpService from "@/services/httpService"
 
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
   const { data } = await httpService.post<LoginResponse>(
@@ -12,7 +13,7 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
 
 export async function logout(): Promise<void> {
   try {
-    await httpService.post(API_PATHS.AUTH.LOGOUT)
+    await postLogout()
   } catch {
     // Cookie có thể đã hết hạn.
   }

@@ -1,32 +1,32 @@
-import API_PATHS from "@/constants/apiPaths"
+import { postLogout } from "@/lib/post-logout"
 import { queryClient } from "@/lib/query-client"
 import { useAuthStore } from "@/stores/auth-store"
 import { useClinicStore } from "@/stores/clinic-store"
 
-const CSRF_COOKIE = "tyv_csrf"
-const CSRF_HEADER = "X-CSRF-Token"
+let sessionResetInProgress = false
 
-function readCookie(name: string): string | null {
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${name.replace(/[$()*+.?[\\\]^{|}]/g, "\\$&")}=([^;]*)`)
-  )
-  return match ? decodeURIComponent(match[1]) : null
+export function isSessionResetInProgress(): boolean {
+  return sessionResetInProgress
 }
 
-/** Gọi BE logout trước (còn cookie), rồi mới clear state local. */
-export async function resetSession(): Promise<void> {
-  try {
-    const headers: HeadersInit = { "Content-Type": "application/json" }
-    const csrf = readCookie(CSRF_COOKIE)
-    if (csrf) headers[CSRF_HEADER] = csrf
-    await fetch(`${import.meta.env.VITE_API_URL}${API_PATHS.AUTH.LOGOUT}`, {
-      method: "POST",
-      credentials: "include",
-      headers,
-      body: "{}",
-    })
-  } catch {
-    // Cookie/CSRF có thể thiếu — vẫn clear local.
+type ResetSessionOptions = {
+  /** Chỉ khi user chủ động đăng xuất — gọi BE xóa cookie HttpOnly. */
+  revokeServer?: boolean
+}
+
+/** Clear state local; không gọi thêm API sau khi bắt đầu (trừ revokeServer). */
+export async function resetSession(options: ResetSessionOptions = {}): Promise<void> {
+  if (sessionResetInProgress) return
+  sessionResetInProgress = true
+
+  await queryClient.cancelQueries()
+
+  if (options.revokeServer) {
+    try {
+      await postLogout()
+    } catch {
+      // Cookie có thể đã hết hạn — vẫn clear local.
+    }
   }
 
   queryClient.clear()
