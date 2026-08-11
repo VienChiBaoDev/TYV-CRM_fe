@@ -24,6 +24,8 @@ export interface AuthUser {
 
 export interface LoginResponse {
   user: AuthUser
+  /** Có khi BE trả kèm — FE dùng Bearer nếu Safari chặn cookie cross-site. */
+  accessToken?: string
 }
 
 export interface Staff {
