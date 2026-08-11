@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { NavLink, useLocation, useNavigate } from "react-router-dom"
+import { NavLink, useLocation } from "react-router-dom"
 import {
   LayoutDashboard,
   Calendar,
@@ -342,7 +342,6 @@ export function Sidebar({
   onClose,
   onCollapse,
 }: SidebarProps) {
-  const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
   const { activeClinicId, activeClinic, clinicOptions, canSwitchBranch } =
@@ -367,8 +366,8 @@ export function Sidebar({
   }, [location.pathname, variant, onClose])
 
   async function handleLogout() {
-    await resetSession()
-    navigate(urlPaths.login, { replace: true })
+    await resetSession({ revokeServer: true })
+    window.location.assign(urlPaths.login)
   }
 
   return (

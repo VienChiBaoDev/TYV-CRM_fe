@@ -1,19 +1,15 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios"
+import axios, {
+  AxiosError,
+  CanceledError,
+  type InternalAxiosRequestConfig,
+} from "axios"
 
 import API_PATHS from "@/constants/apiPaths"
-import { resetSession } from "@/lib/reset-session"
-
-const CSRF_COOKIE = "tyv_csrf"
-const CSRF_HEADER = "X-CSRF-Token"
+import { CSRF_COOKIE, CSRF_HEADER, readCookie } from "@/lib/csrf"
+import { isSessionResetInProgress, resetSession } from "@/lib/reset-session"
+import { urlPaths } from "@/constants/urlPaths"
 
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean }
-
-function readCookie(name: string): string | null {
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${name.replace(/[$()*+.?[\\\]^{|}]/g, "\\$&")}=([^;]*)`)
-  )
-  return match ? decodeURIComponent(match[1]) : null
-}
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -21,6 +17,9 @@ const instance = axios.create({
 })
 
 instance.interceptors.request.use((config) => {
+  if (isSessionResetInProgress()) {
+    return Promise.reject(new CanceledError("Session reset in progress"))
+  }
   const csrf = readCookie(CSRF_COOKIE)
   if (csrf) {
     config.headers.set(CSRF_HEADER, csrf)
@@ -52,11 +51,20 @@ instance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const config = error.config as RetryConfig | undefined
-    if (error.response?.status !== 401 || !config || config._retry || isAuthPath(config.url)) {
-      if (error.response?.status === 401 && !isAuthPath(config?.url)) {
+    if (
+      error.response?.status !== 401 ||
+      !config ||
+      config._retry ||
+      isAuthPath(config.url)
+    ) {
+      if (
+        error.response?.status === 401 &&
+        !isAuthPath(config?.url) &&
+        !isSessionResetInProgress()
+      ) {
         void resetSession()
-        if (window.location.pathname !== "/login") {
-          window.location.assign("/login")
+        if (window.location.pathname !== urlPaths.login) {
+          window.location.assign(urlPaths.login)
         }
       }
       return Promise.reject(error)
@@ -71,9 +79,11 @@ instance.interceptors.response.use(
       return instance.request(config)
     }
 
-    void resetSession()
-    if (window.location.pathname !== "/login") {
-      window.location.assign("/login")
+    if (!isSessionResetInProgress()) {
+      void resetSession()
+      if (window.location.pathname !== urlPaths.login) {
+        window.location.assign(urlPaths.login)
+      }
     }
     return Promise.reject(error)
   }
