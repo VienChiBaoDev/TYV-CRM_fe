@@ -116,8 +116,8 @@ pnpm run start:dev
 cd TYV-CRM_fe
 pnpm install
 
-# .env.development đã có sẵn mẫu:
-# VITE_API_URL=http://localhost:3003
+# .env.development / .env.production đã có sẵn (VITE_API_URL=/api)
+# Override local (không commit): tạo .env hoặc .env.local
 
 pnpm dev
 # → http://localhost:5173
@@ -164,11 +164,17 @@ pnpm dev
 
 ### Frontend
 
-| Key            | Mô tả                                    |
-| -------------- | ---------------------------------------- |
-| `VITE_API_URL` | Base URL axios (`http://localhost:3003`) |
+| File                 | Commit? | Mô tả                                              |
+| -------------------- | ------- | -------------------------------------------------- |
+| `.env.development`   | Có      | `pnpm dev` — config public                         |
+| `.env.production`    | Có      | `pnpm build` / Vercel — config public              |
+| `.env` / `.env.local`| Không   | Override local hoặc secret (gitignore)             |
 
-Chỉ biến `VITE_*` được inject vào client.
+| Key            | Mô tả                                                         |
+| -------------- | ------------------------------------------------------------- |
+| `VITE_API_URL` | Base URL axios (`/api` — same-origin qua Vite/Vercel proxy)   |
+
+Chỉ biến `VITE_*` được inject vào client. Không đặt secret trong `VITE_*`.
 
 ---
 
