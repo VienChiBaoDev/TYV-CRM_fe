@@ -404,7 +404,7 @@ export function Sidebar({
               </button>
             ) : null}
             <img
-              src="Logo.jpg"
+              src="/Logo.jpg"
               alt="Thượng Y Viên"
               className="h-20 w-20 rounded-xl border border-[#f8e3a3] object-cover"
             />
