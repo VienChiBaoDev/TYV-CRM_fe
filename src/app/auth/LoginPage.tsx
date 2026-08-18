@@ -48,7 +48,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
         <div className="mb-6 flex flex-col items-center text-center">
           <img
-            src="Logo.jpg"
+            src="/Logo.jpg"
             alt="Thượng Y Viên"
             className="h-20 w-20 rounded-xl object-cover"
           />
