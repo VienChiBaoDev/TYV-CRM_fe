@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { Edit, Plus, X } from "lucide-react"
-import type { Visit } from "@/app/medical-records/interfaces/types"
+import { Edit, Plus, Sparkles, X } from "lucide-react"
+import type { Herb, Visit } from "@/app/medical-records/interfaces/types"
 import {
   VISIT_STATUSES,
   REMINDER_DAYS_OPTIONS,
@@ -38,6 +38,8 @@ import {
 import { applyFormulaToVisit } from "@/app/prescription-formulas/utils/apply-formula-to-visit"
 import { FormulaPickerCombobox } from "@/app/prescription-formulas/components/FormulaPickerCombobox"
 import type { PrescriptionFormula } from "@/app/prescription-formulas/types/prescription-formula"
+import { suggestVisitPrescription } from "@/app/medical-records/services/ai-prescription-service"
+import { getApiErrorMessage } from "@/app/medical-records/mappers/map-visit-request"
 
 const MODAL_CONFIG = {
   add: {
@@ -149,6 +151,7 @@ export function VisitFormModal() {
     isSubmittingVisit,
     visitSubmitError,
     activeClinicId,
+    activePatient,
     selectedMedicine,
     setSelectedMedicine,
     tempHerbQuantity,
@@ -162,6 +165,8 @@ export function VisitFormModal() {
   } = useMedicalRecordContext()
 
   const [isApplyingFormula, setIsApplyingFormula] = useState(false)
+  const [isSuggestingAi, setIsSuggestingAi] = useState(false)
+  const [aiRationale, setAiRationale] = useState<string | null>(null)
 
   const { data: clinicOptions = [] } = useQuery(clinicOptionsQueryOptions())
   const locationOptions = useMemo(
@@ -246,6 +251,82 @@ export function VisitFormModal() {
       toast.error("Không thể áp dụng công thức. Vui lòng thử lại.")
     } finally {
       setIsApplyingFormula(false)
+    }
+  }
+
+  const handleAiSuggest = async () => {
+    const patientId = activePatient?.id
+    const symptoms = visit.symptoms?.trim()
+    if (!patientId) {
+      toast.error("Không tìm thấy thông tin bệnh nhân.")
+      return
+    }
+    if (!symptoms) {
+      toast.error("Nhập triệu chứng & bệnh sử trước khi gợi ý AI.")
+      return
+    }
+
+    setIsSuggestingAi(true)
+    setAiRationale(null)
+    try {
+      const suggestion = await suggestVisitPrescription(patientId, {
+        symptoms,
+        bloodPressure: visit.bloodPressure || undefined,
+        pulse: visit.pulse || undefined,
+        labResults: visit.labResults || undefined,
+        pulseDiagnosis: visit.pulseDiagnosis
+          ? {
+              ta: visit.pulseDiagnosis.ta || undefined,
+              huu: visit.pulseDiagnosis.huu || undefined,
+              bung: visit.pulseDiagnosis.bung || undefined,
+            }
+          : undefined,
+      })
+
+      const herbs: Herb[] = suggestion.herbs.map((herb) => {
+        const quantity = Number.parseFloat(
+          herb.weight.replace(/[^\d.,]/g, "").replace(",", ".")
+        )
+        const qty = Number.isFinite(quantity) && quantity > 0 ? quantity : undefined
+        return {
+          name: herb.name,
+          weight: herb.weight,
+          medicineId: herb.medicineId ?? undefined,
+          unit: herb.unit ?? undefined,
+          quantity: qty,
+        }
+      })
+
+      updateVisit({
+        prescriptionFormula: suggestion.prescriptionFormula || visit.prescriptionFormula,
+        prescriptionDosage: suggestion.prescriptionDosage || visit.prescriptionDosage,
+        herbs: herbs.length > 0 ? herbs : visit.herbs,
+      })
+
+      setAiRationale(
+        [
+          suggestion.diagnosis
+            ? `Chẩn đoán YHCT: ${suggestion.diagnosis}`
+            : null,
+          suggestion.rationale,
+          ...(suggestion.warnings ?? []),
+        ]
+          .filter(Boolean)
+          .join("\n")
+      )
+
+      const unmatched = suggestion.herbs.filter((h) => !h.matchedFromCatalog)
+      if (unmatched.length > 0) {
+        toast.warning(
+          `Đã điền gợi ý AI. ${unmatched.length} vị chưa khớp kho — hãy chọn lại từ danh mục.`
+        )
+      } else {
+        toast.success("Đã điền gợi ý AI — vui lòng kiểm tra trước khi lưu.")
+      }
+    } catch (error) {
+      toast.error(getApiErrorMessage(error))
+    } finally {
+      setIsSuggestingAi(false)
     }
   }
 
@@ -390,9 +471,22 @@ export function VisitFormModal() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase">
-              Triệu chứng & bệnh sử bệnh nhân
-            </label>
+            <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+              <label className="block text-[11px] font-bold text-slate-500 uppercase">
+                Triệu chứng & bệnh sử bệnh nhân
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleAiSuggest()
+                }}
+                disabled={isSuggestingAi || isSubmittingVisit}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {isSuggestingAi ? "Đang gợi ý..." : "Gợi ý AI (chẩn đoán + đơn)"}
+              </button>
+            </div>
             <textarea
               value={visit.symptoms || ""}
               onChange={(e) => updateVisit({ symptoms: e.target.value })}
@@ -400,6 +494,12 @@ export function VisitFormModal() {
               className={longTextareaClassName}
               placeholder="Mô tả các triệu chứng mệt mỏi, nóng dạ dạ, nhức mỏi xương khớp..."
             />
+            {aiRationale && (
+              <p className="mt-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed whitespace-pre-wrap text-amber-950">
+                <span className="font-semibold">Gợi ý AI: </span>
+                {aiRationale}
+              </p>
+            )}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
