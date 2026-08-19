@@ -10,7 +10,7 @@ interface ComingSoonPageProps {
 
 export function ComingSoonPage({ title }: ComingSoonPageProps) {
   return (
-    <div className="mx-2 mt-50 max-w-2xl space-y-4 rounded-2xl border-gray-500 py-8 text-center shadow-2xl md:mx-auto md:border md:px-18 md:shadow-none">
+    <div className="mx-2 mt-50 max-w-2xl space-y-4 rounded-2xl border-gray-500 py-8 text-center shadow-2xl md:mx-auto md:border md:px-18">
       <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 text-emerald-600 shadow-inner">
         <BriefcaseMedical className="h-18 w-18" />
       </div>
