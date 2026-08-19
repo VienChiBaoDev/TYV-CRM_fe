@@ -17,6 +17,9 @@ export function ComingSoonPage({ title }: ComingSoonPageProps) {
       <h3 className="font-display text-2xl font-bold text-primary">
         Chức năng {title}
       </h3>
+      <h4 className="font-display text-lg font-semibold text-slate-600 italic">
+        Chức năng chưa được phát triển
+      </h4>
       <p className="font-sans text-sm leading-relaxed text-slate-600">
         Bạn đang trải nghiệm giao diện quản trị phòng khám. Chế độ xem trọng tâm
         chính hiện tại là Hồ Sơ Khám Bệnh Chuyên Sâu thiết kế chuẩn Đông Y. Vui
