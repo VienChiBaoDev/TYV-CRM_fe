@@ -89,7 +89,11 @@ export function PrescriptionFormulasPage() {
           title="Công thức đơn thuốc"
           description="Quản lý công thức cá nhân — dùng lại khi kê đơn cho bệnh nhân"
           actions={
-            <Button type="button" onClick={openAddDialog}>
+            <Button
+              type="button"
+              onClick={openAddDialog}
+              className="max-md:mb-2"
+            >
               <Plus className="h-4 w-4" />
               Thêm công thức
             </Button>

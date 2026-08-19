@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom"
-import { FileText, Info } from "lucide-react"
+import { BriefcaseMedical, FileText } from "lucide-react"
 
 import { urlPaths } from "@/constants/urlPaths"
+import { Button } from "../ui/button"
 
 interface ComingSoonPageProps {
   title: string
@@ -9,11 +10,11 @@ interface ComingSoonPageProps {
 
 export function ComingSoonPage({ title }: ComingSoonPageProps) {
   return (
-    <div className="mx-auto max-w-2xl space-y-4 p-8 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 text-emerald-600 shadow-inner">
-        <Info className="h-8 w-8" />
+    <div className="mx-2 mt-50 max-w-2xl space-y-4 rounded-2xl border-gray-500 py-8 text-center shadow-2xl md:mx-auto md:border md:px-18 md:shadow-none">
+      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 text-emerald-600 shadow-inner">
+        <BriefcaseMedical className="h-18 w-18" />
       </div>
-      <h3 className="font-display text-lg font-bold text-slate-800">
+      <h3 className="font-display text-2xl font-bold text-primary">
         Chức năng {title}
       </h3>
       <p className="font-sans text-sm leading-relaxed text-slate-600">
@@ -22,12 +23,14 @@ export function ComingSoonPage({ title }: ComingSoonPageProps) {
         lòng nhấn chọn &quot;Hồ sơ khám&quot; trên thanh menu bên trái hoặc nút
         dưới đây để quay lại màn hình chính.
       </p>
-      <Link
-        to={urlPaths.medicalRecordList}
-        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-800 px-5 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-primary"
-      >
-        <FileText className="h-4 w-4" /> Quay lại Hồ sơ khám
-      </Link>
+      <Button>
+        <Link
+          to={urlPaths.medicalRecordList}
+          className="flex items-center gap-2"
+        >
+          <FileText className="h-4 w-4" /> Quay lại Hồ sơ khám
+        </Link>
+      </Button>
     </div>
   )
 }

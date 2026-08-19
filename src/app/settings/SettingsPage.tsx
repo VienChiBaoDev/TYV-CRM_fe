@@ -2,7 +2,15 @@ import { useState } from "react"
 import { Navigate } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { isAxiosError } from "axios"
-import { Building2, Landmark, Loader2, Pencil, Plus, Trash2, UserCog } from "lucide-react"
+import {
+  Building2,
+  Landmark,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
+  UserCog,
+} from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -79,11 +87,15 @@ export default function SettingsPage() {
   const currentUser = useAuthStore((state) => state.user)
   const queryClient = useQueryClient()
 
-  const canStaff = userHasAnyPermission(currentUser, [PERMISSIONS.SETTINGS_STAFF])
+  const canStaff = userHasAnyPermission(currentUser, [
+    PERMISSIONS.SETTINGS_STAFF,
+  ])
   const canClinics = userHasAnyPermission(currentUser, [
     PERMISSIONS.SETTINGS_CLINICS,
   ])
-  const canBanks = userHasAnyPermission(currentUser, [PERMISSIONS.SETTINGS_BANKS])
+  const canBanks = userHasAnyPermission(currentUser, [
+    PERMISSIONS.SETTINGS_BANKS,
+  ])
   const defaultTab = canStaff
     ? "staff"
     : canClinics
@@ -179,9 +191,9 @@ export default function SettingsPage() {
         {canStaff ? (
           <TabsContent value="staff">
             <div className="mb-4 flex items-start justify-between">
-              <p className="max-w-xl text-sm text-slate-500">
-                Thêm, sửa, xóa tài khoản. Chọn vai trò để lấy quyền mặc định, rồi
-                tick thêm/bớt theo từng người.
+              <p className="hidden max-w-xl text-sm text-slate-500 md:block">
+                Thêm, sửa, xóa tài khoản. Chọn vai trò để lấy quyền mặc định,
+                rồi tick thêm/bớt theo từng người.
               </p>
               <Button
                 onClick={openCreate}
@@ -319,7 +331,9 @@ function normalizePermissionCodes(
 
 function isCustomPermissions(staff: Staff): boolean {
   if (staff.role === "ADMIN") return false
-  const current = new Set(normalizePermissionCodes(staff.permissionCodes, staff.role))
+  const current = new Set(
+    normalizePermissionCodes(staff.permissionCodes, staff.role)
+  )
   const defaults = getRoleDefaultPermissions(staff.role)
   if (current.size !== defaults.length) return true
   return defaults.some((code) => !current.has(code))
@@ -481,10 +495,7 @@ function StaffFormDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex min-h-0 flex-1 flex-col"
-        >
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
             <div className="space-y-1.5">
               <Label htmlFor="fullName">Họ tên</Label>

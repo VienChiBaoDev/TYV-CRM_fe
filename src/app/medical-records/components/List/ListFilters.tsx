@@ -22,12 +22,12 @@ export function ListFilters() {
 
   return (
     <div className="mb-4">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 max-md:mb-2">
         <div>
           <h2 className="text-sm font-semibold text-slate-800">
             Danh sách khách hàng
           </h2>
-          <p className="mb-4 text-xs text-slate-500">
+          <p className="mb-4 text-xs text-slate-500 max-md:hidden">
             Danh sách khách hàng theo ngày tạo hồ sơ, chốt dịch vụ, điều trị,
             thanh toán hoặc ngày checked in
           </p>

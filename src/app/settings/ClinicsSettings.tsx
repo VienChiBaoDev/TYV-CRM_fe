@@ -78,7 +78,7 @@ export default function ClinicsSettings() {
   return (
     <div>
       <div className="mb-4 flex items-start justify-between">
-        <p className="max-w-xl text-sm text-slate-500">
+        <p className="hidden max-w-xl text-sm text-slate-500 md:block">
           Danh sách cơ sở / chi nhánh phòng khám. Thêm các cơ sở tại đây trước,
           rồi gắn nhân sự và dữ liệu nghiệp vụ theo cơ sở ở các bước sau.
         </p>
@@ -270,9 +270,7 @@ function ClinicFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? "Sửa cơ sở" : "Thêm cơ sở"}
-          </DialogTitle>
+          <DialogTitle>{isEdit ? "Sửa cơ sở" : "Thêm cơ sở"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
