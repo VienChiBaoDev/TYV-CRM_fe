@@ -130,7 +130,7 @@ export function MedicinesPage() {
           title="Quản lý kho thuốc"
           description="Danh sách thuốc dùng khi kê đơn trong lượt khám"
           actions={
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 max-md:mb-2">
               <Button
                 type="button"
                 variant="outline"

@@ -74,7 +74,7 @@ export default function BankAccountsSettings() {
   return (
     <div>
       <div className="mb-4 flex items-start justify-between">
-        <p className="max-w-xl text-sm text-slate-500">
+        <p className="hidden max-w-xl text-sm text-slate-500 md:block">
           Danh sách tài khoản dùng khi khách chuyển khoản. Nhân viên sẽ chọn
           đúng tài khoản đã nhận tiền lúc lập phiếu thu, và thông tin này được
           lưu lại trong lịch sử thanh toán.

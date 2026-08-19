@@ -26,12 +26,12 @@ export function StaffScheduleNavigator({
   shiftCount,
 }: StaffScheduleNavigatorProps) {
   return (
-    <div className="flex flex-wrap items-start gap-6">
+    <div className="flex flex-wrap items-center gap-6">
       <PageHeader
         title="Lịch làm việc"
         description={formatWeekTitle(anchorDate)}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 lg:ml-4">
             <Button
               type="button"
               variant="outline"
@@ -39,7 +39,7 @@ export function StaffScheduleNavigator({
               onClick={() => onAnchorChange(shiftWeek(anchorDate, -1))}
             >
               <ChevronLeft className="h-4 w-4" />
-              Tuần trước
+              <span className="hidden sm:inline">Tuần trước</span>
             </Button>
             <Button
               type="button"
@@ -55,7 +55,7 @@ export function StaffScheduleNavigator({
               size="sm"
               onClick={() => onAnchorChange(shiftWeek(anchorDate, 1))}
             >
-              Tuần sau
+              <span className="hidden sm:inline">Tuần sau</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
