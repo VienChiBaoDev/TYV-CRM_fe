@@ -471,22 +471,9 @@ export function VisitFormModal() {
           </div>
 
           <div>
-            <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-              <label className="block text-[11px] font-bold text-slate-500 uppercase">
-                Triệu chứng & bệnh sử bệnh nhân
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  void handleAiSuggest()
-                }}
-                disabled={isSuggestingAi || isSubmittingVisit}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                {isSuggestingAi ? "Đang gợi ý..." : "Gợi ý AI (chẩn đoán + đơn)"}
-              </button>
-            </div>
+            <label className="block text-[11px] font-bold text-slate-500 uppercase">
+              Triệu chứng & bệnh sử bệnh nhân
+            </label>
             <textarea
               value={visit.symptoms || ""}
               onChange={(e) => updateVisit({ symptoms: e.target.value })}
@@ -494,12 +481,6 @@ export function VisitFormModal() {
               className={longTextareaClassName}
               placeholder="Mô tả các triệu chứng mệt mỏi, nóng dạ dạ, nhức mỏi xương khớp..."
             />
-            {aiRationale && (
-              <p className="mt-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed whitespace-pre-wrap text-amber-950">
-                <span className="font-semibold">Gợi ý AI: </span>
-                {aiRationale}
-              </p>
-            )}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -569,6 +550,29 @@ export function VisitFormModal() {
               </div>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => {
+                void handleAiSuggest()
+              }}
+              disabled={isSuggestingAi || isSubmittingVisit}
+              className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-900 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              <Sparkles className="h-4 w-4" />
+              {isSuggestingAi
+                ? "Đang chẩn đoán..."
+                : "AI chẩn đoán và kê đơn thuốc"}
+            </button>
+            {aiRationale && (
+              <p className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed whitespace-pre-wrap text-amber-950">
+                <span className="font-semibold">Gợi ý AI: </span>
+                {aiRationale}
+              </p>
+            )}
+          </div>
+
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[10px] font-bold text-slate-500 uppercase">
               Công thức mẫu
