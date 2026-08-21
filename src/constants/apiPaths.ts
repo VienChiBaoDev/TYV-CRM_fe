@@ -47,6 +47,10 @@ const API_PATHS = {
     detail: (id: string) => `/patients/${id}`,
     update: (id: string) => `/patients/${id}`,
   },
+  patientVisits: {
+    aiSuggest: (patientId: string) =>
+      `/patients/${patientId}/visits/ai-suggest`,
+  },
   patientServices: {
     list: (patientId: string) => `/patients/${patientId}/services`,
     create: (patientId: string) => `/patients/${patientId}/services`,
