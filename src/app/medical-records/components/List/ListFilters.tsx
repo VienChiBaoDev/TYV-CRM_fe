@@ -1,6 +1,6 @@
-import { Building2, UserPlus } from "lucide-react"
-import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
+import { Building2, FileUp, UserPlus } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,8 +13,11 @@ import {
 import { urlPaths } from "@/constants/urlPaths"
 import { clinicOptionsQueryOptions } from "@/queries/clinic-query"
 import { useClinicStore } from "@/stores/clinic-store"
+import { useState } from "react"
+import { PatientImportDialog } from "./PatientImportDialog"
 
 export function ListFilters() {
+  const [importOpen, setImportOpen] = useState(false)
   const navigate = useNavigate()
   const activeClinicId = useClinicStore((state) => state.activeClinicId)
   const setActiveClinicId = useClinicStore((state) => state.setActiveClinicId)
@@ -32,13 +35,19 @@ export function ListFilters() {
             thanh toán hoặc ngày checked in
           </p>
         </div>
-        <Button
-          onClick={() => navigate(urlPaths.medicalRecordCreate)}
-          className="shrink-0"
-        >
-          <UserPlus className="h-4 w-4" />
-          Tạo mới hồ sơ
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <FileUp className="h-4 w-4" />
+            Import Excel
+          </Button>
+          <Button
+            onClick={() => navigate(urlPaths.medicalRecordCreate)}
+            className="shrink-0"
+          >
+            <UserPlus className="h-4 w-4" />
+            Tạo mới hồ sơ
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -61,6 +70,7 @@ export function ListFilters() {
           </Select>
         </div>
       </div>
+      <PatientImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   )
 }

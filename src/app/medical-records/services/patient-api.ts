@@ -1,5 +1,10 @@
-import httpService from "@/services/httpService"
 import API_PATHS from "@/constants/apiPaths"
+import httpService from "@/services/httpService"
+import type { PatientImportApiResponse } from "../interfaces/patient-import"
+import {
+  chunkArray,
+  PATIENT_IMPORT_BATCH_SIZE,
+} from "../utils/patient-import-batch"
 
 export type Gender = "MALE" | "FEMALE"
 
@@ -48,6 +53,21 @@ export interface FetchPatientsParams {
   referrerId?: string
 }
 
+export interface ImportPatientPayload {
+  fullName: string
+  phone: string
+  gender: Gender
+  clinicCode: string
+  address?: string
+  birthDate?: string
+  createdAt?: string
+}
+
+export interface ImportPatientsBatchProgress {
+  currentBatch: number
+  totalBatches: number
+}
+
 export async function fetchPatients(
   params: FetchPatientsParams = {}
 ): Promise<PatientApi[]> {
@@ -58,9 +78,7 @@ export async function fetchPatients(
   return data
 }
 
-export async function fetchPatientById(
-  patientId: string
-): Promise<PatientApi> {
+export async function fetchPatientById(patientId: string): Promise<PatientApi> {
   const { data } = await httpService.get<PatientApi>(
     API_PATHS.patients.detail(patientId)
   )
@@ -86,4 +104,43 @@ export async function updatePatient(
     payload
   )
   return data
+}
+
+export async function importPatients(
+  items: ImportPatientPayload[]
+): Promise<PatientImportApiResponse> {
+  const { data } = await httpService.post<PatientImportApiResponse>(
+    API_PATHS.patients.import,
+    { items }
+  )
+  return data
+}
+
+export async function importPatientsInBatches(
+  items: ImportPatientPayload[],
+  options?: {
+    batchSize?: number
+    onProgress?: (progress: ImportPatientsBatchProgress) => void
+  }
+): Promise<PatientImportApiResponse> {
+  const batchSize = options?.batchSize ?? PATIENT_IMPORT_BATCH_SIZE
+  const batches = chunkArray(items, batchSize)
+
+  let created = 0
+  let skipped = 0
+  const errors: PatientImportApiResponse["errors"] = []
+
+  for (let i = 0; i < batches.length; i++) {
+    options?.onProgress?.({
+      currentBatch: i + 1,
+      totalBatches: batches.length,
+    })
+
+    const result = await importPatients(batches[i])
+    created += result.created
+    skipped += result.skipped
+    errors.push(...result.errors)
+  }
+
+  return { created, skipped, errors }
 }
