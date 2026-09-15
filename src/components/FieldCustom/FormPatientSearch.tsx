@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
+import { useEffect, useState } from "react"
 import type { Control, FieldPath, FieldValues } from "react-hook-form"
 
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+  getPatientById,
+  getPatients,
+  type Patient,
+} from "@/app/medical-records/data/patientService"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -19,16 +17,18 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import {
-  getPatientById,
-  getPatients,
-  type Patient,
-} from "@/app/medical-records/data/patientService"
 
 interface FormPatientSearchProps<T extends FieldValues> {
   control: Control<T>
@@ -96,7 +96,9 @@ export function PatientSearchCombobox({
 
   useEffect(() => {
     if (!value) {
-      setSelectedPatient(null)
+      setTimeout(() => {
+        setSelectedPatient(null)
+      }, 0)
       return
     }
 
@@ -109,14 +111,16 @@ export function PatientSearchCombobox({
 
   useEffect(() => {
     if (!search.trim()) {
-      setResults([])
+      setTimeout(() => {
+        setResults([])
+      }, 0)
       return
     }
 
     const timer = window.setTimeout(() => {
       setLoading(true)
-      getPatients({ clinicId, search: search.trim() })
-        .then(setResults)
+      getPatients({ clinicId, search: search.trim(), limit: 20 })
+        .then((res) => setResults(res.data))
         .catch(() => setResults([]))
         .finally(() => setLoading(false))
     }, 300)
@@ -144,7 +148,7 @@ export function PatientSearchCombobox({
             disabled={disabled}
             className={cn(
               "w-full justify-between font-normal",
-              !value && "text-muted-foreground",
+              !value && "text-muted-foreground"
             )}
           >
             {selectedPatient
@@ -181,7 +185,7 @@ export function PatientSearchCombobox({
                   <Check
                     className={cn(
                       "mr-2 size-4",
-                      value === patient.id ? "opacity-100" : "opacity-0",
+                      value === patient.id ? "opacity-100" : "opacity-0"
                     )}
                   />
                   <div className="flex flex-col">

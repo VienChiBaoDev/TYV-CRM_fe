@@ -1,5 +1,10 @@
 import API_PATHS from "@/constants/apiPaths"
 import httpService from "@/services/httpService"
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  type PaginatedResponse,
+} from "@/types/pagination"
 import type { PatientImportApiResponse } from "../interfaces/patient-import"
 import {
   chunkArray,
@@ -51,6 +56,8 @@ export interface FetchPatientsParams {
   search?: string
   clinicId?: string
   referrerId?: string
+  page?: number
+  limit?: number
 }
 
 export interface ImportPatientPayload {
@@ -70,10 +77,18 @@ export interface ImportPatientsBatchProgress {
 
 export async function fetchPatients(
   params: FetchPatientsParams = {}
-): Promise<PatientApi[]> {
-  const { data } = await httpService.get<PatientApi[]>(
+): Promise<PaginatedResponse<PatientApi>> {
+  const { data } = await httpService.get<PaginatedResponse<PatientApi>>(
     API_PATHS.patients.list,
-    { params }
+    {
+      params: {
+        page: params.page ?? DEFAULT_PAGE,
+        limit: params.limit ?? DEFAULT_LIMIT,
+        search: params.search?.trim() || undefined,
+        clinicId: params.clinicId,
+        referrerId: params.referrerId,
+      },
+    }
   )
   return data
 }

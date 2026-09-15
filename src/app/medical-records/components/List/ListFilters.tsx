@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { Building2, FileUp, UserPlus } from "lucide-react"
+import { Building2, FileUp, Search, UserPlus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -16,7 +17,17 @@ import { useClinicStore } from "@/stores/clinic-store"
 import { useState } from "react"
 import { PatientImportDialog } from "./PatientImportDialog"
 
-export function ListFilters() {
+interface ListFiltersProps {
+  search: string
+  onSearchChange: (value: string) => void
+  onApplySearch: () => void
+}
+
+export function ListFilters({
+  search,
+  onSearchChange,
+  onApplySearch,
+}: ListFiltersProps) {
   const [importOpen, setImportOpen] = useState(false)
   const navigate = useNavigate()
   const activeClinicId = useClinicStore((state) => state.activeClinicId)
@@ -69,6 +80,19 @@ export function ListFilters() {
             </SelectContent>
           </Select>
         </div>
+        <div className="relative min-w-[220px] flex-1">
+          <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onApplySearch()}
+            placeholder="Tìm theo tên, SĐT, mã khách hàng"
+            className="h-8 bg-white pl-8 text-sm"
+          />
+        </div>
+        <Button type="button" size="sm" onClick={onApplySearch}>
+          OK
+        </Button>
       </div>
       <PatientImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>

@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query"
+import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 
 import {
   fetchPatientById,
@@ -25,6 +25,7 @@ export function patientListQueryOptions(params: FetchPatientsParams) {
     queryFn: () => fetchPatients(params),
     enabled: Boolean(params.clinicId),
     staleTime: 30_000,
+    placeholderData: keepPreviousData,
   })
 }
 
